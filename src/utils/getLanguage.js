@@ -19,8 +19,9 @@ function getLanguage(context) {
             // pega o melhor idioma disponível (o da interação ou da 'memória')
             const bestAvailableLocale = (context.user && context.locale) || userData.lastKnownLocale || context.locale;
             
-            // se o idioma for pt-BR, a gente usa. pra QUALQUER outra coisa, a gente usa en_US como padrão.
-            return bestAvailableLocale === 'pt-BR' ? 'pt_BR' : 'en_US';
+            // se o idioma for português (pt-BR, pt-PT, etc.), a gente usa. pra QUALQUER outra coisa, a gente usa en_US como padrão.
+            const isPt = Boolean(bestAvailableLocale && String(bestAvailableLocale).toLowerCase().startsWith('pt'));
+            return isPt ? 'pt_BR' : 'en_US';
     }
 }
 
