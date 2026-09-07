@@ -88,10 +88,10 @@ module.exports = {
                 .setCustomId(`botinfo_nav_${interaction.user.id}`)
                 .setPlaceholder(isPtBr ? 'Navegue pelas informações...' : 'Navigate through info...')
                 .addOptions([
-                    { label: isPtBr ? 'Página Inicial' : 'Home', value: 'page_home', emoji: '🏠', default: true },
-                    { label: isPtBr ? 'RG do Bot' : 'Bot Info / ID', value: 'page_credits', emoji: '📜' },
-                    { label: isPtBr ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: '🖥️' },
-                    { label: isPtBr ? 'Agradecimentos' : 'Special Thanks', value: 'page_thanks', emoji: '💖' },
+                    { label: isPtBr ? 'Página Inicial' : 'Home', value: 'page_home', emoji: { id: '1397393887068160030', name: 'casa' }, default: true },
+                    { label: isPtBr ? 'RG do Bot' : 'Bot Info / ID', value: 'page_credits', emoji: { id: '1394142002404135003', name: 'carta' } },
+                    { label: isPtBr ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: { id: '1397393671791312906', name: 'vscode' } },
+                    { label: isPtBr ? 'Agradecimentos' : 'Special Thanks', value: 'page_thanks', emoji: { id: '1397391540535431198', name: 'coracaopixel' } },
                 ])
         );
 
@@ -124,19 +124,10 @@ module.exports = {
                 .setURL(urls.github)
         );
 
-        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../utils/componentsV2.js');
-        const v2Container = embedToV2Container(embed);
-
         const replyPayload = {
-            flags: IS_COMPONENTS_V2,
-            components: [v2Container, navMenu, actionRow],
+            embeds: [embed],
+            components: [navMenu, actionRow],
         };
-        Object.defineProperty(replyPayload, 'embeds', {
-            value: [embed],
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
         if (files.length > 0) {
             replyPayload.files = files;
         }

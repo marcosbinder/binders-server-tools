@@ -159,6 +159,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
                 .setLabel(isPtBr ? 'Ver Avatar' : 'View Avatar')
                 .setStyle(ButtonStyle.Link)
                 .setURL(avatarUrl)
+                .setEmoji(getEmoji('pessoa'))
         );
     }
     if (bannerUrl) {
@@ -167,6 +168,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
                 .setLabel(isPtBr ? 'Ver Banner' : 'View Banner')
                 .setStyle(ButtonStyle.Link)
                 .setURL(bannerUrl)
+                .setEmoji(getEmoji('paletadecores'))
         );
     }
 

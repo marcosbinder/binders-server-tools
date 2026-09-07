@@ -302,7 +302,7 @@ function buildStudioPayload(session, guild) {
               .setCustomId('btn_builder_undo')
               .setLabel('Desfazer Última Ação')
               .setStyle(ButtonStyle.Secondary)
-              .setEmoji('↩️')
+              .setEmoji(getEmoji('voltar'))
               .setDisabled(n === 0)
               .toJSON(),
             new ButtonBuilder()

@@ -1,4 +1,4 @@
-const { ActionRowBuilder, StringSelectMenuBuilder, version } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder, version, MessageFlags } = require('discord.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
@@ -56,19 +56,19 @@ async function buildPage(page, interaction, client) {
             const ramTotal = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
 
             const hostDescription = [
-                `### 🖥️ ${isPtBr ? 'Telemetria & Ambiente de Hospedagem' : 'Telemetry & Hosting Environment'}`,
-                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** \`🟢 Online & Saudável\``,
+                `### ${emojis.vscode} ${isPtBr ? 'Telemetria & Ambiente de Hospedagem' : 'Telemetry & Hosting Environment'}`,
+                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** ${emojis.verde} \`Online & Saudável\``,
                 `> • **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** <t:${startTimestamp}:R> (\`${uptimeStr}\`)`,
                 `> • **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${client.ws.ping}ms\``,
                 `> • **${isPtBr ? 'Uso de Memória RAM' : 'RAM Memory Usage'}:** \`${ramUsed} MB / ${ramTotal} MB\``,
                 `> • **${isPtBr ? 'Versão do Node.js' : 'Node.js Version'}:** \`${process.version}\``,
                 `> • **${isPtBr ? 'Sistema Operacional' : 'Operating System'}:** \`${os.type()} ${os.arch()}\``,
                 ``,
-                `-# ⚡ ${isPtBr ? 'Hospedado na nuvem com contingência de banco em alta disponibilidade.' : 'Cloud-hosted with high availability database failover.'}`
+                `-# ${emojis.raio} ${isPtBr ? 'Hospedado na nuvem com contingência de banco em alta disponibilidade.' : 'Cloud-hosted with high availability database failover.'}`
             ].join('\n');
 
             embed = await createEmbed(interaction, {
-                title: `[3/4] ${emojis.ferramenta1 || '🖥️'} ${isPtBr ? 'Hospedagem' : 'Hosting'}`,
+                title: `[3/4] ${emojis.ferramenta1} ${isPtBr ? 'Hospedagem' : 'Hosting'}`,
                 description: hostDescription,
                 color: colors.primary,
             });
@@ -77,7 +77,7 @@ async function buildPage(page, interaction, client) {
         case 'page_thanks':
             const thanksList = inspirations.map(i => `[${i.name}](https://discord.com/users/${i.id})`).join(', ');
             embed = await createEmbed(interaction, {
-                title: `[4/4] ${emojis.coracao1 || '💖'} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
+                title: `[4/4] ${emojis.coracaopixel} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
                 description: `> ${isPtBr ? `Agradecimentos especiais para a Vitória pela arte e apoio! Me inspiro em bots e pessoas como ${thanksList}.` : `Special thanks to Vitória for the art and support! I'm inspired by bots and people like ${thanksList}.`}\n\n-# ${isPtBr ? 'Obrigado a cada pessoa que faz parte dessa jornada!' : 'Thank you to everyone who is part of this journey!'}`,
                 color: colors.primary,
             });
@@ -105,8 +105,9 @@ async function buildPage(page, interaction, client) {
 module.exports = {
     name: 'botinfo_nav',
     async execute(interaction, client) {
-        const isOwner = await checkInteractionOwnership(interaction);
-        if (!isOwner) return;
+        const parts = (interaction.customId || '').split('_');
+        const ownerId = parts[parts.length - 1];
+        const isOwner = /^\d+$/.test(ownerId) ? interaction.user.id === ownerId : true;
 
         const selectedPage = interaction.values[0];
         const newEmbed = await buildPage(selectedPage, interaction, client);
@@ -117,32 +118,31 @@ module.exports = {
                 .setCustomId(`botinfo_nav_${interaction.user.id}`)
                 .setPlaceholder(lang === 'pt_BR' ? 'Navegue pelas informações...' : 'Navigate through the info...')
                 .addOptions([
-                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: '🏠', default: selectedPage === 'page_home' },
-                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: '📜', default: selectedPage === 'page_credits' },
-                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: '🖥️', default: selectedPage === 'page_host' },
-                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: '💖', default: selectedPage === 'page_thanks' },
+                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: { id: '1397393887068160030', name: 'casa' }, default: selectedPage === 'page_home' },
+                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: { id: '1394142002404135003', name: 'carta' }, default: selectedPage === 'page_credits' },
+                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: { id: '1397393671791312906', name: 'vscode' }, default: selectedPage === 'page_host' },
+                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: { id: '1397391540535431198', name: 'coracaopixel' }, default: selectedPage === 'page_thanks' },
                 ])
         );
 
-        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../utils/componentsV2.js');
-        const v2Container = embedToV2Container(newEmbed);
         const linkRow = interaction.message?.components?.[2] || interaction.message?.components?.[1];
 
         const payload = {
-            flags: IS_COMPONENTS_V2,
-            components: linkRow ? [v2Container, navMenu, linkRow] : [v2Container, navMenu]
+            embeds: [newEmbed],
+            components: linkRow ? [navMenu, linkRow] : [navMenu]
         };
-        Object.defineProperty(payload, 'embeds', {
-            value: [newEmbed],
-            enumerable: false,
-            writable: true,
-            configurable: true
-        });
         
-        if (selectedPage !== 'page_home') {
+        if (selectedPage === 'page_home') {
+            payload.files = ['./assets/banner.png'];
+        } else {
             payload.files = [];
         }
 
-        await interaction.update(payload);
+        if (isOwner) {
+            await interaction.update(payload);
+        } else {
+            payload.flags = [MessageFlags.Ephemeral];
+            await interaction.reply(payload);
+        }
     },
 };

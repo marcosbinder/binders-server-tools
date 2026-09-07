@@ -78,8 +78,8 @@ module.exports = {
         if (!attachment && !urlOption) {
             return safeReply(interaction, {
                 content: isPtBr
-                    ? '❌ Você precisa fornecer uma **imagem** (upload) ou uma **URL** de imagem válida para realizar o OCR.'
-                    : '❌ You must provide an **image** (upload) or a valid image **URL** to perform OCR.',
+                    ? `${emojis.errado} Você precisa fornecer uma **imagem** (upload) ou uma **URL** de imagem válida para realizar o OCR.`
+                    : `${emojis.errado} You must provide an **image** (upload) or a valid image **URL** to perform OCR.`,
                 flags: [MessageFlags.Ephemeral],
             });
         }
@@ -94,8 +94,8 @@ module.exports = {
             if (!isImageMime && !hasValidExt) {
                 return safeReply(interaction, {
                     content: isPtBr
-                        ? '❌ O arquivo enviado não parece ser uma imagem válida (formatos aceitos: PNG, JPG, JPEG, WEBP, BMP, GIF).'
-                        : '❌ The uploaded file does not appear to be a valid image (supported formats: PNG, JPG, JPEG, WEBP, BMP, GIF).',
+                        ? `${emojis.errado} O arquivo enviado não parece ser uma imagem válida (formatos aceitos: PNG, JPG, JPEG, WEBP, BMP, GIF).`
+                        : `${emojis.errado} The uploaded file does not appear to be a valid image (supported formats: PNG, JPG, JPEG, WEBP, BMP, GIF).`,
                     flags: [MessageFlags.Ephemeral],
                 });
             }
@@ -104,8 +104,8 @@ module.exports = {
             if (!isValidImageUrl(urlOption)) {
                 return safeReply(interaction, {
                     content: isPtBr
-                        ? '❌ A URL fornecida não é válida ou não aponta para uma imagem suportada.'
-                        : '❌ The provided URL is invalid or does not point to a supported image.',
+                        ? `${emojis.errado} A URL fornecida não é válida ou não aponta para uma imagem suportada.`
+                        : `${emojis.errado} The provided URL is invalid or does not point to a supported image.`,
                     flags: [MessageFlags.Ephemeral],
                 });
             }
@@ -122,11 +122,11 @@ module.exports = {
 
         if (!ocrResult.success) {
             const errorEmbed = await createEmbed(interaction, {
-                title: isPtBr ? '❌ Falha no Reconhecimento Óptico' : '❌ OCR Processing Failed',
+                title: isPtBr ? `${emojis.errado} Falha no Reconhecimento Óptico` : `${emojis.errado} OCR Processing Failed`,
                 description: isPtBr
-                    ? `Não foi possível extrair texto desta imagem.\n**Motivo:** \`${ocrResult.error || 'Erro desconhecido'}\``
-                    : `Unable to extract text from this image.\n**Reason:** \`${ocrResult.error || 'Unknown error'}\``,
-                color: 0xED4245,
+                    ? `Não foi possível extrair texto desta imagem.\n> **Motivo:** \`${ocrResult.error || 'Erro desconhecido'}\``
+                    : `Unable to extract text from this image.\n> **Reason:** \`${ocrResult.error || 'Unknown error'}\``,
+                color: colors.error || 0xED4245,
             });
 
             return safeReply(interaction, { embeds: [errorEmbed] });
@@ -142,29 +142,29 @@ module.exports = {
                 : rawText;
         } else {
             displayContent = isPtBr
-                ? '⚠️ Nenhum texto legível foi detectado nesta imagem.'
-                : '⚠️ No readable text was detected in this image.';
+                ? `${emojis.amarelo} Nenhum texto legível foi detectado nesta imagem.`
+                : `${emojis.amarelo} No readable text was detected in this image.`;
         }
 
         const fields = [
             {
-                name: isPtBr ? '📊 Estatísticas' : '📊 Statistics',
-                value: `• **${isPtBr ? 'Caracteres' : 'Characters'}:** \`${ocrResult.characters}\`\n• **${isPtBr ? 'Linhas' : 'Lines'}:** \`${ocrResult.lines}\``,
+                name: isPtBr ? `${emojis.ferramenta1} Estatísticas` : `${emojis.ferramenta1} Statistics`,
+                value: `> • **${isPtBr ? 'Caracteres' : 'Characters'}:** \`${ocrResult.characters}\`\n> • **${isPtBr ? 'Linhas' : 'Lines'}:** \`${ocrResult.lines}\``,
                 inline: true,
             },
             {
-                name: isPtBr ? '⚙️ Motor OCR' : '⚙️ OCR Engine',
-                value: `• **Provedor:** \`${ocrResult.provider}\`\n• **Status:** \`${hasText ? 'Sucesso' : 'Sem texto'}\``,
+                name: isPtBr ? `${emojis.configuracao} Motor OCR` : `${emojis.configuracao} OCR Engine`,
+                value: `> • **Provedor:** \`${ocrResult.provider}\`\n> • **Status:** \`${hasText ? (isPtBr ? 'Sucesso' : 'Success') : (isPtBr ? 'Sem texto' : 'No text')}\``,
                 inline: true,
             },
         ];
 
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? '🔍 Reconhecimento de Imagem (OCR)' : '🔍 Image Text Recognition (OCR)',
-            description: `\`\`\`text\n${displayContent}\n\`\`\``,
+            title: isPtBr ? `${emojis.lupa} Reconhecimento de Imagem (OCR)` : `${emojis.lupa} Image Text Recognition (OCR)`,
+            description: `> ${isPtBr ? 'Texto extraído com sucesso:' : 'Extracted text from image:'}\n\`\`\`text\n${displayContent}\n\`\`\``,
             fields,
             thumbnail: targetImageUrl,
-            color: hasText ? 0x57F287 : 0xFEE75C,
+            color: colors.primary || 0xAEA7BD,
         });
 
         const buttons = [
@@ -172,6 +172,7 @@ module.exports = {
                 .setLabel(isPtBr ? 'Ver Imagem Original' : 'View Original Image')
                 .setStyle(ButtonStyle.Link)
                 .setURL(targetImageUrl)
+                .setEmoji(emojis.visto)
         ];
 
         const row = new ActionRowBuilder().addComponents(buttons);

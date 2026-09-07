@@ -10,6 +10,7 @@ const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
+const { getEmoji } = require('../config/emojis.js');
 const { buildUserProfilePayload } = require('../utils/userProfileBuilder.js');
 
 module.exports = {
@@ -148,15 +149,18 @@ module.exports = {
                 new ButtonBuilder()
                     .setLabel('PNG')
                     .setStyle(ButtonStyle.Link)
-                    .setURL(targetUser.displayAvatarURL({ extension: 'png', size: 2048 })),
+                    .setURL(targetUser.displayAvatarURL({ extension: 'png', size: 2048 }))
+                    .setEmoji(getEmoji('pasta')),
                 new ButtonBuilder()
                     .setLabel('WEBP')
                     .setStyle(ButtonStyle.Link)
-                    .setURL(targetUser.displayAvatarURL({ extension: 'webp', size: 2048 })),
+                    .setURL(targetUser.displayAvatarURL({ extension: 'webp', size: 2048 }))
+                    .setEmoji(getEmoji('pasta')),
                 new ButtonBuilder()
                     .setLabel('JPG')
                     .setStyle(ButtonStyle.Link)
-                    .setURL(targetUser.displayAvatarURL({ extension: 'jpg', size: 2048 })),
+                    .setURL(targetUser.displayAvatarURL({ extension: 'jpg', size: 2048 }))
+                    .setEmoji(getEmoji('pasta')),
             ];
 
             if (targetUser.avatar && targetUser.avatar.startsWith('a_')) {
@@ -165,6 +169,7 @@ module.exports = {
                         .setLabel('GIF')
                         .setStyle(ButtonStyle.Link)
                         .setURL(targetUser.displayAvatarURL({ extension: 'gif', size: 2048 }))
+                        .setEmoji(getEmoji('brilho'))
                 );
             }
 
@@ -174,6 +179,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Avatar do Servidor' : 'Server Avatar')
                         .setStyle(ButtonStyle.Link)
                         .setURL(serverAvatarUrl)
+                        .setEmoji(getEmoji('mundo'))
                 );
             }
 

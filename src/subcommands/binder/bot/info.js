@@ -51,10 +51,10 @@ module.exports = {
                 .setCustomId(`botinfo_nav_${interaction.user.id}`)
                 .setPlaceholder(lang === 'pt_BR' ? 'Navegue pelas informações...' : 'Navigate through the info...')
                 .addOptions([
-                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: '🏠', default: true },
-                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: '📜' },
-                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: '🖥️' },
-                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: '💖' },
+                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: { id: '1397393887068160030', name: 'casa' }, default: true },
+                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: { id: '1394142002404135003', name: 'carta' } },
+                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: { id: '1397393671791312906', name: 'vscode' } },
+                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: { id: '1397391540535431198', name: 'coracaopixel' } },
                 ])
         );
 
@@ -70,12 +70,9 @@ module.exports = {
             new ButtonBuilder().setLabel('GitHub').setEmoji(emojis.github).setStyle(ButtonStyle.Link).setURL(urls.github)
         );
 
-        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../../utils/componentsV2.js');
-        const v2Container = embedToV2Container(homeEmbed);
-
         await interaction.reply({ 
-            flags: IS_COMPONENTS_V2,
-            components: [v2Container, navMenu, actionRow],
+            embeds: [homeEmbed],
+            components: [navMenu, actionRow],
             files: ['./assets/banner.png']
         });
     },

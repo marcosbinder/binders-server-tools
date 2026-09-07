@@ -14,7 +14,6 @@ const getLanguage = require('../utils/getLanguage.js');
 const Logger = require('../utils/logger.js');
 const { queueInteractionLog, setClient } = require('../utils/interactionWebhookLogger.js');
 const { getEmoji } = require('../config/emojis.js');
-const { wrapInteractionForV2 } = require('../utils/componentsV2.js');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -26,8 +25,6 @@ module.exports = {
 
         // Autocomplete interactions do not support Message Components V2 replies (they use respond())
         if (typeof interaction.isAutocomplete === 'function' && interaction.isAutocomplete()) return;
-
-        wrapInteractionForV2(interaction);
 
         const startTime = Date.now();
 

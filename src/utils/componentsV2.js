@@ -6,6 +6,7 @@
  */
 
 const colors = require('../config/colors.js');
+const { getEmoji } = require('../config/emojis.js');
 
 /**
  * Message flag indicating Components V2 message layout.
@@ -309,14 +310,19 @@ function embedToV2Container(embed) {
 
     // 1. Author header
     if (data.author?.name) {
-        containerComponents.push(
-            createTextDisplay(`### 👤 ${data.author.name}`)
-        );
+        const authorText = `-# ${getEmoji('pessoa')} **${data.author.name}**`;
+        if (data.author.icon_url) {
+            containerComponents.push(
+                createSection(authorText, { url: data.author.icon_url })
+            );
+        } else {
+            containerComponents.push(createTextDisplay(authorText));
+        }
     }
 
     // 2. Title + Thumbnail Section
     if (data.title) {
-        const titleText = `## ${data.title}`;
+        const titleText = `### ${data.title}`;
         if (data.thumbnail?.url) {
             containerComponents.push(
                 createSection(titleText, { url: data.thumbnail.url })
@@ -326,7 +332,7 @@ function embedToV2Container(embed) {
         }
     } else if (data.thumbnail?.url) {
         containerComponents.push(
-            createSection('-# 🔳', { url: data.thumbnail.url })
+            createSection(`-# ${getEmoji('selo')}`, { url: data.thumbnail.url })
         );
     }
 
@@ -335,24 +341,27 @@ function embedToV2Container(embed) {
         containerComponents.push(createTextDisplay(data.description));
     }
 
-    // 4. Fields
+    // 4. Fields (format as clean markdown blockquotes without thick separator lines)
     if (Array.isArray(data.fields) && data.fields.length > 0) {
-        containerComponents.push(createSeparator(true, 1));
-        const fieldLines = data.fields.map(f => `**${f.name}**\n${f.value}`);
+        const fieldLines = data.fields.map(f => `> **${f.name}**\n> ${f.value}`);
         containerComponents.push(createTextDisplay(fieldLines.join('\n\n')));
     }
 
     // 5. Image (Media Gallery Type 12)
-    if (data.image?.url) {
+    if (data.image?.url && !data.image.url.startsWith('attachment://')) {
         containerComponents.push(createMediaGallery([data.image.url]));
     }
 
-    // 6. Footer
+    // 6. Footer (clean small text, with server icon if present)
     if (data.footer?.text) {
-        containerComponents.push(createSeparator(true, 1));
-        containerComponents.push(
-            createTextDisplay(`-# ${data.footer.text}`)
-        );
+        const footerText = `-# ${getEmoji('bot')} ${data.footer.text}`;
+        if (data.footer.icon_url) {
+            containerComponents.push(
+                createSection(footerText, { url: data.footer.icon_url })
+            );
+        } else {
+            containerComponents.push(createTextDisplay(footerText));
+        }
     }
 
     // Determine accent color
@@ -364,7 +373,7 @@ function embedToV2Container(embed) {
     // Clamp to Discord maximum 25 components per container
     const safeComponents = containerComponents.length > 25
         ? containerComponents.slice(0, 25)
-        : (containerComponents.length > 0 ? containerComponents : [createTextDisplay('ℹ️')]);
+        : (containerComponents.length > 0 ? containerComponents : [createTextDisplay(getEmoji('informacao'))]);
 
     return createContainer({
         accentColor,
