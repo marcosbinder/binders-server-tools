@@ -131,6 +131,12 @@ module.exports = {
             flags: IS_COMPONENTS_V2,
             components: [v2Container, navMenu, actionRow],
         };
+        Object.defineProperty(replyPayload, 'embeds', {
+            value: [embed],
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
         if (files.length > 0) {
             replyPayload.files = files;
         }

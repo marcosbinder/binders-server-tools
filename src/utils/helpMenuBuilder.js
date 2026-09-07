@@ -219,10 +219,18 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
 
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
-    return {
+    const payload = {
         flags: IS_COMPONENTS_V2,
         components: [helpContainer, row],
     };
+    Object.defineProperty(payload, 'embeds', {
+        value: [embed],
+        enumerable: false,
+        writable: true,
+        configurable: true
+    });
+
+    return payload;
 }
 
 module.exports = {

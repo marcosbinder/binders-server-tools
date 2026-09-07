@@ -427,10 +427,21 @@ function transformToV2Payload(payload, isEphemeral = false) {
                       (Array.isArray(base.flags) && base.flags.includes(IS_COMPONENTS_V2));
     const hasContainers = Array.isArray(base.components) && base.components.some(c => c && (c.type === 17 || c.type === 'CONTAINER'));
 
+    const originalEmbeds = Array.isArray(base.embeds) ? base.embeds : null;
+
     if (hasV2Flag && hasContainers) {
         base.flags = resolveFlags(base.flags, shouldBeEphemeral);
-        // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active
+        // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active.
+        // We delete it from enumerable properties (omitted in JSON), but preserve non-enumerable reference for tests/inspectors.
         delete base.embeds;
+        if (originalEmbeds) {
+            Object.defineProperty(base, 'embeds', {
+                value: originalEmbeds,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        }
         if (base.content === null || base.content === undefined) {
             delete base.content;
         }
@@ -491,6 +502,14 @@ function transformToV2Payload(payload, isEphemeral = false) {
         base.components = newComponents;
         // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active
         delete base.embeds;
+        if (originalEmbeds) {
+            Object.defineProperty(base, 'embeds', {
+                value: originalEmbeds,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        }
         if (convertedAny && typeof base.content === 'string') {
             delete base.content;
         } else if (base.content === null || base.content === undefined) {
@@ -499,6 +518,14 @@ function transformToV2Payload(payload, isEphemeral = false) {
     } else if (hasV2Flag) {
         // Even if no components were converted, if IS_COMPONENTS_V2 is set, strip embeds
         delete base.embeds;
+        if (originalEmbeds) {
+            Object.defineProperty(base, 'embeds', {
+                value: originalEmbeds,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            });
+        }
     }
 
     return base;

@@ -45,9 +45,17 @@ module.exports = {
         const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../../utils/componentsV2.js');
         const v2Container = embedToV2Container(embed);
 
-        return interaction.editReply({
+        const replyPayload = {
             flags: IS_COMPONENTS_V2,
-            components: [v2Container]
+            components: [v2Container],
+        };
+        Object.defineProperty(replyPayload, 'embeds', {
+            value: [embed],
+            enumerable: false,
+            writable: true,
+            configurable: true
         });
+
+        return interaction.editReply(replyPayload);
     },
 };

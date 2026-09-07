@@ -132,6 +132,12 @@ module.exports = {
             flags: IS_COMPONENTS_V2,
             components: linkRow ? [v2Container, navMenu, linkRow] : [v2Container, navMenu]
         };
+        Object.defineProperty(payload, 'embeds', {
+            value: [newEmbed],
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
         
         if (selectedPage !== 'page_home') {
             payload.files = [];
