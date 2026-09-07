@@ -1,24 +1,31 @@
 # Dependências e arquivos de ambiente
 node_modules/
 .env
+.env.*
+!.env.example
 
 # Banco de Dados do Servidor de Produção (Sincronizado via Syncthing)
 database-server/
 
-# Banco de Dados Local e Backups
+# Banco de Dados Local, Arquivos SQLite e Backups
+*.db
+*.db-*
 database/main.db
 database/main.db-*
 database/backups/
 database/.stfolder
 
-# Logs e arquivos de sistema
+# Logs, credenciais e arquivos de sistema
 *.log
 logs/
+credentials.json
 .DS_Store
 Thumbs.db
+.agents/
+scratch/
+*.sqlite
 
-# Arquivos do Servidor
-
+# Arquivos do Servidor e Scripts de Deploy Locais
 webhook-server.js
 deploy.sh
 send-deploy-notice.js

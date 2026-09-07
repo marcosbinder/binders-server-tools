@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "deploy": "node deploy-commands.js"
+    "deploy": "node deploy-commands.js",
+    "test": "node --test \"tests/tier1_features/*.test.js\" \"tests/tier2_boundaries/*.test.js\" \"tests/tier3_combinations/*.test.js\" \"tests/tier4_scenarios/*.test.js\" \"tests/adversarial_stress_challenge.test.js\""
   },
   "keywords": [
     "discord",
@@ -23,10 +24,12 @@
     "url": "https://github.com/marcaodosbots/binders-server-tools/issues"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "@supabase/supabase-js": "^2.112.4",
     "better-sqlite3": "^11.1.2",
     "discord.js": "^14.15.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
