@@ -9,7 +9,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Chann
 const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
-const emojis = require('../config/emojis.js');
+const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
 
@@ -117,13 +117,13 @@ module.exports = {
                 `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${ownerMention}`,
                 `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
                 ``,
-                `### 👥 ${isPtBr ? 'Membros' : 'Members'}`,
-                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `👤 \`${humanCount}\` humanos • 🤖 \`${botCount}\` bots` : `👤 \`${humanCount}\` humans • 🤖 \`${botCount}\` bots`})`,
+                `### ${getEmoji('pessoas1')} ${isPtBr ? 'Membros' : 'Members'}`,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `${getEmoji('pessoa')} \`${humanCount}\` humanos • ${getEmoji('bot')} \`${botCount}\` bots` : `${getEmoji('pessoa')} \`${humanCount}\` humans • ${getEmoji('bot')} \`${botCount}\` bots`})`,
                 ``,
-                `### 💬 ${isPtBr ? 'Canais & Categorias' : 'Channels & Categories'}`,
-                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `💬 \`${textChannels}\` texto • 🔊 \`${voiceChannels}\` voz • 📁 \`${categoryChannels}\` categorias` : `💬 \`${textChannels}\` text • 🔊 \`${voiceChannels}\` voice • 📁 \`${categoryChannels}\` categories`})`,
+                `### ${getEmoji('chatbubble')} ${isPtBr ? 'Canais & Categorias' : 'Channels & Categories'}`,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `${getEmoji('chatbubble')} \`${textChannels}\` texto • ${getEmoji('speaker')} \`${voiceChannels}\` voz • ${getEmoji('pasta')} \`${categoryChannels}\` categorias` : `${getEmoji('chatbubble')} \`${textChannels}\` text • ${getEmoji('speaker')} \`${voiceChannels}\` voice • ${getEmoji('pasta')} \`${categoryChannels}\` categories`})`,
                 ``,
-                `### 💎 ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
+                `### ${getEmoji('diamante')} ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
                 `> • **${isPtBr ? 'Nível de Boost' : 'Boost Tier'}:** \`${boostTier}\` (\`${boostCount}\` ${isPtBr ? 'impulsos' : 'boosts'})`,
                 `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** \`${verificationText}\``,
                 `> • **${isPtBr ? 'Recursos' : 'Assets'}:** \`${totalRoles}\` ${isPtBr ? 'cargos' : 'roles'} • \`${totalEmojis}\` emojis • \`${totalStickers}\` ${isPtBr ? 'figurinhas' : 'stickers'}`

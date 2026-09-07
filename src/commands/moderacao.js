@@ -187,7 +187,7 @@ module.exports = {
             }
 
             const embed = await createEmbed(interaction, {
-                title: isPtBr ? '🔨 Membro Banido' : '🔨 Member Banned',
+                title: isPtBr ? `${getEmoji('martelo_ban')} Membro Banido` : `${getEmoji('martelo_ban')} Member Banned`,
                 fields: [
                     { name: isPtBr ? '👤 Usuário' : '👤 User', value: (targetUser.tag || targetUser.username) + ' (`' + targetUser.id + '`)', inline: true },
                     { name: isPtBr ? '👮 Moderador' : '👮 Moderator', value: interaction.user.tag || interaction.user.username, inline: true },
