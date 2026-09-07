@@ -218,6 +218,13 @@ function initSqliteFallback() {
                 createdAt INTEGER DEFAULT (strftime('%s', 'now')),
                 completed INTEGER NOT NULL DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS sync_queue (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                entityId TEXT NOT NULL,
+                payload TEXT NOT NULL,
+                createdAt INTEGER DEFAULT (strftime('%s', 'now'))
+            );
         `;
         sqliteDb.exec(createTablesStmt);
         if (databaseMode !== 'supabase') {
@@ -260,6 +267,8 @@ function recordSupabaseSuccess() {
     }
     consecutiveSupabaseFailures = 0;
     circuitBreakerOpenUntil = 0;
+    // Dispara sincronização assíncrona de itens pendentes na fila
+    flushSyncQueue().catch(() => null);
 }
 
 function recordSupabaseFailure(error) {
@@ -273,6 +282,160 @@ function recordSupabaseFailure(error) {
 
 function isSupabaseAvailable() {
     return databaseMode === 'supabase' && supabaseClient && !isCircuitBreakerOpen();
+}
+
+// -----------------------------------------------------------------------------
+// Fila de Sincronização (Outbox Sync Queue) Supabase Resiliente
+// -----------------------------------------------------------------------------
+const syncQueueMemory = [];
+let isFlushingSyncQueue = false;
+
+/**
+ * Enfileira uma mutação para ser sincronizada com o Supabase após recuperação de conexão
+ */
+function enqueueSync(type, entityId, payload) {
+    const item = {
+        type,
+        entityId: String(entityId),
+        payload: typeof payload === 'string' ? payload : JSON.stringify(payload),
+        createdAt: Date.now(),
+    };
+    syncQueueMemory.push(item);
+
+    if (sqliteDb) {
+        try {
+            sqliteDb.prepare('INSERT INTO sync_queue (type, entityId, payload, createdAt) VALUES (?, ?, ?, ?)').run(
+                item.type,
+                item.entityId,
+                item.payload,
+                Math.floor(item.createdAt / 1000)
+            );
+        } catch (e) {
+            console.error('[Database/SyncQueue] Erro ao gravar na sync_queue SQLite:', e.message);
+        }
+    }
+}
+
+/**
+ * Retorna a quantidade de itens pendentes de sincronização
+ */
+function getSyncQueueSize() {
+    let count = syncQueueMemory.length;
+    if (sqliteDb) {
+        try {
+            const row = sqliteDb.prepare('SELECT COUNT(*) as cnt FROM sync_queue').get();
+            if (row && typeof row.cnt === 'number') {
+                return row.cnt;
+            }
+        } catch (_) {}
+    }
+    return count;
+}
+
+/**
+ * Descarrega os itens pendentes da fila para o Supabase
+ */
+async function flushSyncQueue() {
+    if (!supabaseClient || isCircuitBreakerOpen() || isFlushingSyncQueue) {
+        return { processed: 0 };
+    }
+    isFlushingSyncQueue = true;
+
+    let processedCount = 0;
+
+    try {
+        let items = [];
+        if (sqliteDb) {
+            try {
+                const rows = sqliteDb.prepare('SELECT * FROM sync_queue ORDER BY id ASC LIMIT 50').all();
+                if (rows && rows.length > 0) {
+                    items = rows.map(r => ({
+                        dbId: r.id,
+                        type: r.type,
+                        entityId: r.entityId,
+                        payload: typeof r.payload === 'string' ? JSON.parse(r.payload) : r.payload,
+                    }));
+                }
+            } catch (e) {
+                console.error('[Database/SyncQueue] Erro ao ler sync_queue SQLite:', e.message);
+            }
+        }
+
+        if (items.length === 0 && syncQueueMemory.length > 0) {
+            const memItems = syncQueueMemory.splice(0, 50);
+            items = memItems.map(item => ({
+                type: item.type,
+                entityId: item.entityId,
+                payload: typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload,
+            }));
+        }
+
+        for (const item of items) {
+            try {
+                if (item.type === 'UPDATE_USER') {
+                    const { error } = await supabaseClient
+                        .from('users')
+                        .upsert({ userId: item.entityId, ...item.payload });
+                    if (error) throw error;
+                } else if (item.type === 'UPDATE_GUILD') {
+                    const { error } = await supabaseClient
+                        .from('guilds')
+                        .upsert({ guildId: item.entityId, ...item.payload });
+                    if (error) throw error;
+                } else if (item.type === 'CREATE_REMINDER') {
+                    const { error } = await supabaseClient
+                        .from('reminders')
+                        .upsert(item.payload);
+                    if (error) throw error;
+                } else if (item.type === 'COMPLETE_REMINDER') {
+                    const { error } = await supabaseClient
+                        .from('reminders')
+                        .update({ completed: 1 })
+                        .eq('id', item.entityId);
+                    if (error) throw error;
+                } else if (item.type === 'DELETE_REMINDER') {
+                    const { error } = await supabaseClient
+                        .from('reminders')
+                        .delete()
+                        .eq('id', item.entityId);
+                    if (error) throw error;
+                }
+
+                if (item.dbId && sqliteDb) {
+                    try {
+                        sqliteDb.prepare('DELETE FROM sync_queue WHERE id = ?').run(item.dbId);
+                    } catch (_) {}
+                }
+                processedCount++;
+            } catch (err) {
+                console.warn(`[Database/SyncQueue] Falha temporária ao sincronizar ${item.type} (${item.entityId}):`, err.message);
+                break;
+            }
+        }
+
+        if (processedCount > 0) {
+            console.log(`[Database/SyncQueue] Sincronizados com sucesso ${processedCount} itens com o Supabase.`);
+        }
+    } finally {
+        isFlushingSyncQueue = false;
+    }
+
+    return { processed: processedCount };
+}
+
+// Agenda varredura periódica de sincronização a cada 30 segundos
+setInterval(() => {
+    if (isSupabaseAvailable() && getSyncQueueSize() > 0) {
+        flushSyncQueue().catch(() => null);
+    }
+}, 30000).unref();
+
+function invalidateUserCache(userId) {
+    if (userId) userCache.delete(userId);
+}
+
+function invalidateGuildCache(guildId) {
+    if (guildId) guildCache.delete(guildId);
 }
 
 /**
@@ -494,6 +657,7 @@ async function updateUser(userId, columnOrObject, value) {
             if (error) {
                 recordSupabaseFailure(error);
                 console.error(`[Database/Supabase] Erro ao atualizar usuário ${userId}:`, error.message);
+                enqueueSync('UPDATE_USER', userId, normalizedUpdates);
                 updateFallbackUser(userId, normalizedUpdates);
             } else {
                 recordSupabaseSuccess();
@@ -503,11 +667,13 @@ async function updateUser(userId, columnOrObject, value) {
         } catch (err) {
             recordSupabaseFailure(err);
             console.error(`[Database/Supabase] Exceção em updateUser (${userId}):`, err.message);
+            enqueueSync('UPDATE_USER', userId, normalizedUpdates);
             updateFallbackUser(userId, normalizedUpdates);
             return merged;
         }
     }
 
+    enqueueSync('UPDATE_USER', userId, normalizedUpdates);
     updateFallbackUser(userId, normalizedUpdates);
     return merged;
 }
@@ -727,6 +893,7 @@ async function updateGuild(guildId, columnOrObject, value) {
             if (error) {
                 recordSupabaseFailure(error);
                 console.error(`[Database/Supabase] Erro ao atualizar guilda ${guildId}:`, error.message);
+                enqueueSync('UPDATE_GUILD', guildId, supabasePayload);
                 updateFallbackGuild(guildId, normalizedUpdates);
             } else {
                 recordSupabaseSuccess();
@@ -736,11 +903,13 @@ async function updateGuild(guildId, columnOrObject, value) {
         } catch (err) {
             recordSupabaseFailure(err);
             console.error(`[Database/Supabase] Exceção em updateGuild (${guildId}):`, err.message);
+            enqueueSync('UPDATE_GUILD', guildId, supabasePayload);
             updateFallbackGuild(guildId, normalizedUpdates);
             return merged;
         }
     }
 
+    enqueueSync('UPDATE_GUILD', guildId, supabasePayload);
     updateFallbackGuild(guildId, normalizedUpdates);
     return merged;
 }
@@ -879,6 +1048,7 @@ async function createReminder(data) {
             if (error) {
                 recordSupabaseFailure(error);
                 console.error('[Database/Supabase] Erro ao criar reminder:', error.message);
+                enqueueSync('CREATE_REMINDER', reminder.id, supabasePayload);
                 createFallbackReminder(reminder);
             } else {
                 recordSupabaseSuccess();
@@ -888,11 +1058,13 @@ async function createReminder(data) {
         } catch (err) {
             recordSupabaseFailure(err);
             console.error('[Database/Supabase] Exceção em createReminder:', err.message);
+            enqueueSync('CREATE_REMINDER', reminder.id, supabasePayload);
             createFallbackReminder(reminder);
             return reminder;
         }
     }
 
+    enqueueSync('CREATE_REMINDER', reminder.id, reminder);
     createFallbackReminder(reminder);
     return reminder;
 }
@@ -1052,13 +1224,17 @@ async function completeReminder(id) {
             if (error) {
                 recordSupabaseFailure(error);
                 console.error('[Database/Supabase] Erro ao completar reminder:', error.message);
+                enqueueSync('COMPLETE_REMINDER', id, {});
             } else {
                 recordSupabaseSuccess();
             }
         } catch (err) {
             recordSupabaseFailure(err);
             console.error('[Database/Supabase] Exceção em completeReminder:', err.message);
+            enqueueSync('COMPLETE_REMINDER', id, {});
         }
+    } else {
+        enqueueSync('COMPLETE_REMINDER', id, {});
     }
 
     completeFallbackReminder(id);
@@ -1093,13 +1269,17 @@ async function deleteReminder(id) {
             if (error) {
                 recordSupabaseFailure(error);
                 console.error('[Database/Supabase] Erro ao deletar reminder:', error.message);
+                enqueueSync('DELETE_REMINDER', id, {});
             } else {
                 recordSupabaseSuccess();
             }
         } catch (err) {
             recordSupabaseFailure(err);
             console.error('[Database/Supabase] Exceção em deleteReminder:', err.message);
+            enqueueSync('DELETE_REMINDER', id, {});
         }
+    } else {
+        enqueueSync('DELETE_REMINDER', id, {});
     }
 
     deleteFallbackReminder(id);
@@ -1148,6 +1328,11 @@ module.exports = {
     isCircuitBreakerOpen,
     recordSupabaseFailure,
     recordSupabaseSuccess,
+    enqueueSync,
+    flushSyncQueue,
+    getSyncQueueSize,
+    invalidateUserCache,
+    invalidateGuildCache,
     get db() {
         return sqliteDb;
     },

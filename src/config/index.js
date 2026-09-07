@@ -88,6 +88,7 @@ const config = {
     emojis,
     urls,
     constants,
+    currentTosVersion: 2,
     validateConfig,
     isValid: configValidation.valid,
     validationErrors: configValidation.errors,
