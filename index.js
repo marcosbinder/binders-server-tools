@@ -131,12 +131,14 @@ if (process.env.DISCORD_TOKEN) {
     console.warn('[AVISO] DISCORD_TOKEN não encontrado no ambiente.');
 }
 
-const { sendLifecycleLog } = require('./src/utils/lifecycleLogger.js');
+const { sendLifecycleLog, setLifecycleClient } = require('./src/utils/lifecycleLogger.js');
 const { closeDatabase } = require('./src/database/db.js');
+
+setLifecycleClient(client);
 
 const shutdownHandler = (signal) => {
     console.log(`[SHUTDOWN] Recebido sinal ${signal}. Encerrando...`);
-    sendLifecycleLog('🔴 Bot Desligando...', 'Red');
+    sendLifecycleLog('🔴 Bot Desligando...', 'Red', client);
     closeDatabase();
     setTimeout(() => process.exit(0), 1000);
 };

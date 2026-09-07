@@ -21,7 +21,7 @@ module.exports = {
     name: Events.ClientReady,
     once: true,
     execute(client) {
-        sendLifecycleLog('🟢 Bot Online!', 'Green');
+        sendLifecycleLog('🟢 Bot Online!', 'Green', client);
         console.log(`[Logado] ${client.user.tag} (${client.user.id})`);
 
         // Initialize persistent reminder manager

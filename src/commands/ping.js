@@ -7,7 +7,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
-const { getEmoji } = require('../config/emojis.js');
+const { getEmoji, emojis } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,21 +37,24 @@ module.exports = {
         const roundtrip = sent.createdTimestamp - interaction.createdTimestamp;
         const wsPing = client?.ws?.ping ?? 0;
 
+        const pingColor = roundtrip < 200 ? colors.success : roundtrip < 500 ? colors.warning : colors.error;
+
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? `${getEmoji('foguete')} Latência do Bot` : `${getEmoji('foguete')} Bot Latency`,
+            title: isPtBr ? `${emojis.foguete || '🚀'} Latência do Bot` : `${emojis.foguete || '🚀'} Bot Latency`,
+            description: `> ${isPtBr ? 'Métricas de conectividade e tempo de resposta em tempo real.' : 'Real-time connectivity and latency response metrics.'}`,
             fields: [
                 {
-                    name: '📶 Gateway (WebSocket)',
-                    value: `\`${wsPing}ms\``,
+                    name: `${emojis.wifi || '📶'} Gateway (WebSocket)`,
+                    value: `> \`${wsPing}ms\``,
                     inline: true,
                 },
                 {
-                    name: isPtBr ? `${getEmoji('tempo')} Ida e Volta (REST)` : `${getEmoji('tempo')} Roundtrip (REST)`,
-                    value: `\`${roundtrip}ms\``,
+                    name: isPtBr ? `${emojis.tempo || '⏱️'} Ida e Volta (REST)` : `${emojis.tempo || '⏱️'} Roundtrip (REST)`,
+                    value: `> \`${roundtrip}ms\``,
                     inline: true,
                 },
             ],
-            color: roundtrip < 200 ? 0x57F287 : roundtrip < 500 ? 0xFEE75C : 0xED4245,
+            color: pingColor,
         });
 
         return interaction.editReply({ content: null, embeds: [embed] });

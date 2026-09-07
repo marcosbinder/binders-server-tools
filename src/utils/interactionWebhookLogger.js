@@ -12,6 +12,11 @@ const MAX_QUEUE_SIZE = 500;
 let isFlushing = false;
 let flushTimer = null;
 const FLUSH_INTERVAL_MS = 2500; // 2.5s between webhook batches to strictly protect against rate limits
+let cachedClient = null;
+
+function setClient(client) {
+    if (client) cachedClient = client;
+}
 
 function isUnknownWebhookError(err) {
     if (!err) return false;
@@ -33,6 +38,10 @@ function queueInteractionLog(interaction, status = 'SUCCESS', durationMs = 0, er
         return false;
     }
 
+    if (interaction.client) {
+        cachedClient = interaction.client;
+    }
+
     const webhookUrl = process.env.WEBHOOK_INTERACTIONS;
     if (!webhookUrl || isDeadWebhook(webhookUrl)) {
         return false;
@@ -43,7 +52,7 @@ function queueInteractionLog(interaction, status = 'SUCCESS', durationMs = 0, er
     }
 
     queue.push({
-        commandName: interaction.commandName || 'desconhecido',
+        commandName: interaction.commandName || interaction.customId || 'desconhecido',
         userId: interaction.user?.id || '0',
         userTag: interaction.user?.tag || interaction.user?.username || 'Desconhecido',
         guildName: interaction.guild?.name || 'DM',
@@ -52,6 +61,7 @@ function queueInteractionLog(interaction, status = 'SUCCESS', durationMs = 0, er
         durationMs,
         error: error ? (error.message || String(error)) : null,
         timestamp: Date.now(),
+        avatarURL: interaction.client?.user?.displayAvatarURL?.() || undefined,
     });
 
     scheduleFlush();
@@ -82,23 +92,48 @@ async function flushQueue() {
     try {
         webhookClient = new WebhookClient({ url: webhookUrl });
 
+        const hasErrors = batch.some(b => b.status === 'ERROR' || b.status === 'FATAL_ERROR');
+        const color = hasErrors ? 0xED4245 : 0xAEA7BD;
+
+        const avatarURL = cachedClient?.user?.displayAvatarURL?.()
+            || batch.find(b => b.avatarURL)?.avatarURL
+            || undefined;
+
         const embed = new EmbedBuilder()
             .setTitle(`⚡ Registro de Comandos (${batch.length} ${batch.length === 1 ? 'execução' : 'execuções'})`)
-            .setColor(batch.some(b => b.status === 'ERROR' || b.status === 'FATAL_ERROR') ? 0xED4245 : 0x5865F2)
+            .setColor(color)
             .setTimestamp();
 
-        const lines = batch.map(b => {
-            const icon = b.status === 'SUCCESS' ? '✅' : (b.status === 'RATE_LIMITED' ? '⏳' : (b.status === 'ERROR' ? '❌' : 'ℹ️'));
-            const place = b.guildId ? `${b.guildName}` : 'DM';
-            const duration = `+${b.durationMs}ms`;
-            const errInfo = b.error ? ` (${b.error.slice(0, 50)})` : '';
-            return `${icon} \`/${b.commandName}\` por **${b.userTag}** em **${place}** (\`${duration}\`)${errInfo}`;
+        if (avatarURL) {
+            embed.setFooter({
+                text: "Binder's Server Tools • Interaction Logger",
+                iconURL: avatarURL,
+            });
+        } else {
+            embed.setFooter({
+                text: "Binder's Server Tools • Interaction Logger",
+            });
+        }
+
+        const formattedEntries = batch.map(b => {
+            const header = `### ⚡ Execução de Comando`;
+            const cmd = `> **Comando:** \`/${b.commandName}\``;
+            const usr = `> **Usuário:** **${b.userTag}** (\`${b.userId}\`)`;
+            const loc = `> **Local:** ${b.guildId ? `**${b.guildName}** (\`${b.guildId}\`)` : 'Direct Message (DM)'}`;
+            const dur = `> **Duração:** \`${b.durationMs}ms\` • **Status:** \`${b.status}\``;
+            const lines = [header, cmd, usr, loc, dur];
+            if (b.error) {
+                const safeErr = b.error.length > 300 ? `${b.error.slice(0, 300)}...` : b.error;
+                lines.push(`-# ⚠️ Erro: \`${safeErr}\``);
+            }
+            return lines.join('\n');
         });
 
-        embed.setDescription(lines.join('\n').slice(0, 4000));
+        embed.setDescription(formattedEntries.join('\n\n').slice(0, 4000));
 
         await webhookClient.send({
             username: "Binder's Interactions",
+            avatarURL,
             embeds: [embed],
         }).catch(err => {
             if (isUnknownWebhookError(err)) {
@@ -136,4 +171,5 @@ module.exports = {
     getQueueSize,
     clearQueue,
     shouldLogInteraction,
+    setClient,
 };

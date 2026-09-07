@@ -8,6 +8,7 @@ const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const emojis = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 const urls = require('../config/urls.js');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -47,36 +48,36 @@ module.exports = {
 
         const fields = [
             {
-                name: isPtBr ? '🤖 Identidade' : '🤖 Identity',
-                value: `**Nome:** Binder's Server Tools\n**ID:** \`${client?.user?.id || '1310336375261892608'}\`\n**Desenvolvedor:** Marcos (\`659214571634032667\`)`,
+                name: isPtBr ? `${emojis.bot || '🤖'} Identidade` : `${emojis.bot || '🤖'} Identity`,
+                value: `> **Nome:** Binder's Server Tools\n> **ID:** \`${client?.user?.id || '1310336375261892608'}\`\n> **${isPtBr ? 'Desenvolvedor' : 'Developer'}:** Marcos (\`659214571634032667\`)`,
                 inline: true,
             },
             {
-                name: isPtBr ? '📊 Estatísticas' : '📊 Statistics',
-                value: `**${isPtBr ? 'Servidores' : 'Servers'}:** ${serverCount.toLocaleString('pt-BR')}\n**${isPtBr ? 'Usuários' : 'Users'}:** ${userCount.toLocaleString('pt-BR')}\n**Ping:** \`${wsPing}ms\``,
+                name: isPtBr ? `${emojis.trofeu || '📊'} Estatísticas` : `${emojis.trofeu || '📊'} Statistics`,
+                value: `> **${isPtBr ? 'Servidores' : 'Servers'}:** \`${serverCount.toLocaleString('pt-BR')}\`\n> **${isPtBr ? 'Usuários' : 'Users'}:** \`${userCount.toLocaleString('pt-BR')}\`\n> **Ping:** \`${wsPing}ms\``,
                 inline: true,
             },
             {
-                name: isPtBr ? '⚙️ Sistema & Recursos' : '⚙️ System & Tech',
-                value: `**Discord.js:** \`v14.15.3\`\n**Node.js:** \`${process.version}\`\n**RAM:** \`${memUsedMb} MB\`\n**Uptime:** \`${uptimeStr}\``,
+                name: isPtBr ? `${emojis.ferramenta1 || '⚙️'} Sistema & Recursos` : `${emojis.ferramenta1 || '⚙️'} System & Tech`,
+                value: `> **Discord.js:** \`v14.15.3\`\n> **Node.js:** \`${process.version}\`\n> **RAM:** \`${memUsedMb} MB\`\n> **Uptime:** \`${uptimeStr}\``,
                 inline: false,
             },
             {
-                name: isPtBr ? '💖 Créditos' : '💖 Credits',
+                name: isPtBr ? `${emojis.coracao1 || '💖'} Créditos` : `${emojis.coracao1 || '💖'} Credits`,
                 value: isPtBr
-                    ? '• **Marcos**: Criador, Desenvolvedor Principal e Proprietário.\n• **Vitória**: Artista e Apoiadora.'
-                    : '• **Marcos**: Creator, Lead Developer, and Owner.\n• **Vitória**: Artist and Supporter.',
+                    ? '> • **Marcos**: Criador, Desenvolvedor Principal e Proprietário.\n> • **Vitória**: Artista e Apoiadora.\n\n-# Agradecimentos especiais a toda a comunidade pelo carinho!'
+                    : '> • **Marcos**: Creator, Lead Developer, and Owner.\n> • **Vitória**: Artist and Supporter.\n\n-# Special thanks to the community for continuous support!',
                 inline: false,
             },
         ];
 
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? `${emojis.bot} Informações do Binder` : `${emojis.bot} Binder Information`,
+            title: isPtBr ? `${emojis.bot || '🤖'} Informações do Binder` : `${emojis.bot || '🤖'} Binder Information`,
             description: isPtBr
-                ? `Olá! Sou o **Binder's Server Tools**, bot multifuncional focado em moderação avançada, Components V2, utilidades gamer e segurança.`
-                : `Hello! I'm **Binder's Server Tools**, a multipurpose bot focusing on advanced moderation, Components V2, gaming utilities, and server security.`,
+                ? `> Olá! Sou o **Binder's Server Tools**, bot multifuncional focado em moderação avançada, Components V2, utilidades gamer e segurança.`
+                : `> Hello! I'm **Binder's Server Tools**, a multipurpose bot focusing on advanced moderation, Components V2, gaming utilities, and server security.`,
             fields,
-            color: 0x5865F2,
+            color: colors.primary,
         });
 
         const bannerPath = path.join(process.cwd(), 'assets', 'banner.png');

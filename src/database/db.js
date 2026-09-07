@@ -22,6 +22,7 @@ const userCache = new Map();
 const guildCache = new Map();
 const aiHistoryMemory = [];
 const remindersMemory = [];
+const commandStatsMemory = new Map();
 const CACHE_TTL_MS = 60 * 1000; // 1 minuto de cache
 
 // Cache de prepared statements para reaproveitamento e prevenção de destructors de GC
@@ -224,6 +225,12 @@ function migrateSqliteTables(db) {
             entityId TEXT NOT NULL,
             payload TEXT NOT NULL,
             createdAt INTEGER DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS command_stats (
+            commandName TEXT PRIMARY KEY,
+            executionCount INTEGER NOT NULL DEFAULT 0,
+            uniqueUsers TEXT DEFAULT '[]',
+            lastUsedAt INTEGER DEFAULT 0
         )`
     ];
 
@@ -259,6 +266,11 @@ function migrateSqliteTables(db) {
             if (!reminderCols.includes('completed')) db.exec('ALTER TABLE reminders ADD COLUMN completed INTEGER DEFAULT 0');
             if (!reminderCols.includes('guildId')) db.exec('ALTER TABLE reminders ADD COLUMN guildId TEXT');
             if (!reminderCols.includes('channelId')) db.exec('ALTER TABLE reminders ADD COLUMN channelId TEXT');
+
+            const statsCols = db.pragma('table_info(command_stats)').map(c => c.name);
+            if (!statsCols.includes('executionCount')) db.exec('ALTER TABLE command_stats ADD COLUMN executionCount INTEGER NOT NULL DEFAULT 0');
+            if (!statsCols.includes('uniqueUsers')) db.exec("ALTER TABLE command_stats ADD COLUMN uniqueUsers TEXT DEFAULT '[]'");
+            if (!statsCols.includes('lastUsedAt')) db.exec('ALTER TABLE command_stats ADD COLUMN lastUsedAt INTEGER DEFAULT 0');
         }
     } catch (e) {
         console.warn('[Database/SQLite] Aviso na verificação de colunas:', e.message);
@@ -466,6 +478,11 @@ async function flushSyncQueue() {
                         .from('reminders')
                         .delete()
                         .eq('id', item.entityId);
+                    if (error) throw error;
+                } else if (item.type === 'RECORD_COMMAND_USAGE') {
+                    const { error } = await supabaseClient
+                        .from('command_stats')
+                        .upsert(item.payload);
                     if (error) throw error;
                 }
 
@@ -1370,6 +1387,307 @@ async function deleteReminder(id) {
     deleteFallbackReminder(id);
 }
 
+/**
+ * Normaliza um registro de estatística de comando
+ */
+function normalizeCommandStat(raw) {
+    if (!raw) return null;
+    let users = [];
+    if (raw.uniqueUsers) {
+        if (typeof raw.uniqueUsers === 'string') {
+            try {
+                users = JSON.parse(raw.uniqueUsers);
+            } catch (_) {
+                users = [];
+            }
+        } else if (Array.isArray(raw.uniqueUsers)) {
+            users = raw.uniqueUsers;
+        } else if (raw.uniqueUsers instanceof Set) {
+            users = Array.from(raw.uniqueUsers);
+        }
+    }
+    if (!Array.isArray(users)) users = [];
+
+    const executionCount = Number(raw.executionCount || 0);
+    const uniqueUserCount = users.length;
+    const lastUsedAt = Number(raw.lastUsedAt || 0);
+    const commandName = String(raw.commandName || '');
+
+    return {
+        commandName,
+        executionCount,
+        uniqueUsers: users,
+        uniqueUserCount,
+        lastUsedAt,
+    };
+}
+
+/**
+ * Registra o uso de um comando no fallback local (SQLite / Memória)
+ * @param {string} commandName Nome do comando
+ * @param {string} [userId] ID do usuário
+ */
+function recordFallbackCommandUsage(commandName, userId) {
+    if (!commandName) return null;
+    const cmdName = String(commandName).trim();
+    if (!cmdName) return null;
+
+    const now = Date.now();
+    let mem = commandStatsMemory.get(cmdName);
+    if (!mem) {
+        mem = {
+            commandName: cmdName,
+            executionCount: 0,
+            uniqueUsers: [],
+            lastUsedAt: 0,
+        };
+        commandStatsMemory.set(cmdName, mem);
+    }
+    mem.executionCount++;
+    if (userId) {
+        const uidStr = String(userId);
+        if (!mem.uniqueUsers.includes(uidStr)) {
+            mem.uniqueUsers.push(uidStr);
+        }
+    }
+    mem.lastUsedAt = now;
+
+    if (!sqliteDb) {
+        initSqliteFallback();
+    }
+    if (sqliteDb) {
+        try {
+            const selectStmt = getPreparedStatement('SELECT commandName, executionCount, uniqueUsers, lastUsedAt FROM command_stats WHERE commandName = ?');
+            const row = selectStmt ? selectStmt.get(cmdName) : null;
+            if (row) {
+                let users = [];
+                try {
+                    users = typeof row.uniqueUsers === 'string' ? JSON.parse(row.uniqueUsers) : (Array.isArray(row.uniqueUsers) ? row.uniqueUsers : []);
+                } catch (_) {
+                    users = [];
+                }
+                if (!Array.isArray(users)) users = [];
+                if (userId && !users.includes(String(userId))) {
+                    users.push(String(userId));
+                }
+                const newCount = (Number(row.executionCount) || 0) + 1;
+                const updateStmt = getPreparedStatement('UPDATE command_stats SET executionCount = ?, uniqueUsers = ?, lastUsedAt = ? WHERE commandName = ?');
+                if (updateStmt) {
+                    updateStmt.run(newCount, JSON.stringify(users), now, cmdName);
+                }
+                mem.executionCount = newCount;
+                mem.uniqueUsers = users;
+            } else {
+                const users = userId ? [String(userId)] : [];
+                const insertStmt = getPreparedStatement('INSERT INTO command_stats (commandName, executionCount, uniqueUsers, lastUsedAt) VALUES (?, 1, ?, ?)');
+                if (insertStmt) {
+                    insertStmt.run(cmdName, JSON.stringify(users), now);
+                }
+            }
+        } catch (e) {
+            console.error('[Database/SQLite] Erro ao registrar command_stats:', e.message);
+        }
+    }
+
+    return {
+        commandName: cmdName,
+        executionCount: mem.executionCount,
+        uniqueUsers: mem.uniqueUsers,
+        uniqueUserCount: mem.uniqueUsers.length,
+        lastUsedAt: mem.lastUsedAt,
+    };
+}
+
+/**
+ * Registra o uso de um comando no banco de dados com suporte unificado Supabase, SQLite e Memória
+ * @param {string} commandName Nome do comando
+ * @param {string} [userId] ID do usuário executor
+ * @returns {Promise<Object>}
+ */
+async function recordCommandUsage(commandName, userId) {
+    if (!commandName) return null;
+    const cmdName = String(commandName).trim();
+    if (!cmdName) return null;
+
+    const fallbackResult = recordFallbackCommandUsage(cmdName, userId);
+    const now = Date.now();
+
+    if (isSupabaseAvailable()) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('command_stats')
+                .select('*')
+                .eq('commandName', cmdName)
+                .maybeSingle();
+
+            if (error) {
+                recordSupabaseFailure(error);
+                console.error('[Database/Supabase] Erro ao consultar command_stats:', error.message);
+                enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
+                    commandName: cmdName,
+                    executionCount: fallbackResult.executionCount,
+                    uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
+                    lastUsedAt: now,
+                });
+            } else {
+                recordSupabaseSuccess();
+                let users = [];
+                let count = 0;
+                if (data) {
+                    try {
+                        users = typeof data.uniqueUsers === 'string' ? JSON.parse(data.uniqueUsers) : (Array.isArray(data.uniqueUsers) ? data.uniqueUsers : []);
+                    } catch (_) {
+                        users = [];
+                    }
+                    if (!Array.isArray(users)) users = [];
+                    count = Number(data.executionCount) || 0;
+                }
+                count++;
+                if (userId && !users.includes(String(userId))) {
+                    users.push(String(userId));
+                }
+
+                for (const u of fallbackResult.uniqueUsers) {
+                    if (!users.includes(u)) users.push(u);
+                }
+                const maxCount = Math.max(count, fallbackResult.executionCount);
+
+                const payload = {
+                    commandName: cmdName,
+                    executionCount: maxCount,
+                    uniqueUsers: JSON.stringify(users),
+                    lastUsedAt: now,
+                };
+
+                const { error: upsertErr } = await supabaseClient
+                    .from('command_stats')
+                    .upsert(payload);
+
+                if (upsertErr) {
+                    recordSupabaseFailure(upsertErr);
+                    console.error('[Database/Supabase] Erro ao gravar command_stats:', upsertErr.message);
+                    enqueueSync('RECORD_COMMAND_USAGE', cmdName, payload);
+                } else {
+                    recordSupabaseSuccess();
+                    const mem = commandStatsMemory.get(cmdName);
+                    if (mem) {
+                        mem.executionCount = maxCount;
+                        mem.uniqueUsers = users;
+                        mem.lastUsedAt = now;
+                    }
+                    return {
+                        commandName: cmdName,
+                        executionCount: maxCount,
+                        uniqueUserCount: users.length,
+                        lastUsedAt: now,
+                    };
+                }
+            }
+        } catch (err) {
+            recordSupabaseFailure(err);
+            console.error('[Database/Supabase] Exceção em recordCommandUsage:', err.message);
+            enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
+                commandName: cmdName,
+                executionCount: fallbackResult.executionCount,
+                uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
+                lastUsedAt: now,
+            });
+        }
+    } else {
+        enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
+            commandName: cmdName,
+            executionCount: fallbackResult.executionCount,
+            uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
+            lastUsedAt: now,
+        });
+    }
+
+    return {
+        commandName: cmdName,
+        executionCount: fallbackResult.executionCount,
+        uniqueUserCount: fallbackResult.uniqueUserCount,
+        lastUsedAt: fallbackResult.lastUsedAt,
+    };
+}
+
+/**
+ * Retorna estatísticas de comandos locais (SQLite / Memória)
+ * @returns {Array<{ commandName: string, executionCount: number, uniqueUserCount: number, lastUsedAt: number }>}
+ */
+function getFallbackCommandStats() {
+    let stats = [];
+    if (!sqliteDb) {
+        initSqliteFallback();
+    }
+    if (sqliteDb) {
+        try {
+            const stmt = getPreparedStatement('SELECT * FROM command_stats ORDER BY executionCount DESC');
+            const rows = stmt ? stmt.all() : [];
+            if (rows && rows.length > 0) {
+                stats = rows.map(normalizeCommandStat).filter(Boolean);
+            }
+        } catch (e) {
+            console.error('[Database/SQLite] Erro em getFallbackCommandStats:', e.message);
+        }
+    }
+
+    if (stats.length === 0 && commandStatsMemory.size > 0) {
+        stats = Array.from(commandStatsMemory.values())
+            .map(normalizeCommandStat)
+            .filter(Boolean);
+    }
+
+    stats.sort((a, b) => b.executionCount - a.executionCount);
+
+    return stats.map(s => ({
+        commandName: s.commandName,
+        executionCount: s.executionCount,
+        uniqueUserCount: s.uniqueUserCount,
+        lastUsedAt: s.lastUsedAt,
+    }));
+}
+
+/**
+ * Retorna todas as estatísticas de comandos ordenadas por executionCount decrescente
+ * @returns {Promise<Array<{ commandName: string, executionCount: number, uniqueUserCount: number, lastUsedAt: number }>>}
+ */
+async function getCommandStats() {
+    let stats = [];
+
+    if (isSupabaseAvailable()) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('command_stats')
+                .select('*')
+                .order('executionCount', { ascending: false });
+
+            if (!error && Array.isArray(data) && data.length > 0) {
+                recordSupabaseSuccess();
+                stats = data.map(normalizeCommandStat).filter(Boolean);
+            } else if (error) {
+                recordSupabaseFailure(error);
+                console.error('[Database/Supabase] Erro em getCommandStats:', error.message);
+            }
+        } catch (err) {
+            recordSupabaseFailure(err);
+            console.error('[Database/Supabase] Exceção em getCommandStats:', err.message);
+        }
+    }
+
+    if (stats.length === 0) {
+        return getFallbackCommandStats();
+    }
+
+    stats.sort((a, b) => b.executionCount - a.executionCount);
+
+    return stats.map(s => ({
+        commandName: s.commandName,
+        executionCount: s.executionCount,
+        uniqueUserCount: s.uniqueUserCount,
+        lastUsedAt: s.lastUsedAt,
+    }));
+}
+
 function closeDatabase() {
     sqliteInitAttempted = false;
     preparedStatements.clear();
@@ -1411,6 +1729,10 @@ module.exports = {
     createFallbackReminder,
     deleteFallbackReminder,
     completeFallbackReminder,
+    recordCommandUsage,
+    getCommandStats,
+    recordFallbackCommandUsage,
+    getFallbackCommandStats,
     isCircuitBreakerOpen,
     recordSupabaseFailure,
     recordSupabaseSuccess,

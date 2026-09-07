@@ -59,6 +59,7 @@ module.exports = {
             guild: interaction.guild,
             channel: interaction.channel,
             message,
+            client,
         });
 
         if (!result.success) {

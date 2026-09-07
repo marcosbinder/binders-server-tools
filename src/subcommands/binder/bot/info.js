@@ -3,6 +3,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } 
 const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
 const emojis = require('../../../config/emojis.js');
+const colors = require('../../../config/colors.js');
 const urls = require('../../../config/urls.js');
 
 // central de textos com emojis separados
@@ -14,12 +15,12 @@ const texts = {
     },
     descriptions: {
         'pt_BR': [
-            `Olá! Sou o Binder's Server Tools, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em ${emojis.djs} Discord.js e atualmente ajudo **\${userCount}** usuários em **\${serverCount}** servidores!`,
-            `E aí! Me chamo Binder's Server Tools. Minha missão é trazer as melhores ferramentas para o seu servidor. Feito com ${emojis.djs} Discord.js, hoje estou presente em **\${serverCount}** servidores, servindo **\${userCount}** usuários.`,
+            `Olá! Sou o **Binder's Server Tools**, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em ${emojis.djs} Discord.js e atualmente ajudo **\${userCount}** usuários em **\${serverCount}** servidores!`,
+            `E aí! Me chamo **Binder's Server Tools**. Minha missão é trazer as melhores ferramentas para o seu servidor. Feito com ${emojis.djs} Discord.js, hoje estou presente em **\${serverCount}** servidores, servindo **\${userCount}** usuários.`,
         ],
         'en_US': [
-            `Hello! I'm Binder's Server Tools, a multipurpose bot created to make your life on Discord easier. I was developed in ${emojis.djs} Discord.js and I'm currently helping **\${userCount}** users across **\${serverCount}** servers!`,
-            `Hey there! My name is Binder's Server Tools. My mission is to bring the best tools to your server. Made with ${emojis.djs} Discord.js, I'm currently in **\${serverCount}** servers, serving **\${userCount}** users.`,
+            `Hello! I'm **Binder's Server Tools**, a multipurpose bot created to make your life on Discord easier. I was developed in ${emojis.djs} Discord.js and I'm currently helping **\${userCount}** users across **\${serverCount}** servers!`,
+            `Hey there! My name is **Binder's Server Tools**. My mission is to bring the best tools to your server. Made with ${emojis.djs} Discord.js, I'm currently in **\${serverCount}** servers, serving **\${userCount}** users.`,
         ]
     }
 };
@@ -40,7 +41,8 @@ module.exports = {
 
         const homeEmbed = await createEmbed(interaction, {
             title: `[1/4] ${randomEmoji} ${randomTitle}`,
-            description: randomDescription,
+            description: `> ${randomDescription}`,
+            color: colors.primary,
         });
         homeEmbed.setImage('attachment://banner.png');
 

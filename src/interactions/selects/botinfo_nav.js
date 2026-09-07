@@ -3,6 +3,7 @@ const createEmbed = require('../../utils/createEmbed.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const emojis = require('../../config/emojis.js');
+const colors = require('../../config/colors.js');
 const os = require('node:os');
 
 // config da equipe e inspirações
@@ -28,16 +29,18 @@ async function buildPage(page, interaction, client) {
     switch (page) {
         case 'page_credits':
             userCount = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
-            const teamLinks = team.map(m => `[${m.name}](https://discord.com/users/${m.id}) - ${m.role[lang]}`).join('\n');
+            const teamLinks = team.map(m => `> • [${m.name}](https://discord.com/users/${m.id}) - *${m.role[lang]}*`).join('\n');
             embed = await createEmbed(interaction, {
-                title: isPtBr ? '[2/4] 📜 RG do Bot' : '[2/4] 📜 Bot\'s ID',
+                title: isPtBr ? `[2/4] ${emojis.carta || '📜'} RG do Bot` : `[2/4] ${emojis.carta || '📜'} Bot's ID`,
+                description: `> ${isPtBr ? 'Identificação formal, dados de registro e créditos de desenvolvimento.' : 'Formal identification, registration data, and development credits.'}`,
                 fields: [
-                    { name: isPtBr ? 'Desenvolvedor' : 'Developer', value: `[${(await client.users.fetch(process.env.OWNER_ID)).tag}](https://discord.com/users/${process.env.OWNER_ID})`, inline: true },
-                    { name: isPtBr ? 'Biblioteca' : 'Library', value: `Discord.js v${version}`, inline: true },
-                    { name: isPtBr ? 'Servidores' : 'Servers', value: client.guilds.cache.size.toLocaleString(locale), inline: true },
-                    { name: isPtBr ? 'Usuários Totais' : 'Total Users', value: userCount.toLocaleString(locale), inline: true },
-                    { name: isPtBr ? 'Equipe' : 'Team', value: teamLinks || (isPtBr ? 'Ninguém por enquanto!' : 'No one yet!') },
-                ]
+                    { name: isPtBr ? `${emojis.selodev1 || '🛠️'} Desenvolvedor` : `${emojis.selodev1 || '🛠️'} Developer`, value: `> [${(await client.users.fetch(process.env.OWNER_ID)).tag}](https://discord.com/users/${process.env.OWNER_ID})`, inline: true },
+                    { name: isPtBr ? `${emojis.djs || '🤖'} Biblioteca` : `${emojis.djs || '🤖'} Library`, value: `> \`Discord.js v${version}\``, inline: true },
+                    { name: isPtBr ? `${emojis.mundo || '🌐'} Servidores` : `${emojis.mundo || '🌐'} Servers`, value: `> \`${client.guilds.cache.size.toLocaleString(locale)}\``, inline: true },
+                    { name: isPtBr ? `${emojis.pessoas1 || '👥'} Usuários Totais` : `${emojis.pessoas1 || '👥'} Total Users`, value: `> \`${userCount.toLocaleString(locale)}\``, inline: true },
+                    { name: isPtBr ? `${emojis.coracao1 || '💖'} Equipe` : `${emojis.coracao1 || '💖'} Team`, value: teamLinks || (isPtBr ? '> *Ninguém por enquanto!*' : '> *No one yet!*') },
+                ],
+                color: colors.primary,
             });
             break;
 
@@ -45,23 +48,26 @@ async function buildPage(page, interaction, client) {
             const uptime = os.uptime();
             const uptimeString = `${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m ${Math.floor(uptime%60)}s`;
             embed = await createEmbed(interaction, {
-                title: `[3/4] 🖥️ ${isPtBr ? 'Hospedagem' : 'Hosting'}`,
+                title: `[3/4] ${emojis.ferramenta1 || '🖥️'} ${isPtBr ? 'Hospedagem' : 'Hosting'}`,
+                description: `> ${isPtBr ? 'Métricas da máquina servidora e telemetria do ambiente de execução.' : 'Host server metrics and runtime telemetry.'}`,
                 fields: [
-                    { name: 'Host', value: 'Local (Self-hosted)', inline: true },
-                    { name: 'Uptime', value: uptimeString, inline: true },
-                    { name: 'Ping da API', value: `${client.ws.ping}ms`, inline: true },
-                    { name: 'Uso de RAM', value: `${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`, inline: true },
-                    { name: 'Node.js', value: process.version, inline: true },
-                    { name: 'Sistema Op.', value: `${os.type()}`, inline: true },
-                ]
+                    { name: 'Host', value: '> `Local (Self-hosted)`', inline: true },
+                    { name: 'Uptime', value: `> \`${uptimeString}\``, inline: true },
+                    { name: 'Ping da API', value: `> \`${client.ws.ping}ms\``, inline: true },
+                    { name: 'Uso de RAM', value: `> \`${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB\``, inline: true },
+                    { name: 'Node.js', value: `> \`${process.version}\``, inline: true },
+                    { name: 'Sistema Op.', value: `> \`${os.type()}\``, inline: true },
+                ],
+                color: colors.primary,
             });
             break;
 
         case 'page_thanks':
             const thanksList = inspirations.map(i => `[${i.name}](https://discord.com/users/${i.id})`).join(', ');
             embed = await createEmbed(interaction, {
-                title: `[4/4] 💖 ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
-                description: isPtBr ? `Agradecimentos especiais para a Vitória pela arte e apoio! Me inspiro em bots e pessoas como ${thanksList}.` : `Special thanks to Vitória for the art and support! I'm inspired by bots and people like ${thanksList}.`,
+                title: `[4/4] ${emojis.coracao1 || '💖'} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
+                description: `> ${isPtBr ? `Agradecimentos especiais para a Vitória pela arte e apoio! Me inspiro em bots e pessoas como ${thanksList}.` : `Special thanks to Vitória for the art and support! I'm inspired by bots and people like ${thanksList}.`}\n\n-# ${isPtBr ? 'Obrigado a cada pessoa que faz parte dessa jornada!' : 'Thank you to everyone who is part of this journey!'}`,
+                color: colors.primary,
             });
             break;
             
@@ -70,10 +76,14 @@ async function buildPage(page, interaction, client) {
             serverCount = client.guilds.cache.size;
             userCount = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
             description = isPtBr 
-                ? `Olá! Sou o Binder's Server Tools, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em ${emojis.djs} Discord.js e atualmente ajudo **${userCount.toLocaleString(locale)}** usuários em **${serverCount.toLocaleString(locale)}** servidores!`
-                : `Hello! I'm Binder's Server Tools, a multipurpose bot to make your life on Discord easier. I was developed in ${emojis.djs} Discord.js and I'm currently helping **${userCount.toLocaleString(locale)}** users across **${serverCount.toLocaleString(locale)}** servers!`;
+                ? `Olá! Sou o **Binder's Server Tools**, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em ${emojis.djs} Discord.js e atualmente ajudo **${userCount.toLocaleString(locale)}** usuários em **${serverCount.toLocaleString(locale)}** servidores!`
+                : `Hello! I'm **Binder's Server Tools**, a multipurpose bot to make your life on Discord easier. I was developed in ${emojis.djs} Discord.js and I'm currently helping **${userCount.toLocaleString(locale)}** users across **${serverCount.toLocaleString(locale)}** servers!`;
             
-            embed = await createEmbed(interaction, { title: `[1/4] ${emojis.foguete} ${isPtBr ? 'Sobre mim!' : 'About me!'}`, description: description });
+            embed = await createEmbed(interaction, {
+                title: `[1/4] ${emojis.foguete} ${isPtBr ? 'Sobre mim!' : 'About me!'}`,
+                description: `> ${description}`,
+                color: colors.primary,
+            });
             embed.setImage('attachment://banner.png');
             break;
     }

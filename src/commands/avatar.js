@@ -9,6 +9,9 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
 
+const colors = require('../config/colors.js');
+const emojis = require('../config/emojis.js');
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('avatar')
@@ -43,6 +46,8 @@ module.exports = {
 
         let avatarUrl = null;
         let memberName = targetUser.username;
+        let serverAvatarUrl = null;
+        const globalAvatarUrl = targetUser.displayAvatarURL ? targetUser.displayAvatarURL({ size: 2048 }) : null;
 
         if (preferServer && interaction.guild) {
             const member = await Promise.race([
@@ -51,22 +56,28 @@ module.exports = {
             ]).catch(() => null);
             if (member && member.displayAvatarURL) {
                 memberName = member.displayName;
-                avatarUrl = member.displayAvatarURL({ size: 2048 });
+                serverAvatarUrl = member.displayAvatarURL({ size: 2048 });
+                avatarUrl = serverAvatarUrl;
             }
         }
 
-        if (!avatarUrl && targetUser.displayAvatarURL) {
-            avatarUrl = targetUser.displayAvatarURL({ size: 2048 });
+        if (!avatarUrl && globalAvatarUrl) {
+            avatarUrl = globalAvatarUrl;
         }
 
         const pngUrl = targetUser.displayAvatarURL ? targetUser.displayAvatarURL({ extension: 'png', size: 2048 }) : avatarUrl;
         const jpgUrl = targetUser.displayAvatarURL ? targetUser.displayAvatarURL({ extension: 'jpg', size: 2048 }) : avatarUrl;
         const webpUrl = targetUser.displayAvatarURL ? targetUser.displayAvatarURL({ extension: 'webp', size: 2048 }) : avatarUrl;
 
+        const description = (serverAvatarUrl && serverAvatarUrl !== globalAvatarUrl)
+            ? `> ${isPtBr ? `Exibindo o avatar no servidor **${interaction.guild.name}**.` : `Displaying avatar in **${interaction.guild.name}**.`}\n\n-# ${isPtBr ? 'Escolha um formato abaixo para baixar a imagem original.' : 'Select a format below to download the original image.'}`
+            : `> ${isPtBr ? `Exibindo o avatar global de **${memberName}**.` : `Displaying global avatar for **${memberName}**.`}\n\n-# ${isPtBr ? 'Escolha um formato abaixo para baixar a imagem original.' : 'Select a format below to download the original image.'}`;
+
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? `🖼️ Avatar de ${memberName}` : `🖼️ Avatar for ${memberName}`,
+            title: `${emojis.pessoa || '👤'} ${isPtBr ? `Avatar de ${memberName}` : `Avatar for ${memberName}`}`,
+            description,
             image: avatarUrl,
-            color: 0x5865F2,
+            color: colors.primary,
         });
 
         const row = new ActionRowBuilder().addComponents(

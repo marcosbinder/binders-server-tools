@@ -4,7 +4,7 @@
  */
 
 const { Events, MessageFlags } = require('discord.js');
-const { getUser, setLastKnownLocale } = require('../../database/db.js');
+const { getUser, setLastKnownLocale, recordCommandUsage } = require('../../database/db.js');
 const tosCheck = require('../utils/tosCheck.js');
 const checkInteractionOwnership = require('../utils/interactionOwnership.js');
 const interactionErrorHandler = require('../utils/interactionErrorHandler.js');
@@ -12,13 +12,14 @@ const devCommandHandler = require('../utils/devCommandHandler.js');
 const rateLimiter = require('../utils/rateLimiter.js');
 const getLanguage = require('../utils/getLanguage.js');
 const Logger = require('../utils/logger.js');
-const { queueInteractionLog } = require('../utils/interactionWebhookLogger.js');
+const { queueInteractionLog, setClient } = require('../utils/interactionWebhookLogger.js');
 const { getEmoji } = require('../config/emojis.js');
 
 module.exports = {
     name: Events.InteractionCreate,
     once: false,
     async execute(interaction, client) {
+        if (client) setClient(client);
         // Ignore automated bot interactions
         if (interaction.user?.bot) return;
 
@@ -82,6 +83,9 @@ module.exports = {
                     const elapsed = Date.now() - startTime;
                     Logger.command(interaction, 'SUCCESS', elapsed);
                     queueInteractionLog(interaction, 'SUCCESS', elapsed);
+                    if (typeof recordCommandUsage === 'function') {
+                        recordCommandUsage(interaction.commandName, interaction.user?.id).catch(() => {});
+                    }
                 } catch (error) {
                     const elapsed = Date.now() - startTime;
                     Logger.error(`Erro no comando ${interaction.commandName}:`, error, { userId: interaction.user?.id, command: interaction.commandName });

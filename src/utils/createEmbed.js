@@ -2,7 +2,7 @@ const { EmbedBuilder } = require('discord.js');
 
 // config base pra todos os embeds
 const defaultConfig = {
-    color: '#9F9AAF',
+    color: '#AEA7BD',
 };
 
 async function createEmbed(context, options = {}) {
