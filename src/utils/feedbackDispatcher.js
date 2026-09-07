@@ -5,6 +5,7 @@
 
 const { WebhookClient } = require('discord.js');
 const { isDeadWebhook, markDeadWebhook } = require('./logger.js');
+const { getEmoji } = require('../config/emojis.js');
 
 function isUnknownWebhookError(err) {
     if (!err) return false;
@@ -55,14 +56,14 @@ async function submitFeedbackOrBug({ type, user, guild, channel, message, webhoo
     const systemInfo = `> **Node.js:** \`${process.version}\` • **OS:** \`${process.platform} (${process.arch})\`\n> **Uptime:** \`${uptimeStr}\` • **Memória:** \`${memUsed}MB / ${memTotal}MB\`\n> **Ambiente:** \`${process.env.NODE_ENV || 'production'}\``;
 
     const embed = {
-        title: isBug ? '🐛 Novo Relatório de Bug' : '💡 Nova Sugestão / Feedback',
+        title: isBug ? `${getEmoji('bughunter')} Novo Relatório de Bug` : `${getEmoji('lampada')} Nova Sugestão / Feedback`,
         color: isBug ? 0xED4245 : 0xAEA7BD,
         fields: [
-            { name: '👤 Autor', value: `**${userTag}** (\`${userId}\`)`, inline: true },
-            { name: '🏢 Servidor', value: guild ? `**${guild.name}** (\`${guild.id}\`)` : 'Direct Message (DM)', inline: true },
-            { name: '💬 Canal', value: channel ? `**#${channel.name}** (\`${channel.id}\`)` : (guild ? 'Canal não informado' : 'Direct Message (DM)'), inline: true },
-            { name: '📝 Conteúdo', value: `>>> ${trimmed}`, inline: false },
-            { name: '⚙️ Ambiente do Sistema', value: systemInfo, inline: false },
+            { name: `${getEmoji('pessoa')} Autor`, value: `**${userTag}** (\`${userId}\`)`, inline: true },
+            { name: `${getEmoji('casa')} Servidor`, value: guild ? `**${guild.name}** (\`${guild.id}\`)` : 'Direct Message (DM)', inline: true },
+            { name: `${getEmoji('chatbubble')} Canal`, value: channel ? `**#${channel.name}** (\`${channel.id}\`)` : (guild ? 'Canal não informado' : 'Direct Message (DM)'), inline: true },
+            { name: `${getEmoji('lapis')} Conteúdo`, value: `>>> ${trimmed}`, inline: false },
+            { name: `${getEmoji('configuracao')} Ambiente do Sistema`, value: systemInfo, inline: false },
         ],
         footer: {
             text: `Binder's Server Tools • ${isBug ? 'Bug Tracker' : 'Feedback Hub'}`,

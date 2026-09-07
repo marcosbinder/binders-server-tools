@@ -7,6 +7,7 @@ const { MessageFlags } = require('discord.js');
 const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
 const { submitFeedbackOrBug } = require('../../../utils/feedbackDispatcher.js');
+const { getEmoji } = require('../../../config/emojis.js');
 const safeReply = require('../../../utils/safeReply.js');
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
         }
 
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? '🐛 Bug Reportado!' : '🐛 Bug Reported!',
+            title: isPtBr ? `${getEmoji('bughunter')} Bug Reportado!` : `${getEmoji('bughunter')} Bug Reported!`,
             description: isPtBr ? result.userConfirmation : 'Your bug report has been successfully sent to the development team! Thank you.',
             color: 0xED4245,
         });
