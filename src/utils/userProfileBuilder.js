@@ -14,14 +14,14 @@ const BADGE_MAP = {
     HypeSquadOnlineHouse1: { pt: '🏠 HypeSquad Bravery', en: '🏠 HypeSquad Bravery' },
     HypeSquadOnlineHouse2: { pt: '🏠 HypeSquad Brilliance', en: '🏠 HypeSquad Brilliance' },
     HypeSquadOnlineHouse3: { pt: '🏠 HypeSquad Balance', en: '🏠 HypeSquad Balance' },
-    ActiveDeveloper: { pt: '👨‍💻 Desenvolvedor Ativo', en: '👨‍💻 Active Developer' },
-    PremiumEarlySupporter: { pt: '👑 Apoiador Inicial', en: '👑 Early Supporter' },
-    VerifiedDeveloper: { pt: '💻 Dev de Bot Verificado', en: '💻 Early Verified Bot Dev' },
-    CertifiedModerator: { pt: '🛡️ Moderador Certificado', en: '🛡️ Certified Moderator' },
-    BugHunterLevel1: { pt: '🐛 Caçador de Bugs I', en: '🐛 Bug Hunter Level 1' },
-    BugHunterLevel2: { pt: '🐛 Caçador de Bugs II', en: '🐛 Bug Hunter Level 2' },
-    Staff: { pt: '💼 Equipe Discord (Staff)', en: '💼 Discord Staff' },
-    Partner: { pt: '🤝 Dono de Servidor Parceiro', en: '🤝 Partnered Server Owner' },
+    ActiveDeveloper: { pt: `${getEmoji('selodev1')} Desenvolvedor Ativo`, en: `${getEmoji('selodev1')} Active Developer` },
+    PremiumEarlySupporter: { pt: `${getEmoji('coroa')} Apoiador Inicial`, en: `${getEmoji('coroa')} Early Supporter` },
+    VerifiedDeveloper: { pt: `${getEmoji('selodev2')} Dev de Bot Verificado`, en: `${getEmoji('selodev2')} Early Verified Bot Dev` },
+    CertifiedModerator: { pt: `${getEmoji('safetybadge')} Moderador Certificado`, en: `${getEmoji('safetybadge')} Certified Moderator` },
+    BugHunterLevel1: { pt: `${getEmoji('bughunter')} Caçador de Bugs I`, en: `${getEmoji('bughunter')} Bug Hunter Level 1` },
+    BugHunterLevel2: { pt: `${getEmoji('bughunter')} Caçador de Bugs II`, en: `${getEmoji('bughunter')} Bug Hunter Level 2` },
+    Staff: { pt: `${getEmoji('selostaff')} Equipe Discord (Staff)`, en: `${getEmoji('selostaff')} Discord Staff` },
+    Partner: { pt: `${getEmoji('partner')} Dono de Servidor Parceiro`, en: `${getEmoji('partner')} Partnered Server Owner` },
 };
 
 async function buildUserProfilePayload(interaction, client, targetUser, targetMember) {
@@ -98,7 +98,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
         });
 
         fields.push({
-            name: `${getEmoji('diamante')} Booster`,
+            name: `${getEmoji('booster')} Booster`,
             value: targetMember.premiumSince
                 ? `${isPtBr ? 'Desde' : 'Since'} <t:${Math.floor(new Date(targetMember.premiumSince).getTime() / 1000)}:R>`
                 : (isPtBr ? 'Não' : 'No'),

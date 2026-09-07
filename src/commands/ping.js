@@ -43,11 +43,13 @@ module.exports = {
             ? (isPtBr ? 'Excelente' : 'Excellent')
             : (roundtrip < 500 ? (isPtBr ? 'Bom' : 'Good') : (isPtBr ? 'Instável' : 'Unstable'));
 
+        const statusEmoji = roundtrip < 200 ? getEmoji('verde') : (roundtrip < 500 ? getEmoji('amarelo') : getEmoji('vermelho'));
+
         const descriptionLines = [
             `### 🚀 ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
             `> • **${emojis.wifi || '📶'} Gateway (WebSocket):** \`${wsPing}ms\``,
             `> • **${emojis.tempo || '⏱️'} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
-            `> • **${emojis.estrela || '⭐'} Status:** \`${statusText}\``,
+            `> • **${statusEmoji} Status:** \`${statusText}\``,
             ``,
             `-# ⚡ ${isPtBr ? 'Medição em tempo real diretamente com os servidores do Discord.' : 'Real-time measurement directly with Discord gateway servers.'}`
         ];
