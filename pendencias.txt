@@ -97,14 +97,15 @@ PARTE 3: O QUE JÁ ESTÁ 100% PRONTO, BLINDADO E TESTADO
 [X] Banco Supabase PostgreSQL configurado via Pooler com RLS ativo (users, guilds, reminders, bot_logs).
 [X] Arquivo .env e .env.example criados na raiz com todos os IDs e URLs de webhooks reais.
 [X] Subcomandos centrais reorganizados: /binder ajuda, /binder feedback, /binder bugreport, /binder novidades, /binder info, /binder ping, /binder idioma.
-[X] Comandos standalone implementados: /ping, /coinflip, /convidar, /botinfo, /userinfo, /serverinfo, /useravatar, /serveravatar, /developers (eval, adicionar, remover, stats), /ocr, /musica (com Top 10).
+[X] Comandos standalone implementados: /ping, /coinflip, /convidar, /botinfo, /user (info, avatar), /server (info, avatar), /developers (eval, adicionar, remover, stats), /ocr, /musica (com Top 10).
 [X] Menu de Contexto de Usuário (Apps -> Informações do Usuário) com badges, HypeSquad e datas.
 [X] Dashboard fixo sem flood em canal configurado (1358542780275888501).
 [X] Logger de interações com fila assíncrona protegida contra rate limit do Discord (429).
-[X] Suíte de moderação completa com componentes de contêiner (/containerbuilder V2).
+[X] Suíte de moderação completa com componentes de contêiner (/containerbuilder V2) blindada por permissões (ManageMessages/Admin).
 [X] Lembretes simultâneos (Canal + DM) com suporte a cancelamento e persistência resiliente.
 [X] Proteção anti-spam e rate limiter em memória com limpeza automática de memória (TTL).
-[X] Circuit breaker de banco de dados com fallback para SQLite/Memória em caso de oscilação da nuvem.
+[X] Circuit breaker de banco de dados com Outbox Sync Queue automático para sincronizar gravações offline de volta ao Supabase.
 [X] Documentação jurídica completa em docs/TERMOS_E_PRIVACIDADE.md.
-[X] Mais de 217 testes automatizados passando com 100% de sucesso.
+[X] Mais de 222 testes automatizados passando com 100% de sucesso.
 ================================================================================
+

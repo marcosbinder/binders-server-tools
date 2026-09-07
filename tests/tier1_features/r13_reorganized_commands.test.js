@@ -19,10 +19,9 @@ const pingCommand = require('../../src/commands/ping.js');
 const coinflipCommand = require('../../src/commands/coinflip.js');
 const convidarCommand = require('../../src/commands/convidar.js');
 const botinfoCommand = require('../../src/commands/botinfo.js');
-const userinfoCommand = require('../../src/commands/userinfo.js');
-const serverinfoCommand = require('../../src/commands/serverinfo.js');
-const useravatarCommand = require('../../src/commands/useravatar.js');
-const serveravatarCommand = require('../../src/commands/serveravatar.js');
+const userCommand = require('../../src/commands/user.js');
+const serverCommand = require('../../src/commands/server.js');
+const containerbuilderCommand = require('../../src/commands/containerbuilder.js');
 const developersCommand = require('../../src/commands/developers.js');
 
 // Events & Utils
@@ -240,12 +239,16 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
     // -------------------------------------------------------------------------
     // 3. User & Server Profile Commands
     // -------------------------------------------------------------------------
-    describe('3. Profile & Media Commands: /userinfo, /serverinfo, /useravatar, /serveravatar', () => {
-        test('/userinfo includes Developer badge for user with isDeveloper = 1', async () => {
+    // -------------------------------------------------------------------------
+    // 3. User & Server Profile Commands (/user info, /user avatar, /server info, /server avatar)
+    // -------------------------------------------------------------------------
+    describe('3. Profile & Media Commands: /user (info, avatar) & /server (info, avatar)', () => {
+        test('/user info includes Developer badge for user with isDeveloper = 1', async () => {
             const client = createMockClient();
             const devInteraction = createMockInteraction({
                 userId: REGULAR_USER_ID,
-                commandName: 'userinfo',
+                commandName: 'user',
+                subcommand: 'info',
                 options: {
                     usuario: {
                         id: OWNER_ID,
@@ -255,18 +258,19 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
                 },
             });
 
-            await userinfoCommand.execute(devInteraction, client);
+            await userCommand.execute(devInteraction, client);
             assert.equal(devInteraction._replies.length, 1);
             const res = devInteraction._getLastResponse();
             const badgeField = res.embeds[0].data.fields.find(f => f.name.includes('Badges'));
             assert.ok(badgeField && badgeField.value.includes('Desenvolvedor'), 'Must display Developer badge');
         });
 
-        test('/userinfo resolves target user flags and guild hierarchy', async () => {
+        test('/user info resolves target user flags and guild hierarchy', async () => {
             const client = createMockClient();
             const interaction = createMockInteraction({
                 userId: REGULAR_USER_ID,
-                commandName: 'userinfo',
+                commandName: 'user',
+                subcommand: 'info',
                 options: {
                     usuario: {
                         id: '888777666555444333',
@@ -284,18 +288,34 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
                 },
             });
 
-            await userinfoCommand.execute(interaction, client);
+            await userCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
             const badgeField = res.embeds[0].data.fields.find(f => f.name.includes('Badges'));
             assert.ok(badgeField && badgeField.value.includes('Bravery'), 'Must map HypeSquad badge');
         });
 
-        test('/serverinfo in guild renders comprehensive stats', async () => {
+        test('/user avatar renders user avatar with format buttons', async () => {
             const client = createMockClient();
             const interaction = createMockInteraction({
                 userId: REGULAR_USER_ID,
-                commandName: 'serverinfo',
+                commandName: 'user',
+                subcommand: 'avatar',
+            });
+
+            await userCommand.execute(interaction, client);
+            assert.equal(interaction._replies.length, 1);
+            const res = interaction._getLastResponse();
+            assert.ok(res.components[0].components.some(b => b.data.label === 'PNG'));
+            assert.ok(res.components[0].components.some(b => b.data.label === 'WEBP'));
+        });
+
+        test('/server info in guild renders comprehensive stats', async () => {
+            const client = createMockClient();
+            const interaction = createMockInteraction({
+                userId: REGULAR_USER_ID,
+                commandName: 'server',
+                subcommand: 'info',
                 guild: {
                     id: '987654321098765432',
                     name: 'Servidor de Teste Oficial',
@@ -314,46 +334,34 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
                 },
             });
 
-            await serverinfoCommand.execute(interaction, client);
+            await serverCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
             assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Identificação') || f.name.includes('Identification')));
             assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Membros') || f.name.includes('Members')));
         });
 
-        test('/serverinfo rejects execution in DM context', async () => {
+        test('/server info rejects execution in DM context', async () => {
             const client = createMockClient();
             const interaction = createMockInteraction({
                 userId: REGULAR_USER_ID,
                 guildId: null,
                 guild: null,
-                commandName: 'serverinfo',
+                commandName: 'server',
+                subcommand: 'info',
             });
 
-            await serverinfoCommand.execute(interaction, client);
+            await serverCommand.execute(interaction, client);
             const res = interaction._getLastResponse();
             assert.ok(res.content.includes('servidor') || res.content.includes('server'));
         });
 
-        test('/useravatar renders user avatar with format buttons', async () => {
+        test('/server avatar in guild renders server icon and buttons', async () => {
             const client = createMockClient();
             const interaction = createMockInteraction({
                 userId: REGULAR_USER_ID,
-                commandName: 'useravatar',
-            });
-
-            await useravatarCommand.execute(interaction, client);
-            assert.equal(interaction._replies.length, 1);
-            const res = interaction._getLastResponse();
-            assert.ok(res.components[0].components.some(b => b.data.label === 'PNG'));
-            assert.ok(res.components[0].components.some(b => b.data.label === 'WEBP'));
-        });
-
-        test('/serveravatar in guild renders server icon and buttons', async () => {
-            const client = createMockClient();
-            const interaction = createMockInteraction({
-                userId: REGULAR_USER_ID,
-                commandName: 'serveravatar',
+                commandName: 'server',
+                subcommand: 'avatar',
                 guild: {
                     name: 'Guild Icon Server',
                     iconURL: () => 'https://cdn.discordapp.com/icons/guild_icon.png',
@@ -361,22 +369,55 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
                 },
             });
 
-            await serveravatarCommand.execute(interaction, client);
+            await serverCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
             assert.ok(res.components[0].components.length >= 1);
         });
 
-        test('/serveravatar rejects in DM context', async () => {
+        test('/server avatar rejects in DM context', async () => {
             const client = createMockClient();
             const interaction = createMockInteraction({
                 userId: REGULAR_USER_ID,
                 guildId: null,
                 guild: null,
-                commandName: 'serveravatar',
+                commandName: 'server',
+                subcommand: 'avatar',
             });
 
-            await serveravatarCommand.execute(interaction, client);
+            await serverCommand.execute(interaction, client);
+            const res = interaction._getLastResponse();
+            assert.ok(res.content.includes('servidor') || res.content.includes('server'));
+        });
+
+        test('/containerbuilder rejects member without ManageMessages permission', async () => {
+            const client = createMockClient();
+            const interaction = createMockInteraction({
+                userId: REGULAR_USER_ID,
+                commandName: 'containerbuilder',
+                guild: { id: '999888777' },
+                member: {
+                    permissions: {
+                        has: () => false,
+                    },
+                },
+            });
+
+            await containerbuilderCommand.execute(interaction, client);
+            const res = interaction._getLastResponse();
+            assert.ok(res.content.includes('permissão') || res.content.includes('permission'));
+        });
+
+        test('/containerbuilder rejects in DM context', async () => {
+            const client = createMockClient();
+            const interaction = createMockInteraction({
+                userId: REGULAR_USER_ID,
+                guild: null,
+                guildId: null,
+                commandName: 'containerbuilder',
+            });
+
+            await containerbuilderCommand.execute(interaction, client);
             const res = interaction._getLastResponse();
             assert.ok(res.content.includes('servidor') || res.content.includes('server'));
         });
@@ -612,6 +653,31 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
                 assert.ok(res, 'Dashboard update must return message');
             });
             assert.ok(editedEmbed || sentEmbed, 'Dashboard must have been updated or created');
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // 6. Database Outbox Sync Queue & Cache Safety
+    // -------------------------------------------------------------------------
+    describe('6. Database Outbox Sync Queue & Cache Safety', () => {
+        test('enqueueSync increments sync queue size', () => {
+            const initialSize = db.getSyncQueueSize();
+            db.enqueueSync('UPDATE_USER', '999111222', { language: 'pt_BR' });
+            assert.equal(db.getSyncQueueSize(), initialSize + 1);
+        });
+
+        test('flushSyncQueue executes without throwing and processes queued items', async () => {
+            await assert.doesNotReject(async () => {
+                const result = await db.flushSyncQueue();
+                assert.ok(typeof result.processed === 'number');
+            });
+        });
+
+        test('invalidateUserCache and invalidateGuildCache run safely', () => {
+            assert.doesNotThrow(() => {
+                db.invalidateUserCache('test_user_id');
+                db.invalidateGuildCache('test_guild_id');
+            });
         });
     });
 });
