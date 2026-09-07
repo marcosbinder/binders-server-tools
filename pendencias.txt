@@ -1,0 +1,110 @@
+================================================================================
+           BINDER'S SERVER TOOLS • LISTA CONSOLIDADA DE PENDÊNCIAS
+================================================================================
+
+[!] IDENTIFICADORES DO PROPRIETÁRIO & SERVIDORES CONFIGURADOS:
+    - Dono / Desenvolvedor Principal: Marcos (ID 659214571634032667)
+    - Servidor Oficial de Suporte: 878856811694948372 (https://dsc.gg/bindersdc)
+    - Servidor de Anotações: 1350937628446560421
+    - Bot de Status Parceiro: 1408929144237985894
+    - Canais Oficiais Configurados no .env:
+        * Updates / Status Fixo: 1358542780275888501
+        * Bugs & Feedback:       1358542784294031402
+        * Joins (Entradas):      1358542802484728019
+        * Interações / Comandos: 1358542800781840545
+
+--------------------------------------------------------------------------------
+PARTE 1: AÇÕES EXTERNAS DO PROPRIETÁRIO (VOCÊ PRECISA FAZER NO PAINEL/NAVEGADOR)
+--------------------------------------------------------------------------------
+
+[ ] 1. DISCORD DEVELOPER PORTAL (https://discord.com/developers/applications/1310336375261892608)
+    [ ] 1.1. Icon / Avatar do Bot:
+             - Fazer upload de: assets/profile photo.png
+    [ ] 1.2. Banner do Perfil:
+             - Fazer upload de: assets/banner.png
+    [ ] 1.3. Ativar Privileged Gateway Intents (Aba "Bot"):
+             - Marcar a opção: "Server Members Intent" (obrigatório para moderação e leitura de membros).
+    [ ] 1.4. Habilitar Modos de Instalação (Aba "Installation"):
+             - Marcar: "Guild Install" (servidores) e "User Install" (perfil pessoal de usuário).
+    [ ] 1.5. Copiar o DISCORD_TOKEN e colar na variável DISCORD_TOKEN do .env
+
+[ ] 2. POLÍTICA DE PRIVACIDADE E TERMOS DE SERVIÇO NO CARRD (https://binders.carrd.co/#politicas)
+    [ ] 2.1. O texto atualizado, formatado e adequado à LGPD/GDPR já está salvo em:
+             docs/TERMOS_E_PRIVACIDADE.md
+             - Basta abrir o arquivo, copiar o texto e colar diretamente na seção de políticas do Carrd.
+
+[ ] 3. HOSPEDAGEM NO DISCLOUD (https://discloud.app/)
+    [ ] 3.1. Cadastrar as variáveis no painel da Discloud (Tools -> Env Vars):
+             - DISCORD_TOKEN       = (copiar do seu painel do Discord Developer Portal)
+             - CLIENT_ID           = 1310336375261892608
+             - OWNER_ID            = 659214571634032667
+             - OFFICIAL_GUILD_ID   = 878856811694948372
+             - SUPABASE_URL        = (copiar do seu arquivo .env local)
+             - SUPABASE_KEY        = (copiar do seu arquivo .env local)
+             - DATABASE_URL        = (copiar do seu arquivo .env local)
+             - WEBHOOK_FEEDBACK    = (copiar do seu arquivo .env local)
+             - WEBHOOK_BUGS        = (copiar do seu arquivo .env local)
+             - WEBHOOK_JOINS       = (copiar do seu arquivo .env local)
+             - WEBHOOK_INTERACTIONS = (copiar do seu arquivo .env local)
+    [ ] 3.2. Fazer upload do zip do projeto (sem pasta node_modules, sem .git, sem logs).
+
+[ ] 4. LISTAGEM NO TOP.GG (https://top.gg/bot/1310336375261892608/)
+    [ ] 4.1. Atualizar a descrição e tags do bot após deploy oficial.
+
+--------------------------------------------------------------------------------
+PARTE 2: ROADMAP DE RECURSOS E SISTEMAS FUTUROS (PLANEJAMENTO & BACKLOG)
+--------------------------------------------------------------------------------
+
+[ ] 5. SISTEMA DE MEDALHAS & BADGES
+    [X] 5.1. Badge de Desenvolvedor (PRONTO):
+             - Usuários com isDeveloper = 1 (ou OWNER_ID) recebem badge exclusiva (🛠️ Desenvolvedor / Developer)
+               no /userinfo, menu de contexto e perfil do bot.
+    [ ] 5.2. Sistema de Medalhas/Badges Antigas & Veteranos:
+             - Sistema de insígnias para usuários antigos, veteranos e apoiadores de longa data,
+               armazenadas no campo JSON badges da tabela users do Supabase.
+
+[ ] 6. COMANDOS DE UTILIDADE E MÍDIA
+    [X] 6.1. Sistema de OCR (/ocr) (PRONTO):
+             - Comando /ocr com suporte a upload de anexo de imagem e URL direta, extração resiliente
+               via motor OCR.space, estatísticas de caracteres/linhas e embeds bilíngues.
+    [X] 6.2. Top 10 de Músicas Mais Tocadas (/musica) (PRONTO):
+             - Consulta integrada ao ranking global do Deezer e links diretos para playlists do Spotify,
+               com acionamento via `/musica top10`, `/musica busca: top` ou execução padrão sem parâmetros.
+    [ ] 6.3. Sistema de AFK (/afk):
+             - Usuário define status de ausência com motivo opcional.
+             - Quando alguém marcar o usuário ausente, o bot avisa automaticamente.
+             - Ao enviar nova mensagem, o status de AFK é removido com mensagem de boas-vindas.
+    [ ] 6.4. Perfis de Redes Sociais & Perfil do Spotify de Usuários:
+             - Consulta e exibição de perfis de redes sociais famosas (Spotify, TikTok, YouTube, GitHub,
+               Twitter/X, Instagram, Roblox) associados ou pesquisados pelo usuário.
+
+[ ] 7. SISTEMA SOCIAL E GAMIFICAÇÃO
+    [ ] 7.1. Sistema de Reputação (+rep / /rep):
+             - Permitir que membros atribuam e consultem pontos de reputação e histórico de outros usuários.
+    [ ] 7.2. Módulo de Jogos Interativos:
+             - Comandos interativos de minigames com tela de termos/regras de conduta antes de iniciar o jogo.
+
+[ ] 8. SISTEMA DE ÁUDIO & REGISTRO
+    [ ] 8.1. Player de Música por Voz:
+             - Sistema futuro para reprodução direta de faixas em canais de voz do Discord (@discordjs/voice).
+    [ ] 8.2. Refinamento Visual do Sistema de Registro / Onboarding:
+             - Validação e polimento contínuo dos fluxos bilíngues (PT-BR / EN-US) e design Components V2.
+
+--------------------------------------------------------------------------------
+PARTE 3: O QUE JÁ ESTÁ 100% PRONTO, BLINDADO E TESTADO
+--------------------------------------------------------------------------------
+
+[X] Banco Supabase PostgreSQL configurado via Pooler com RLS ativo (users, guilds, reminders, bot_logs).
+[X] Arquivo .env e .env.example criados na raiz com todos os IDs e URLs de webhooks reais.
+[X] Subcomandos centrais reorganizados: /binder ajuda, /binder feedback, /binder bugreport, /binder novidades, /binder info, /binder ping, /binder idioma.
+[X] Comandos standalone implementados: /ping, /coinflip, /convidar, /botinfo, /userinfo, /serverinfo, /useravatar, /serveravatar, /developers (eval, adicionar, remover, stats), /ocr, /musica (com Top 10).
+[X] Menu de Contexto de Usuário (Apps -> Informações do Usuário) com badges, HypeSquad e datas.
+[X] Dashboard fixo sem flood em canal configurado (1358542780275888501).
+[X] Logger de interações com fila assíncrona protegida contra rate limit do Discord (429).
+[X] Suíte de moderação completa com componentes de contêiner (/containerbuilder V2).
+[X] Lembretes simultâneos (Canal + DM) com suporte a cancelamento e persistência resiliente.
+[X] Proteção anti-spam e rate limiter em memória com limpeza automática de memória (TTL).
+[X] Circuit breaker de banco de dados com fallback para SQLite/Memória em caso de oscilação da nuvem.
+[X] Documentação jurídica completa em docs/TERMOS_E_PRIVACIDADE.md.
+[X] Mais de 217 testes automatizados passando com 100% de sucesso.
+================================================================================
