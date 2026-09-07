@@ -606,6 +606,72 @@ function wrapInteractionForV2(interaction) {
     return interaction;
 }
 
+/**
+ * Detects if a Discord message was sent or exists with IS_COMPONENTS_V2 (flag 32768).
+ *
+ * @param {object} message Discord message object or mock
+ * @returns {boolean}
+ */
+function isMessageV2(message) {
+    if (!message) return false;
+    const flags = message.flags;
+    if (typeof flags === 'number') {
+        return (flags & IS_COMPONENTS_V2) !== 0;
+    }
+    if (flags && typeof flags.has === 'function') {
+        return flags.has(IS_COMPONENTS_V2);
+    }
+    if (flags && typeof flags.bitfield === 'number') {
+        return (flags.bitfield & IS_COMPONENTS_V2) !== 0;
+    }
+    if (Array.isArray(flags)) {
+        return flags.includes(IS_COMPONENTS_V2) || flags.includes('IsComponentsV2');
+    }
+    return false;
+}
+
+/**
+ * Safely wraps interaction.update on component interactions.
+ * If the target message in Discord is a Components V2 message (flags: 32768),
+ * any update with legacy embeds will trigger DiscordAPIError[50035]
+ * (MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2).
+ * This wrapper automatically detects V2 messages, converts legacy embeds into V2 Containers,
+ * and intercepts any unexpected 50035 error from Discord to seamlessly convert and retry.
+ *
+ * @param {import('discord.js').Interaction} interaction
+ * @returns {import('discord.js').Interaction}
+ */
+function wrapComponentInteractionUpdate(interaction) {
+    if (!interaction || typeof interaction.update !== 'function' || interaction._v2UpdateWrapped) {
+        return interaction;
+    }
+    interaction._v2UpdateWrapped = true;
+    const originalUpdate = interaction.update.bind(interaction);
+
+    interaction.update = async function (payload) {
+        let callPayload = payload;
+        const msgIsV2 = isMessageV2(interaction.message);
+
+        if (msgIsV2 && callPayload && typeof callPayload === 'object' && Array.isArray(callPayload.embeds) && callPayload.embeds.length > 0) {
+            callPayload = transformToV2Payload(callPayload, false);
+        }
+
+        try {
+            return await originalUpdate(callPayload);
+        } catch (err) {
+            const errStr = (err && err.rawError ? JSON.stringify(err.rawError) : '') + ' ' + (err?.message || '') + ' ' + String(err || '');
+            if (errStr.includes('MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2') ||
+                errStr.includes('IS_COMPONENTS_V2')) {
+                const v2Payload = transformToV2Payload(payload, false);
+                return await originalUpdate(v2Payload);
+            }
+            throw err;
+        }
+    };
+
+    return interaction;
+}
+
 module.exports = {
     IS_COMPONENTS_V2,
     ComponentType,
@@ -620,4 +686,6 @@ module.exports = {
     transformToV2Payload,
     wrapInteractionForV2,
     resolveFlags,
+    isMessageV2,
+    wrapComponentInteractionUpdate,
 };

@@ -16,6 +16,8 @@ const {
     transformToV2Payload,
     wrapInteractionForV2,
     resolveFlags,
+    isMessageV2,
+    wrapComponentInteractionUpdate,
 } = require('../../src/utils/componentsV2.js');
 
 const {
@@ -294,5 +296,66 @@ test('Requirement R15: Discord Components V2 Architecture', async (t) => {
         assert.doesNotThrow(() => {
             closeDatabase();
         }, 'closeDatabase must execute without throwing errors');
+    });
+
+    await t.test('R15.9: isMessageV2 detection and wrapComponentInteractionUpdate prevents DiscordAPIError 50035', async () => {
+        // 1. isMessageV2 detection
+        assert.equal(isMessageV2(null), false);
+        assert.equal(isMessageV2({ flags: 0 }), false);
+        assert.equal(isMessageV2({ flags: 32768 }), true);
+        assert.equal(isMessageV2({ flags: { bitfield: 32768 } }), true);
+        assert.equal(isMessageV2({ flags: { has: (f) => f === 32768 } }), true);
+        assert.equal(isMessageV2({ flags: [32768] }), true);
+
+        // 2. wrapComponentInteractionUpdate automatically converts embeds on V2 messages
+        let updatedPayload = null;
+        const mockInteractionV2 = {
+            message: { flags: 32768 },
+            update: async (payload) => {
+                updatedPayload = payload;
+                return payload;
+            }
+        };
+
+        wrapComponentInteractionUpdate(mockInteractionV2);
+
+        await mockInteractionV2.update({
+            embeds: [{ title: 'Título Teste', description: 'Desc Teste' }],
+            components: []
+        });
+
+        assert.ok(updatedPayload);
+        const serialized = JSON.parse(JSON.stringify(updatedPayload));
+        assert.equal('embeds' in serialized, false, 'embeds must be omitted from serialized JSON payload');
+        assert.equal(updatedPayload.components[0].type, 17, 'Must convert embed to Container (Type 17)');
+
+        // 3. wrapComponentInteractionUpdate retries automatically when Discord throws 50035
+        let attemptCount = 0;
+        let finalPayloadSent = null;
+        const mockInteractionRetry = {
+            message: { flags: 0 }, // Appears not V2 initially
+            update: async (payload) => {
+                attemptCount++;
+                if (attemptCount === 1 && payload.embeds) {
+                    const discordError = new Error('DiscordAPIError[50035]: Invalid Form Body');
+                    discordError.rawError = { message: 'The \'embeds\' field cannot be used when using MessageFlags.IS_COMPONENTS_V2' };
+                    throw discordError;
+                }
+                finalPayloadSent = payload;
+                return payload;
+            }
+        };
+
+        wrapComponentInteractionUpdate(mockInteractionRetry);
+
+        await mockInteractionRetry.update({
+            embeds: [{ title: 'Outro Título', description: 'Outra Desc' }],
+            components: []
+        });
+
+        assert.equal(attemptCount, 2, 'Must retry on 50035 error');
+        const serializedRetry = JSON.parse(JSON.stringify(finalPayloadSent));
+        assert.equal('embeds' in serializedRetry, false, 'Must convert and omit embeds on retry');
+        assert.equal(finalPayloadSent.components[0].type, 17);
     });
 });

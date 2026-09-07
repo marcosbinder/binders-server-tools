@@ -2,6 +2,7 @@ const { updateUser } = require('../../../database/db.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const getLanguage = require('../../utils/getLanguage.js');
+const { isMessageV2, transformToV2Payload } = require('../../utils/componentsV2.js');
 const emojis = require('../../config/emojis.js');
 
 // central de textos pra esse handler
@@ -39,6 +40,18 @@ module.exports = {
         });
 
         // edita a msg original com a confirmação, removendo o menu
-        return interaction.update({ embeds: [finalEmbed], components: [] });
+        const payload = { embeds: [finalEmbed], components: [] };
+        if (isMessageV2(interaction.message)) {
+            return interaction.update(transformToV2Payload(payload, false));
+        }
+        try {
+            return await interaction.update(payload);
+        } catch (err) {
+            const errMsg = err?.rawError?.message || err?.message || String(err);
+            if (errMsg.includes('MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2')) {
+                return await interaction.update(transformToV2Payload(payload, false));
+            }
+            throw err;
+        }
     }
 };

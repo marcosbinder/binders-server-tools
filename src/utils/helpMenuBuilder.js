@@ -6,6 +6,7 @@
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const getLanguage = require('./getLanguage.js');
 const createEmbed = require('./createEmbed.js');
+const { getEmoji } = require('../config/emojis.js');
 
 const categoriesData = {
     home: {
@@ -16,23 +17,23 @@ const categoriesData = {
         },
         fields: {
             pt_BR: [
-                { name: '⚙️ Sistema', value: '`/binder info`, `/binder idioma`, `/ajuda`, `/novidades`', inline: true },
-                { name: '🛠️ Utilidades & Games', value: '`/musica`, `/reminder`, `/roblox`, `/minecraft`, `/avatar`, `/enquete`', inline: true },
-                { name: '🛡️ Moderação', value: '`/moderacao kick`, `ban`, `timeout`, `lock`, `unlock`, `clear`', inline: true },
-                { name: '📦 Construtor', value: '`/containerbuilder` (Discord Components V2 Studio)', inline: true },
-                { name: '💬 Suporte', value: '`/feedback`, `/bugreport`', inline: true },
+                { name: `${getEmoji('configuracao')} Sistema`, value: '`/binder info`, `/binder idioma`, `/ajuda`, `/novidades`', inline: true },
+                { name: `${getEmoji('ferramenta1')} Utilidades & Games`, value: '`/musica`, `/reminder`, `/roblox`, `/minecraft`, `/avatar`, `/enquete`', inline: true },
+                { name: `${getEmoji('cadeadofechado')} Moderação`, value: '`/moderacao kick`, `ban`, `timeout`, `lock`, `unlock`, `clear`', inline: true },
+                { name: `${getEmoji('pasta')} Construtor`, value: '`/containerbuilder` (Discord Components V2 Studio)', inline: true },
+                { name: `${getEmoji('balaodefala')} Suporte`, value: '`/feedback`, `/bugreport`', inline: true },
             ],
             en_US: [
-                { name: '⚙️ System', value: '`/binder info`, `/binder idioma`, `/ajuda`, `/news`', inline: true },
-                { name: '🛠️ Utilities & Gaming', value: '`/musica`, `/reminder`, `/roblox`, `/minecraft`, `/avatar`, `/poll`', inline: true },
-                { name: '🛡️ Moderation', value: '`/moderation kick`, `ban`, `timeout`, `lock`, `unlock`, `clear`', inline: true },
-                { name: '📦 Studio Builder', value: '`/containerbuilder` (Discord Components V2 Studio)', inline: true },
-                { name: '💬 Support', value: '`/feedback`, `/bugreport`', inline: true },
+                { name: `${getEmoji('configuracao')} System`, value: '`/binder info`, `/binder idioma`, `/ajuda`, `/news`', inline: true },
+                { name: `${getEmoji('ferramenta1')} Utilities & Gaming`, value: '`/musica`, `/reminder`, `/roblox`, `/minecraft`, `/avatar`, `/poll`', inline: true },
+                { name: `${getEmoji('cadeadofechado')} Moderation`, value: '`/moderation kick`, `ban`, `timeout`, `lock`, `unlock`, `clear`', inline: true },
+                { name: `${getEmoji('pasta')} Studio Builder`, value: '`/containerbuilder` (Discord Components V2 Studio)', inline: true },
+                { name: `${getEmoji('balaodefala')} Support`, value: '`/feedback`, `/bugreport`', inline: true },
             ],
         },
     },
     sistema: {
-        title: { pt_BR: '⚙️ Comandos do Sistema', en_US: '⚙️ System Commands' },
+        title: { pt_BR: `${getEmoji('configuracao')} Comandos do Sistema`, en_US: `${getEmoji('configuracao')} System Commands` },
         description: {
             pt_BR: 'Configurações e informações centrais do bot.',
             en_US: 'Core bot settings and information.',
@@ -59,7 +60,7 @@ const categoriesData = {
         },
     },
     utilidades: {
-        title: { pt_BR: '🛠️ Utilidades & Gaming', en_US: '🛠️ Utilities & Gaming' },
+        title: { pt_BR: `${getEmoji('ferramenta1')} Utilidades & Gaming`, en_US: `${getEmoji('ferramenta1')} Utilities & Gaming` },
         description: {
             pt_BR: 'Ferramentas do dia a dia, perfis, servidores, lembretes e jogos.',
             en_US: 'Day-to-day tools, profiles, servers, reminders, and gaming lookups.',
@@ -94,7 +95,7 @@ const categoriesData = {
         },
     },
     moderacao: {
-        title: { pt_BR: '🛡️ Comandos de Moderação', en_US: '🛡️ Moderation Commands' },
+        title: { pt_BR: `${getEmoji('cadeadofechado')} Comandos de Moderação`, en_US: `${getEmoji('cadeadofechado')} Moderation Commands` },
         description: {
             pt_BR: 'Ferramentas de proteção, punição e controle de servidor.',
             en_US: 'Server protection, sanctioning, and channel management tools.',
@@ -119,7 +120,7 @@ const categoriesData = {
         },
     },
     builder: {
-        title: { pt_BR: '📦 Construtor de Contêineres', en_US: '📦 Container Studio Builder' },
+        title: { pt_BR: `${getEmoji('pasta')} Construtor de Contêineres`, en_US: `${getEmoji('pasta')} Container Studio Builder` },
         description: {
             pt_BR: 'Estúdio visual para criação de layouts Discord Components V2.',
             en_US: 'Visual studio for designing Discord Components V2 layouts.',
@@ -134,7 +135,7 @@ const categoriesData = {
         },
     },
     seguranca: {
-        title: { pt_BR: '💬 Suporte e Feedback', en_US: '💬 Support & Feedback' },
+        title: { pt_BR: `${getEmoji('balaodefala')} Suporte e Feedback`, en_US: `${getEmoji('balaodefala')} Support & Feedback` },
         description: {
             pt_BR: 'Envie sugestões ou reporte erros para a equipe.',
             en_US: 'Send suggestions or report bugs to the team.',
@@ -178,12 +179,12 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
         .setCustomId(`help_nav_${userId}`)
         .setPlaceholder(isPtBr ? 'Escolha uma categoria...' : 'Choose a category...')
         .addOptions([
-            { label: isPtBr ? 'Início' : 'Home', value: 'home', emoji: '🏠', default: selectedCategory === 'home' },
-            { label: isPtBr ? 'Sistema' : 'System', value: 'sistema', emoji: '⚙️', default: selectedCategory === 'sistema' },
-            { label: isPtBr ? 'Utilidades & Games' : 'Utilities & Gaming', value: 'utilidades', emoji: '🛠️', default: selectedCategory === 'utilidades' },
-            { label: isPtBr ? 'Moderação' : 'Moderation', value: 'moderacao', emoji: '🛡️', default: selectedCategory === 'moderacao' },
-            { label: isPtBr ? 'Construtor V2' : 'Studio Builder', value: 'builder', emoji: '📦', default: selectedCategory === 'builder' },
-            { label: isPtBr ? 'Suporte & Feedback' : 'Support & Feedback', value: 'seguranca', emoji: '💬', default: selectedCategory === 'seguranca' },
+            { label: isPtBr ? 'Início' : 'Home', value: 'home', emoji: { id: '1397393887068160030', name: 'casa' }, default: selectedCategory === 'home' },
+            { label: isPtBr ? 'Sistema' : 'System', value: 'sistema', emoji: { id: '1397393671791312906', name: 'vscode' }, default: selectedCategory === 'sistema' },
+            { label: isPtBr ? 'Utilidades & Games' : 'Utilities & Gaming', value: 'utilidades', emoji: { id: '1397391857905827981', name: 'ferramenta1' }, default: selectedCategory === 'utilidades' },
+            { label: isPtBr ? 'Moderação' : 'Moderation', value: 'moderacao', emoji: { id: '1394186596160503920', name: 'cadeadofechado' }, default: selectedCategory === 'moderacao' },
+            { label: isPtBr ? 'Construtor V2' : 'Studio Builder', value: 'builder', emoji: { id: '1394142646271738018', name: 'pasta' }, default: selectedCategory === 'builder' },
+            { label: isPtBr ? 'Suporte & Feedback' : 'Support & Feedback', value: 'seguranca', emoji: { id: '1393820810434576434', name: 'suporte' }, default: selectedCategory === 'seguranca' },
         ]);
 
     const colors = require('../config/colors.js');

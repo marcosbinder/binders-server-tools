@@ -14,6 +14,7 @@ const getLanguage = require('../utils/getLanguage.js');
 const Logger = require('../utils/logger.js');
 const { queueInteractionLog, setClient } = require('../utils/interactionWebhookLogger.js');
 const { getEmoji } = require('../config/emojis.js');
+const { wrapComponentInteractionUpdate } = require('../utils/componentsV2.js');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -104,6 +105,8 @@ module.exports = {
                                 (typeof interaction.isStringSelectMenu === 'function' && interaction.isStringSelectMenu()) ||
                                 (typeof interaction.isChannelSelectMenu === 'function' && interaction.isChannelSelectMenu());
             if (isComponent) {
+                wrapComponentInteractionUpdate(interaction);
+
                 // Anti-Spam Rate Limit (1500ms cooldown)
                 const prefix = interaction.customId ? interaction.customId.split('_')[0] : 'component';
                 const rateCheck = rateLimiter.check(interaction.user.id, `component:${prefix}`, 1500, isDev);

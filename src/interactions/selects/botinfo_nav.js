@@ -4,6 +4,7 @@ const getLanguage = require('../../utils/getLanguage.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const emojis = require('../../config/emojis.js');
 const colors = require('../../config/colors.js');
+const { isMessageV2, transformToV2Payload } = require('../../utils/componentsV2.js');
 const os = require('node:os');
 
 // config da equipe e inspirações
@@ -139,10 +140,32 @@ module.exports = {
         }
 
         if (isOwner) {
-            await interaction.update(payload);
+            if (isMessageV2(interaction.message)) {
+                await interaction.update(transformToV2Payload(payload, false));
+            } else {
+                try {
+                    await interaction.update(payload);
+                } catch (err) {
+                    const errMsg = err?.rawError?.message || err?.message || String(err);
+                    if (errMsg.includes('MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2')) {
+                        await interaction.update(transformToV2Payload(payload, false));
+                    } else {
+                        throw err;
+                    }
+                }
+            }
         } else {
             payload.flags = [MessageFlags.Ephemeral];
-            await interaction.reply(payload);
+            try {
+                await interaction.reply(payload);
+            } catch (err) {
+                const errMsg = err?.rawError?.message || err?.message || String(err);
+                if (errMsg.includes('MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2')) {
+                    await interaction.reply(transformToV2Payload(payload, true));
+                } else {
+                    throw err;
+                }
+            }
         }
     },
 };
