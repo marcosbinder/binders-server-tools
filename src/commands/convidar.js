@@ -13,6 +13,7 @@ const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('convidar')
         .setNameLocalizations({

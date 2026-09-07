@@ -7,14 +7,19 @@ const {
     createV2Payload
 } = require('../../../utils/componentsV2.js');
 const safeReply = require('../../../utils/safeReply.js');
+const { getUser } = require('../../../../database/db.js');
 const emojis = require('../../../config/emojis.js');
 const colors = require('../../../config/colors.js');
 
 module.exports = {
     async execute(interaction, client) {
+        const userData = getUser(interaction.user.id);
+        const currentLang = userData?.language || 'lang_auto';
+
         const ptContainer = createContainer({
             accentColor: colors.primary || 0xAEA7BD,
             components: [
+                createTextDisplay(`-# ${emojis.pessoa || '👤'} **${interaction.user?.username || 'Usuário'}** | Preferências Pessoais`),
                 createTextDisplay(`## ${emojis.mundo || '🌐'} Configuração de Idioma`),
                 createSeparator(true, 1),
                 createTextDisplay('### 🇧🇷 Português (Brasil)\n> Esta configuração é **pessoal** e afeta apenas como eu respondo a **você**.\n> Escolha uma das opções no menu seletor abaixo para definir seu idioma padrão.'),
@@ -26,6 +31,7 @@ module.exports = {
         const enContainer = createContainer({
             accentColor: colors.secondary || 0x898DA5,
             components: [
+                createTextDisplay(`-# ${emojis.pessoa || '👤'} **${interaction.user?.username || 'User'}** | Personal Preferences`),
                 createTextDisplay(`## ${emojis.mundo || '🌐'} Language Configuration`),
                 createSeparator(true, 1),
                 createTextDisplay('### 🇬🇧 English (US / UK)\n> This setting is **personal** and only affects how I reply to **you**.\n> Choose one of the options in the select menu below to set your preferred language.'),
@@ -44,18 +50,21 @@ module.exports = {
                         description: 'Segue o idioma do seu aplicativo / Follows your Discord client',
                         value: 'lang_auto',
                         emoji: '⚙️',
+                        default: currentLang === 'lang_auto',
                     },
                     {
                         label: 'Português (Brasil)',
                         description: 'Eu sempre vou te responder em português.',
                         value: 'lang_pt_br',
                         emoji: '🇧🇷',
+                        default: currentLang === 'lang_pt_br',
                     },
                     {
                         label: 'English (US/UK)',
                         description: 'I will always answer you in English.',
                         value: 'lang_en_us',
                         emoji: '🇬🇧',
+                        default: currentLang === 'lang_en_us',
                     },
                 ])
         );

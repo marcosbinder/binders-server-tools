@@ -74,7 +74,7 @@ module.exports = {
             session.blocks.push({ type: 'botao', label, url, emoji });
         }
 
-        const payload = buildStudioPayload(session, interaction.guild);
+        const payload = buildStudioPayload(session, interaction.guild, lang);
         return interaction.update(payload);
     }
 };

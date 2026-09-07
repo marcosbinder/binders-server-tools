@@ -110,19 +110,20 @@ module.exports = {
 
             const ownerMention = guild.ownerId ? `<@${guild.ownerId}>` : (isPtBr ? 'Desconhecido' : 'Unknown');
 
+            const divider = '> ────────────────────────────────';
             const serverDescLines = [
                 guild.description ? `> *${guild.description}*\n` : '',
                 `### ${getEmoji('casa')} ${isPtBr ? 'Identificação & Criação' : 'Identification & Creation'}`,
                 `> • **ID:** \`${guild.id}\``,
                 `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${getEmoji('coroa')} ${ownerMention}`,
                 `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
-                ``,
+                divider,
                 `### ${getEmoji('pessoas1')} ${isPtBr ? 'Membros' : 'Members'}`,
                 `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `${getEmoji('pessoa')} \`${humanCount}\` humanos • ${getEmoji('bot')} \`${botCount}\` bots` : `${getEmoji('pessoa')} \`${humanCount}\` humans • ${getEmoji('bot')} \`${botCount}\` bots`})`,
-                ``,
+                divider,
                 `### ${getEmoji('chatbubble')} ${isPtBr ? 'Canais & Categorias' : 'Channels & Categories'}`,
                 `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `${getEmoji('chatbubble')} \`${textChannels}\` texto • ${getEmoji('speaker')} \`${voiceChannels}\` voz • ${getEmoji('pasta')} \`${categoryChannels}\` categorias` : `${getEmoji('chatbubble')} \`${textChannels}\` text • ${getEmoji('speaker')} \`${voiceChannels}\` voice • ${getEmoji('pasta')} \`${categoryChannels}\` categories`})`,
-                ``,
+                divider,
                 `### ${getEmoji('diamante')} ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
                 `> • **${isPtBr ? 'Nível de Boost' : 'Boost Tier'}:** \`${boostTier}\` (\`${boostCount}\` ${isPtBr ? 'impulsos' : 'boosts'})`,
                 `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** ${getEmoji('cadeadofechado')} \`${verificationText}\``,
@@ -132,7 +133,7 @@ module.exports = {
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
                 description: serverDescLines.join('\n'),
-                color: colors.primary,
+                color: colors.primary || 0xAEA7BD,
             });
 
             if (iconUrl && embed.setThumbnail) {
@@ -149,6 +150,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Ícone do Servidor' : 'Server Icon')
                         .setStyle(ButtonStyle.Link)
                         .setURL(iconUrl)
+                        .setEmoji(getEmoji('casa'))
                 );
             }
             if (bannerUrl) {
@@ -157,6 +159,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Banner do Servidor' : 'Server Banner')
                         .setStyle(ButtonStyle.Link)
                         .setURL(bannerUrl)
+                        .setEmoji(getEmoji('paletadecores'))
                 );
             }
 
@@ -182,7 +185,7 @@ module.exports = {
             }
 
             const embed = await createEmbed(interaction, {
-                title: isPtBr ? `Ícone e Mídia de ${guild.name}` : `Icon & Media for ${guild.name}`,
+                title: isPtBr ? `${getEmoji('casa')} Ícone e Mídia de ${guild.name}` : `${getEmoji('casa')} Icon & Media for ${guild.name}`,
                 description: isPtBr ? 'Confira as imagens de perfil e divulgação do servidor:' : 'Check out the server profile and promotional imagery:',
                 color: colors.primary || 0xAEA7BD,
             });

@@ -36,7 +36,7 @@ module.exports = {
         if (selectedType === 'separador') {
             session.saveUndo();
             session.blocks.push({ type: 'separador' });
-            const payload = buildStudioPayload(session, interaction.guild);
+            const payload = buildStudioPayload(session, interaction.guild, lang);
             return interaction.update(payload);
         }
 

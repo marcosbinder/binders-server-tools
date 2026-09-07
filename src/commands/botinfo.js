@@ -14,6 +14,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('botinfo')
         .setDescription('Bot ❯ Mostra informações detalhadas e estatísticas sobre o Binder.')

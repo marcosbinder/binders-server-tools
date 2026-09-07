@@ -40,25 +40,25 @@ module.exports = {
 
         if (subject === 'btn_builder_undo') {
             session.undo();
-            const payload = buildStudioPayload(session, interaction.guild);
+            const payload = buildStudioPayload(session, interaction.guild, lang);
             return interaction.update(payload);
         }
 
         if (subject === 'btn_builder_limpar') {
             session.clear();
-            const payload = buildStudioPayload(session, interaction.guild);
+            const payload = buildStudioPayload(session, interaction.guild, lang);
             return interaction.update(payload);
         }
 
         if (subject === 'btn_builder_publicar') {
             session.isPublishing = true;
-            const payload = buildStudioPayload(session, interaction.guild);
+            const payload = buildStudioPayload(session, interaction.guild, lang);
             return interaction.update(payload);
         }
 
         if (subject === 'btn_builder_voltar') {
             session.isPublishing = false;
-            const payload = buildStudioPayload(session, interaction.guild);
+            const payload = buildStudioPayload(session, interaction.guild, lang);
             return interaction.update(payload);
         }
 
@@ -87,12 +87,12 @@ module.exports = {
                 return safeReply(interaction, { content: isPtBr ? `${getEmoji('errado')} Eu não tenho permissão para enviar mensagens no canal <#${targetChannel.id}>.` : `${getEmoji('errado')} I lack permission to send messages in <#${targetChannel.id}>.`, flags: [MessageFlags.Ephemeral] });
             }
 
-            const containerPayload = renderContainerFromBlocks(session.blocks, interaction.guild);
+            const containerPayload = renderContainerFromBlocks(session.blocks, interaction.guild, lang);
 
             try {
                 await targetChannel.send({ components: [containerPayload] });
                 session.isPublishing = false;
-                const resultPayload = buildStudioPayload(session, interaction.guild);
+                const resultPayload = buildStudioPayload(session, interaction.guild, lang);
                 await interaction.update(resultPayload).catch(() => null);
                 return interaction.followUp({ content: isPtBr ? `${getEmoji('confere')} Contêiner publicado com sucesso no canal <#${targetChannel.id}>!` : `${getEmoji('confere')} Container successfully published to <#${targetChannel.id}>!`, flags: [MessageFlags.Ephemeral] });
             } catch (err) {

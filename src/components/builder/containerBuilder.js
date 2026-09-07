@@ -126,7 +126,8 @@ function truncateText(str, maxLen = 4000) {
   return str.substring(0, maxLen - 3) + '...';
 }
 
-function renderContainerFromBlocks(blocks, guild = null) {
+function renderContainerFromBlocks(blocks, guild = null, lang = 'pt_BR') {
+  const isPtBr = lang === 'pt_BR';
   let accentColor = DEFAULT_BRANDING_COLOR;
   const rawBlocks = (Array.isArray(blocks) ? blocks : []).slice(0, MAX_CONTAINER_BLOCKS);
   const visibleBlocks = [];
@@ -146,7 +147,9 @@ function renderContainerFromBlocks(blocks, guild = null) {
       components: [
         {
           type: 10,
-          content: '-# ❗ | O painel encontra-se vazio. Utilize o menu abaixo para adicionar elementos ao contêiner.'
+          content: isPtBr
+            ? '-# ❗ | O painel encontra-se vazio. Utilize o menu abaixo para adicionar elementos ao contêiner.'
+            : '-# ❗ | The panel is currently empty. Use the menu below to add elements to the container.'
         }
       ]
     };
@@ -213,7 +216,7 @@ function renderContainerFromBlocks(blocks, guild = null) {
         components: [
           {
             type: 10,
-            content: '-# Miniatura'
+            content: isPtBr ? '-# Miniatura' : '-# Thumbnail'
           }
         ],
         accessory: {
@@ -225,7 +228,7 @@ function renderContainerFromBlocks(blocks, guild = null) {
       });
     } else if (b.type === 'botao') {
       flushText();
-      let label = (b.label || 'Botão').trim();
+      let label = (b.label || (isPtBr ? 'Botão' : 'Button')).trim();
       if (label.length > 80) {
         label = label.substring(0, 77) + '...';
       }
@@ -235,7 +238,7 @@ function renderContainerFromBlocks(blocks, guild = null) {
           {
             type: 2,
             style: b.url ? 5 : 2,
-            label: label || 'Botão',
+            label: label || (isPtBr ? 'Botão' : 'Button'),
             url: b.url || undefined,
             custom_id: b.url ? undefined : (b.custom_id || 'btn_action_' + Math.random().toString(36).substring(7)),
             emoji: b.emoji ? { name: b.emoji } : undefined
@@ -254,21 +257,52 @@ function renderContainerFromBlocks(blocks, guild = null) {
   };
 }
 
-function buildStudioPayload(session, guild) {
+function buildStudioPayload(session, guild, lang = 'pt_BR') {
   if (session.blocks.length > MAX_CONTAINER_BLOCKS) {
     session.blocks = session.blocks.slice(0, MAX_CONTAINER_BLOCKS);
   }
+  const isPtBr = lang === 'pt_BR';
   const n = session.blocks.length;
   const controlComponents = [];
 
   if (!session.isPublishing) {
+    const welcomeContent = isPtBr
+      ? `## 🛠️ | Estúdio de Contêineres Components V2\nSeja bem-vindo! Utilize o seletor abaixo para construir e estruturar layouts avançados para o servidor.\n-# 📦 | **${n}** elemento(s) em uso no projeto atual.`
+      : `## 🛠️ | Components V2 Container Studio\nWelcome! Use the selector below to build and structure advanced layouts for the server.\n-# 📦 | **${n}** element(s) in use in current project.`;
+
+    const selectPlaceholder = isPtBr
+      ? '⚙️ | Selecione o componente estrutural desejado...'
+      : '⚙️ | Select the desired structural component...';
+
+    const options = isPtBr ? [
+      { label: 'Título Principal', value: 'titulo', emoji: '🏷️', description: 'Cabeçalho de destaque da seção.' },
+      { label: 'Corpo de Texto', value: 'texto', emoji: '📝', description: 'Área principal para parágrafos e markdown.' },
+      { label: 'Paleta de Cores', value: 'cor', emoji: '🎨', description: 'Define a coloração lateral do contêiner.' },
+      { label: 'Mídia de Destaque', value: 'imagem', emoji: '🖼️', description: 'Anexa uma imagem ou banner ao layout.' },
+      { label: 'Miniatura (Thumbnail)', value: 'thumb', emoji: '🔳', description: 'Ícone lateral ou avatar.' },
+      { label: 'Assinatura do Autor', value: 'autor', emoji: '👤', description: 'Identificação no topo do contêiner.' },
+      { label: 'Notas de Rodapé', value: 'rodape', emoji: '🔻', description: 'Informações complementares na base.' },
+      { label: 'Botões Interativos', value: 'botao', emoji: '🔗', description: 'Insere links e ações clicáveis.' },
+      { label: 'Quebra de Seção', value: 'separador', emoji: '➖', description: 'Linha divisória elegante entre elementos.' }
+    ] : [
+      { label: 'Main Title', value: 'titulo', emoji: '🏷️', description: 'Section highlight header.' },
+      { label: 'Body Text', value: 'texto', emoji: '📝', description: 'Main area for paragraphs and markdown.' },
+      { label: 'Color Palette', value: 'cor', emoji: '🎨', description: 'Sets the container accent color.' },
+      { label: 'Featured Media', value: 'imagem', emoji: '🖼️', description: 'Attach an image or banner to the layout.' },
+      { label: 'Thumbnail', value: 'thumb', emoji: '🔳', description: 'Side icon or avatar.' },
+      { label: 'Author Signature', value: 'autor', emoji: '👤', description: 'Top container attribution.' },
+      { label: 'Footer Notes', value: 'rodape', emoji: '🔻', description: 'Additional info at the bottom.' },
+      { label: 'Interactive Buttons', value: 'botao', emoji: '🔗', description: 'Insert links and clickable actions.' },
+      { label: 'Section Divider', value: 'separador', emoji: '➖', description: 'Elegant separator line between elements.' }
+    ];
+
     const welcomeContainer = {
       type: 17,
       accent_color: colors.primary || 0x5865F2,
       components: [
         {
           type: 10,
-          content: '## 🛠️ | Estúdio de Contêineres Components V2\nSeja bem-vindo! Utilize o seletor abaixo para construir e estruturar layouts avançados para o servidor.\n-# 📦 | **' + n + '** elemento(s) em uso no projeto atual.'
+          content: welcomeContent
         },
         {
           type: 14,
@@ -280,18 +314,8 @@ function buildStudioPayload(session, guild) {
           components: [
             new StringSelectMenuBuilder()
               .setCustomId('sel_builder_elemento')
-              .setPlaceholder('⚙️ | Selecione o componente estrutural desejado...')
-              .addOptions([
-                { label: 'Título Principal', value: 'titulo', emoji: '🏷️', description: 'Cabeçalho de destaque da seção.' },
-                { label: 'Corpo de Texto', value: 'texto', emoji: '📝', description: 'Área principal para parágrafos e markdown.' },
-                { label: 'Paleta de Cores', value: 'cor', emoji: '🎨', description: 'Define a coloração lateral do contêiner.' },
-                { label: 'Mídia de Destaque', value: 'imagem', emoji: '🖼️', description: 'Anexa uma imagem ou banner ao layout.' },
-                { label: 'Miniatura (Thumbnail)', value: 'thumb', emoji: '🔳', description: 'Ícone lateral ou avatar.' },
-                { label: 'Assinatura do Autor', value: 'autor', emoji: '👤', description: 'Identificação no topo do contêiner.' },
-                { label: 'Notas de Rodapé', value: 'rodape', emoji: '🔻', description: 'Informações complementares na base.' },
-                { label: 'Botões Interativos', value: 'botao', emoji: '🔗', description: 'Insere links e ações clicáveis.' },
-                { label: 'Quebra de Seção', value: 'separador', emoji: '➖', description: 'Linha divisória elegante entre elementos.' }
-              ])
+              .setPlaceholder(selectPlaceholder)
+              .addOptions(options)
               .toJSON()
           ]
         },
@@ -300,21 +324,21 @@ function buildStudioPayload(session, guild) {
           components: [
             new ButtonBuilder()
               .setCustomId('btn_builder_undo')
-              .setLabel('Desfazer Última Ação')
+              .setLabel(isPtBr ? 'Desfazer Última Ação' : 'Undo Last Action')
               .setStyle(ButtonStyle.Secondary)
               .setEmoji(getEmoji('voltar'))
               .setDisabled(n === 0)
               .toJSON(),
             new ButtonBuilder()
               .setCustomId('btn_builder_publicar')
-              .setLabel('Enviar Layout')
+              .setLabel(isPtBr ? 'Enviar Layout' : 'Send Layout')
               .setStyle(ButtonStyle.Success)
               .setEmoji(getEmoji('foguete'))
               .setDisabled(n === 0)
               .toJSON(),
             new ButtonBuilder()
               .setCustomId('btn_builder_limpar')
-              .setLabel('Apagar Projeto')
+              .setLabel(isPtBr ? 'Apagar Projeto' : 'Delete Project')
               .setStyle(ButtonStyle.Danger)
               .setEmoji(getEmoji('lixeira'))
               .setDisabled(n === 0)
@@ -331,7 +355,9 @@ function buildStudioPayload(session, guild) {
       components: [
         {
           type: 10,
-          content: '### 🚀 | Central de Envio de Contêiner\n-# 📌 | Selecione o canal de destino abaixo para publicar o layout.'
+          content: isPtBr
+            ? '### 🚀 | Central de Envio de Contêiner\n-# 📌 | Selecione o canal de destino abaixo para publicar o layout.'
+            : '### 🚀 | Container Dispatch Center\n-# 📌 | Select destination channel below to publish the layout.'
         },
         {
           type: 14,
@@ -343,7 +369,7 @@ function buildStudioPayload(session, guild) {
           components: [
             new ChannelSelectMenuBuilder()
               .setCustomId('sel_builder_canal')
-              .setPlaceholder('📢 | Selecione o canal de destino...')
+              .setPlaceholder(isPtBr ? '📢 | Selecione o canal de destino...' : '📢 | Select the target channel...')
               .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
               .toJSON()
           ]
@@ -353,13 +379,13 @@ function buildStudioPayload(session, guild) {
           components: [
             new ButtonBuilder()
               .setCustomId('btn_builder_voltar')
-              .setLabel('Retornar ao Estúdio')
+              .setLabel(isPtBr ? 'Retornar ao Estúdio' : 'Back to Studio')
               .setStyle(ButtonStyle.Secondary)
               .setEmoji(getEmoji('voltar'))
               .toJSON(),
             new ButtonBuilder()
               .setCustomId('btn_builder_confirmar')
-              .setLabel('Confirmar Envio')
+              .setLabel(isPtBr ? 'Confirmar Envio' : 'Confirm Dispatch')
               .setStyle(ButtonStyle.Success)
               .setEmoji(getEmoji('confere'))
               .setDisabled(!session.targetChannelId)
@@ -377,12 +403,12 @@ function buildStudioPayload(session, guild) {
     components: [
       {
         type: 10,
-        content: '-# 👁️ | **Visualização do Projeto em Tempo Real:**'
+        content: isPtBr ? '-# 👁️ | **Visualização do Projeto em Tempo Real:**' : '-# 👁️ | **Real-Time Project Preview:**'
       }
     ]
   };
 
-  const renderedPreview = renderContainerFromBlocks(session.blocks, guild);
+  const renderedPreview = renderContainerFromBlocks(session.blocks, guild, lang);
 
   return {
     flags: 32768 | 64,

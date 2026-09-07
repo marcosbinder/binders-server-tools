@@ -3,13 +3,59 @@
  * @description Standalone slash command /coinflip (Cara ou Coroa / Heads or Tails)
  */
 
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
 const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
+
+async function buildCoinflipPayload(interaction, user) {
+    const lang = getLanguage(interaction);
+    const isPtBr = lang === 'pt_BR';
+
+    const isHeads = Math.random() < 0.5;
+    const resultEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
+    const resultName = isPtBr ? (isHeads ? 'Cara' : 'Coroa') : (isHeads ? 'Heads' : 'Tails');
+    const resultText = isPtBr
+        ? `🪙 A moeda girou no ar e caiu com **${resultName}** virada para cima! ${resultEmoji}`
+        : `🪙 The coin flipped in the air and landed on **${resultName}**! ${resultEmoji}`;
+
+    const embed = await createEmbed(interaction, {
+        title: isPtBr ? `${getEmoji('estrela')} Cara ou Coroa` : `${getEmoji('estrela')} Coin Flip`,
+        description: resultText,
+        color: colors.primary || 0xAEA7BD,
+        thumbnail: isHeads
+            ? 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f464.png'
+            : 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f451.png',
+        fields: [
+            {
+                name: isPtBr ? `${getEmoji('trofeu')} Resultado` : `${getEmoji('trofeu')} Result`,
+                value: `**${resultName}**`,
+                inline: true,
+            },
+            {
+                name: isPtBr ? `${getEmoji('pessoa')} Lançado por` : `${getEmoji('pessoa')} Flipped by`,
+                value: `${user.username}`,
+                inline: true,
+            },
+        ],
+    });
+
+    const rerollButton = new ButtonBuilder()
+        .setCustomId(`coinflip_reroll_${user.id}`)
+        .setLabel(isPtBr ? 'Girar Novamente' : 'Flip Again')
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🔄');
+
+    const actionRow = new ActionRowBuilder().addComponents(rerollButton);
+
+    return {
+        embeds: [embed],
+        components: [actionRow],
+    };
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,37 +69,13 @@ module.exports = {
         .setContexts([0, 1, 2])
         .setDMPermission(true),
 
+    buildCoinflipPayload,
+
     async execute(interaction, client) {
         const canProceed = await tosCheck(interaction);
         if (!canProceed) return;
 
-        const lang = getLanguage(interaction);
-        const isPtBr = lang === 'pt_BR';
-
-        const isHeads = Math.random() < 0.5;
-        const resultEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
-        const resultText = isPtBr
-            ? (isHeads ? `${resultEmoji} Deu **Cara**!` : `${resultEmoji} Deu **Coroa**!`)
-            : (isHeads ? `${resultEmoji} It's **Heads**!` : `${resultEmoji} It's **Tails**!`);
-
-        const embed = await createEmbed(interaction, {
-            title: isPtBr ? `${getEmoji('estrela')} Cara ou Coroa` : `${getEmoji('estrela')} Coin Flip`,
-            description: resultText,
-            color: colors.primary || 0xAEA7BD,
-            fields: [
-                {
-                    name: isPtBr ? `${getEmoji('trofeu')} Resultado` : `${getEmoji('trofeu')} Result`,
-                    value: isHeads ? (isPtBr ? 'Cara' : 'Heads') : (isPtBr ? 'Coroa' : 'Tails'),
-                    inline: true,
-                },
-                {
-                    name: isPtBr ? `${getEmoji('pessoa')} Lançado por` : `${getEmoji('pessoa')} Flipped by`,
-                    value: `${interaction.user.username}`,
-                    inline: true,
-                },
-            ],
-        });
-
-        return safeReply(interaction, { embeds: [embed] });
+        const payload = await buildCoinflipPayload(interaction, interaction.user);
+        return safeReply(interaction, payload);
     },
 };

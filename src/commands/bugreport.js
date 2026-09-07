@@ -9,9 +9,11 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const { submitFeedbackOrBug } = require('../utils/feedbackDispatcher.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('bugreport')
         .setDescription('Bot ❯ Reporta um erro ou bug encontrado no bot.')
@@ -29,12 +31,12 @@ module.exports = {
                     'en-US': 'description',
                     'pt-BR': 'descricao',
                 })
-                .setDescription('Descreva o problema encontrado em detalhes (mínimo 10 caracteres).')
+                .setDescription('Descreva o problema encontrado em detalhes (mínimo 5 caracteres).')
                 .setDescriptionLocalizations({
-                    'en-US': 'Describe the encountered problem in detail (minimum 10 characters).',
-                    'pt-BR': 'Descreva o problema encontrado em detalhes (mínimo 10 caracteres).',
+                    'en-US': 'Describe the encountered problem in detail (minimum 5 characters).',
+                    'pt-BR': 'Descreva o problema encontrado em detalhes (mínimo 5 caracteres).',
                 })
-                .setMinLength(10)
+                .setMinLength(5)
                 .setMaxLength(2000)
                 .setRequired(true)
         ),
@@ -65,7 +67,7 @@ module.exports = {
 
         if (!result.success) {
             return safeReply(interaction, {
-                content: isPtBr ? result.error : 'Message too short! Please enter at least 10 characters detailing your report.',
+                content: isPtBr ? result.error : 'Message too short! Please enter at least 5 characters detailing your report.',
                 flags: [MessageFlags.Ephemeral],
             });
         }
@@ -73,7 +75,7 @@ module.exports = {
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${getEmoji('bughunter')} Bug Reportado!` : `${getEmoji('bughunter')} Bug Reported!`,
             description: isPtBr ? result.userConfirmation : 'Your bug report has been successfully sent to the development team! Thank you.',
-            color: 0xED4245,
+            color: colors.primary || 0xAEA7BD,
         });
 
         return safeReply(interaction, {

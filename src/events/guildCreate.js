@@ -5,6 +5,7 @@
 
 const { Events, WebhookClient, EmbedBuilder } = require('discord.js');
 const { isDeadWebhook, markDeadWebhook } = require('../utils/logger.js');
+const { getEmoji } = require('../config/emojis.js');
 
 function isUnknownWebhookError(err) {
     if (!err) return false;
@@ -21,6 +22,34 @@ module.exports = {
 
         console.log(`[GuildCreate] Entrou no servidor: ${guild.name} (${guild.id}) com ${guild.memberCount} membros.`);
 
+        // 1. Mensagem educada e formatada no canal padrão/do sistema do servidor
+        if (guild.systemChannel && typeof guild.systemChannel.send === 'function') {
+            try {
+                const welcomeEmbed = new EmbedBuilder()
+                    .setColor(0xAEA7BD)
+                    .setTitle(`${getEmoji('brilho')} Olá! Obrigado por me adicionar ao ${guild.name}!`)
+                    .setDescription([
+                        `Olá a todos! Eu sou o **Binder's Server Tools**, o assistente multifuncional do seu servidor.`,
+                        ``,
+                        `> • Para ver a lista completa de comandos disponíveis, use **/binder ajuda** ou **/ajuda**.`,
+                        `> • Para configurar o idioma do bot para você ou seu servidor, use **/binder idioma**.`,
+                        `> • Para ver informações e estatísticas deste servidor, use **/server info**.`,
+                        ``,
+                        `Precisa de suporte ou tem sugestões? Use **/binder feedback** ou acesse nosso servidor de suporte!`
+                    ].join('\n'))
+                    .setFooter({
+                        text: `Binder's Server Tools`,
+                        iconURL: client?.user?.displayAvatarURL ? client.user.displayAvatarURL() : undefined,
+                    })
+                    .setTimestamp();
+
+                await guild.systemChannel.send({ embeds: [welcomeEmbed] }).catch(() => null);
+            } catch (_) {
+                // Silenciosamente ignorado se o bot não tiver permissão no systemChannel
+            }
+        }
+
+        // 2. Notificação via webhook para os desenvolvedores
         const webhookUrl = process.env.WEBHOOK_JOINS;
         if (!webhookUrl || isDeadWebhook(webhookUrl)) return;
 
@@ -49,7 +78,7 @@ module.exports = {
                 const bots = guild.members.cache.filter(m => m.user?.bot).size;
                 const humans = guild.members.cache.filter(m => !m.user?.bot).size;
                 if (bots > 0 || humans > 0) {
-                    memberBreakdown = ` (👤 \`${humans}\` humanos • 🤖 \`${bots}\` bots)`;
+                    memberBreakdown = ` (${getEmoji('pessoa')} \`${humans}\` humanos • ${getEmoji('bot')} \`${bots}\` bots)`;
                 }
             }
 
@@ -59,7 +88,7 @@ module.exports = {
             const avatarURL = client?.user?.displayAvatarURL ? client.user.displayAvatarURL() : undefined;
 
             const descriptionLines = [
-                `### 🏰 Informações do Servidor`,
+                `### ${getEmoji('casa')} Informações do Servidor`,
                 `> **Nome:** **${guild.name}**`,
                 `> **ID:** \`${guild.id}\``,
                 `> **Proprietário:** ${ownerMention} • **${ownerTag}** (\`${guild.ownerId || 'N/A'}\`)`,
@@ -73,7 +102,7 @@ module.exports = {
 
             descriptionLines.push(
                 ``,
-                `### 📊 Estatísticas Globais do Bot`,
+                `### ${getEmoji('linha')} Estatísticas Globais do Bot`,
                 `> **Total de Servidores:** \`${totalGuilds}\``
             );
 
@@ -82,7 +111,7 @@ module.exports = {
             }
 
             const embed = new EmbedBuilder()
-                .setTitle('📥 Entrada em Novo Servidor!')
+                .setTitle(`${getEmoji('foguete')} Entrada em Novo Servidor!`)
                 .setColor(0xAEA7BD)
                 .setDescription(descriptionLines.join('\n'))
                 .setTimestamp();

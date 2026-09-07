@@ -8,6 +8,7 @@ const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
 const { submitFeedbackOrBug } = require('../../../utils/feedbackDispatcher.js');
 const { getEmoji } = require('../../../config/emojis.js');
+const colors = require('../../../config/colors.js');
 const safeReply = require('../../../utils/safeReply.js');
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${getEmoji('lampada')} Sugestão Enviada!` : `${getEmoji('lampada')} Suggestion Submitted!`,
             description: isPtBr ? result.userConfirmation : 'Your suggestion has been successfully sent to our team! Thank you for your feedback.',
-            color: 0x5865F2,
+            color: colors.primary || 0xAEA7BD,
         });
 
         return safeReply(interaction, {

@@ -123,6 +123,18 @@ module.exports = {
         // Subcomando: /user avatar
         // ---------------------------------------------------------------------
         if (sub === 'avatar') {
+            let fetchedUser = targetUser;
+            if (client?.users?.fetch) {
+                try {
+                    fetchedUser = await Promise.race([
+                        client.users.fetch(targetUser.id, { force: true }),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('User fetch timeout')), 2500))
+                    ]).catch(() => targetUser);
+                } catch {
+                    fetchedUser = targetUser;
+                }
+            }
+
             const globalAvatarUrl = targetUser.displayAvatarURL({ size: 1024, forceStatic: false });
             const serverAvatarUrl = targetMember && typeof targetMember.avatarURL === 'function'
                 ? targetMember.avatarURL({ size: 1024, forceStatic: false })
@@ -135,10 +147,15 @@ module.exports = {
                 ? (isPtBr ? `Exibindo o avatar no servidor **${serverName}**.` : `Displaying avatar in **${serverName}**.`)
                 : (isPtBr ? 'Exibindo o avatar global do usuário.' : 'Displaying global user avatar.');
 
+            const embedColor = fetchedUser?.hexAccentColor
+                || ((targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000') ? targetMember.displayHexColor : null)
+                || colors.primary
+                || 0xAEA7BD;
+
             const embed = await createEmbed(interaction, {
-                title: isPtBr ? `Avatar de ${targetUser.username}` : `Avatar of ${targetUser.username}`,
+                title: `${getEmoji('pessoa')} ${isPtBr ? `Avatar de ${targetUser.username}` : `Avatar of ${targetUser.username}`}`,
                 description,
-                color: (targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000') ? targetMember.displayHexColor : (colors.primary || 0xAEA7BD),
+                color: embedColor,
                 targetUser,
             });
 

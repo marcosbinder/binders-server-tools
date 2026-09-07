@@ -37,7 +37,7 @@ module.exports = {
             session.targetChannelId = selectedChannelId;
         }
 
-        const payload = buildStudioPayload(session, interaction.guild);
+        const payload = buildStudioPayload(session, interaction.guild, lang);
         return interaction.update(payload);
     }
 };

@@ -126,9 +126,19 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            if (typeof targetMember.kick === 'function') {
-                await targetMember.kick(`${reason} (Por: ${interaction.user.tag})`);
+            try {
+                if (typeof targetMember.kick === 'function') {
+                    await targetMember.kick(`${reason} (Por: ${interaction.user.tag})`);
+                }
+            } catch (err) {
+                return safeReply(interaction, {
+                    content: isPtBr
+                        ? `${getEmoji('errado')} Falha ao expulsar membro. Verifique se o meu cargo está acima do cargo do membro e se possuo as permissões necessárias.`
+                        : `${getEmoji('errado')} Failed to kick member. Ensure my role is above the member's role and I have required permissions.`,
+                    flags: [MessageFlags.Ephemeral]
+                });
             }
+
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? '👢 Membro Expulso' : '👢 Member Kicked',
                 fields: [
@@ -179,10 +189,19 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            if (typeof interaction.guild.members.ban === 'function') {
-                await interaction.guild.members.ban(targetUser.id, {
-                    reason: `${reason} (Por: ${interaction.user.tag})`,
-                    deleteMessageSeconds: deleteDays * 86400,
+            try {
+                if (typeof interaction.guild.members.ban === 'function') {
+                    await interaction.guild.members.ban(targetUser.id, {
+                        reason: `${reason} (Por: ${interaction.user.tag})`,
+                        deleteMessageSeconds: deleteDays * 86400,
+                    });
+                }
+            } catch (err) {
+                return safeReply(interaction, {
+                    content: isPtBr
+                        ? `${getEmoji('errado')} Falha ao banir membro. Verifique se o meu cargo está acima do cargo do membro e se possuo as permissões necessárias.`
+                        : `${getEmoji('errado')} Failed to ban member. Ensure my role is above the member's role and I have required permissions.`,
+                    flags: [MessageFlags.Ephemeral]
                 });
             }
 
@@ -243,9 +262,19 @@ module.exports = {
                 await interaction.deferReply();
             }
 
-            if (typeof targetMember.timeout === 'function') {
-                await targetMember.timeout(durationMs, `${reason} (Por: ${interaction.user.tag})`);
+            try {
+                if (typeof targetMember.timeout === 'function') {
+                    await targetMember.timeout(durationMs, `${reason} (Por: ${interaction.user.tag})`);
+                }
+            } catch (err) {
+                return safeReply(interaction, {
+                    content: isPtBr
+                        ? `${getEmoji('errado')} Falha ao aplicar castigo. Verifique se o meu cargo está acima do cargo do membro e se possuo as permissões necessárias.`
+                        : `${getEmoji('errado')} Failed to timeout member. Ensure my role is above the member's role and I have required permissions.`,
+                    flags: [MessageFlags.Ephemeral]
+                });
             }
+
             const untilTimestamp = Math.floor((Date.now() + durationMs) / 1000);
 
             const embed = await createEmbed(interaction, {

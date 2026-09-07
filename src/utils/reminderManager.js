@@ -118,13 +118,24 @@ async function dispatchReminder(client, reminder) {
                 const channel = guild.channels?.cache?.get(reminder.channelId) || (typeof guild.channels?.fetch === 'function' ? await guild.channels.fetch(reminder.channelId) : null);
                 if (!channel || typeof channel.send !== 'function') throw new Error(`Channel ${reminder.channelId} not found or not sendable`);
 
+                const channelFields = [
+                    { name: isPtBr ? '💬 Mensagem' : '💬 Message', value: reminder.message, inline: false },
+                ];
+                if (reminder.guildId) {
+                    channelFields.push({ name: isPtBr ? '🏠 Servidor' : '🏠 Server', value: guild.name || `ID: ${reminder.guildId}`, inline: true });
+                }
+                if (reminder.channelId) {
+                    channelFields.push({ name: isPtBr ? '📢 Canal' : '📢 Channel', value: `<#${reminder.channelId}>`, inline: true });
+                }
+
                 return channel.send({
                     content: `${getEmoji('relogio')} <@${reminder.userId}>, ${isPtBr ? 'aqui está o seu lembrete!' : 'here is your reminder!'}`,
                     embeds: [{
                         title: `${getEmoji('relogio')} ${isPtBr ? 'Lembrete Disparado!' : 'Reminder Triggered!'}`,
                         description: reminder.message,
-                        color: colors.warning || 0xFEE75C,
-                        footer: { text: `Binder's Server Tools • ${isPtBr ? 'Lembretes' : 'Reminders'}` },
+                        fields: channelFields,
+                        color: colors.primary || 0xAEA7BD,
+                        footer: { text: `Binder's Server Tools • ${isPtBr ? 'Lembretes' : 'Reminders'} • ID: ${reminder.id}` },
                         timestamp: new Date().toISOString()
                     }]
                 });
@@ -138,13 +149,21 @@ async function dispatchReminder(client, reminder) {
                 const user = client.users.cache?.get(reminder.userId) || (typeof client.users.fetch === 'function' ? await client.users.fetch(reminder.userId) : null);
                 if (!user || typeof user.send !== 'function') throw new Error(`User ${reminder.userId} not found or not sendable`);
 
+                const dmFields = [
+                    { name: isPtBr ? '💬 Mensagem' : '💬 Message', value: reminder.message, inline: false },
+                ];
+                if (reminder.guildId) {
+                    dmFields.push({ name: isPtBr ? '🏠 Servidor' : '🏠 Server', value: `ID: ${reminder.guildId}`, inline: true });
+                }
+
                 return user.send({
                     content: `${getEmoji('relogio')} ${isPtBr ? `Olá <@${reminder.userId}>, você pediu para ser lembrado:` : `Hello <@${reminder.userId}>, you asked to be reminded:`}`,
                     embeds: [{
                         title: `${getEmoji('relogio')} ${isPtBr ? 'Lembrete Disparado!' : 'Reminder Triggered!'}`,
                         description: reminder.message,
-                        color: colors.warning || 0xFEE75C,
-                        footer: { text: `Binder's Server Tools • ${isPtBr ? 'Lembretes' : 'Reminders'}` },
+                        fields: dmFields,
+                        color: colors.primary || 0xAEA7BD,
+                        footer: { text: `Binder's Server Tools • ${isPtBr ? 'Lembretes' : 'Reminders'} • ID: ${reminder.id}` },
                         timestamp: new Date().toISOString()
                     }]
                 });

@@ -48,7 +48,7 @@ const constants = {
     },
 
     BUG_REPORT: {
-        MIN_LENGTH: 10,
+        MIN_LENGTH: 5,
         MAX_LENGTH: 2000,
     },
 

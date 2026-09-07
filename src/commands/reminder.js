@@ -149,7 +149,7 @@ module.exports = {
             }
 
             const dueTimestamp = Date.now() + durationMs;
-            const reminderId = `rem_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+            const reminderId = `REM-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
             const reminderData = {
                 id: reminderId,
@@ -204,7 +204,7 @@ module.exports = {
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `${getEmoji('relogio')} Seus Lembretes Ativos (${userReminders.length})` : `${getEmoji('relogio')} Your Active Reminders (${userReminders.length})`,
                 fields,
-                color: colors.primary || 0x5865F2,
+                color: colors.primary || 0xAEA7BD,
             });
 
             return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
@@ -225,7 +225,7 @@ module.exports = {
 
             await cancelReminder(targetId);
             return interaction.reply({
-                content: isPtBr ? `${getEmoji('confere')} O lembrete \`${targetId}\` foi cancelado com sucesso.` : `${getEmoji('confere')} Reminder \`${targetId}\` was successfully canceled.`,
+                content: isPtBr ? `${getEmoji('certo2')} O lembrete \`${targetId}\` foi cancelado com sucesso.` : `${getEmoji('certo2')} Reminder \`${targetId}\` was successfully canceled.`,
                 flags: [MessageFlags.Ephemeral],
             });
         }

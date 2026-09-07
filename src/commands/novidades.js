@@ -12,6 +12,7 @@ const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('novidades')
         .setNameLocalizations({ 'en-US': 'news', 'pt-BR': 'novidades' })

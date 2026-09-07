@@ -11,6 +11,7 @@ const { getEmoji, emojis } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Bot ❯ Mostra a latência do WebSocket e tempo de resposta da API.')

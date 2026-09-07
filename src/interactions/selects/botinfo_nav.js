@@ -38,19 +38,18 @@ async function buildPage(page, interaction, client) {
             const botCreationTimestamp = client.user?.createdTimestamp ? Math.floor(client.user.createdTimestamp / 1000) : 1732644000;
 
             const creditsDescription = [
-                `### ${emojis.carta} ${isPtBr ? 'Certidão & Registro Geral do Bot' : "Bot's ID & General Registry"}`,
+                `### ${emojis.carta || '📜'} ${isPtBr ? 'Certidão & Registro Geral do Bot' : "Bot's ID & General Registry"}`,
                 `> ${isPtBr ? 'Identificação formal, dados cadastrais e créditos oficiais do **Binder**.' : 'Formal identification, registration records, and development credits for **Binder**.'}`,
                 ``,
-                `> • **${isPtBr ? 'Nome Oficial' : 'Official Name'}:** \`${client.user?.username || "Binder's Server Tools"}\``,
-                `> • **${isPtBr ? 'ID da Aplicação' : 'Application ID'}:** \`${botId}\``,
-                `> • **${isPtBr ? 'Desenvolvedor Principal' : 'Lead Developer'}:** [${ownerTag}](https://discord.com/users/${ownerId}) ${emojis.selodev1 || ''}`,
-                `> • **${isPtBr ? 'Equipe & Arte' : 'Team & Art'}:** [Vitória](https://discord.com/users/1117890204569718885) — *${isPtBr ? 'Artista e Apoiadora' : 'Artist & Supporter'}*`,
-                `> • **${isPtBr ? 'Data de Criação' : 'Birthday (Created)'}:** <t:${botCreationTimestamp}:D> (<t:${botCreationTimestamp}:R>)`,
-                `> • **${isPtBr ? 'Biblioteca Central' : 'Core Library'}:** ${emojis.djs || ''} \`Discord.js v${version}\` • \`Node.js ${process.version}\``,
-                `> • **${isPtBr ? 'Banco de Dados' : 'Database'}:** \`Supabase (PostgreSQL) + Fallback Local\``,
-                `> • **${isPtBr ? 'Comandos & Arquitetura' : 'Commands & Architecture'}:** \`Slash Commands (/) • Components V2\``,
-                `> • **${isPtBr ? 'Comunidade Global' : 'Global Reach'}:** ${emojis.mundo || ''} \`${serverCount.toLocaleString(locale)} servidores\` servindo \`${userCount.toLocaleString(locale)} usuários\``,
-                `> • **${isPtBr ? 'Código Aberto' : 'Open Source'}:** [GitHub Repository](https://github.com/marcosbinder/binders-server-tools)`
+                `> ${emojis.bot || '🤖'} **${isPtBr ? 'Nome Oficial' : 'Official Name'}:** \`${client.user?.username || "Binder's Server Tools"}\``,
+                `> ${emojis.ticket || '🏷️'} **${isPtBr ? 'ID da Aplicação' : 'Application ID'}:** \`${botId}\``,
+                `> ${emojis.selodev1 || '👑'} **${isPtBr ? 'Desenvolvedor Principal' : 'Lead Developer'}:** [${ownerTag}](https://discord.com/users/${ownerId})`,
+                `> ${emojis.coracaopixel || '🎨'} **${isPtBr ? 'Equipe & Arte' : 'Team & Art'}:** [Vitória](https://discord.com/users/1117890204569718885) — *${isPtBr ? 'Artista e Apoiadora' : 'Artist & Supporter'}*`,
+                `> ${emojis.calendario || '📅'} **${isPtBr ? 'Data de Criação' : 'Birthday (Created)'}:** <t:${botCreationTimestamp}:D> (<t:${botCreationTimestamp}:R>)`,
+                `> ${emojis.djs || '📦'} **${isPtBr ? 'Biblioteca Central' : 'Core Library'}:** \`Discord.js v${version}\` • \`Node.js ${process.version}\``,
+                `> ${emojis.bancodedados || emojis.pasta || '🗄️'} **${isPtBr ? 'Banco de Dados' : 'Database'}:** \`PostgreSQL\``,
+                `> ${emojis.ferramenta1 || '⚙️'} **${isPtBr ? 'Comandos & Arquitetura' : 'Commands & Architecture'}:** \`Slash Commands (/) • Components V2\``,
+                `> ${emojis.mundo || '🌐'} **${isPtBr ? 'Comunidade Global' : 'Global Reach'}:** \`${serverCount.toLocaleString(locale)} servidores\` servindo \`${userCount.toLocaleString(locale)} usuários\``,
             ].join('\n');
 
             embed = await createEmbed(interaction, {
@@ -69,19 +68,16 @@ async function buildPage(page, interaction, client) {
             const uptimeStr = `${days > 0 ? `${days}d ` : ''}${hours}h ${minutes}m ${seconds}s`;
             const startTimestamp = Math.floor((Date.now() - (botUptimeSec * 1000)) / 1000);
             const ramUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
-            const ramTotal = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
-            const hostTotalRamGb = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
 
             const hostDescription = [
-                `### ${emojis.selodev2 || emojis.vscode} ${isPtBr ? 'Ambiente de Hospedagem' : 'Hosting Environment'}`,
-                `> • **${isPtBr ? 'Infraestrutura' : 'Infrastructure'}:** \`${isPtBr ? 'Host Externa (Cloud Hosted)' : 'External Host (Cloud Hosted)'}\``,
-                `> • **${isPtBr ? 'Sistema Operacional' : 'Operating System'}:** \`${os.type()} ${os.arch()}\``,
-                `> • **${isPtBr ? 'Memória do Servidor (Total)' : 'Server RAM (Total)'}:** \`${hostTotalRamGb} GB\``,
-                `> • **${isPtBr ? 'Uso do Bot (Heap / RSS)' : 'Bot RAM (Heap / RSS)'}:** \`${ramUsed} MB / ${ramTotal} MB\``,
-                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** ${emojis.verde} \`${isPtBr ? 'Online & Saudável' : 'Online & Healthy'}\``,
-                `> • **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** <t:${startTimestamp}:R> (\`${uptimeStr}\`)`,
-                `> • **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${client.ws.ping}ms\``,
-                `> • **${isPtBr ? 'Versão do Node.js' : 'Node.js Version'}:** \`${process.version}\``,
+                `### ${emojis.selodev2 || emojis.vscode || '💻'} ${isPtBr ? 'Ambiente de Hospedagem' : 'Hosting Environment'}`,
+                ``,
+                `> ${emojis.wifi || '🌐'} **${isPtBr ? 'Infraestrutura' : 'Infrastructure'}:** \`${isPtBr ? 'Host Externa (Cloud Hosted)' : 'External Host (Cloud Hosted)'}\``,
+                `> ${emojis.verde || '🟢'} **${isPtBr ? 'Status do Sistema' : 'System Status'}:** \`${isPtBr ? 'Online & Saudável' : 'Online & Healthy'}\``,
+                `> ${emojis.tempo || '⏰'} **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** <t:${startTimestamp}:R> (\`${uptimeStr}\`)`,
+                `> ${emojis.internet || '📡'} **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${client.ws.ping}ms\``,
+                `> ${emojis.ferramenta1 || '💾'} **${isPtBr ? 'Memória em Uso' : 'RAM in Use'}:** \`${ramUsed} MB\``,
+                `> ${emojis.vscode || '⚡'} **${isPtBr ? 'Versão do Node.js' : 'Node.js Version'}:** \`${process.version}\``,
             ].join('\n');
 
             embed = await createEmbed(interaction, {

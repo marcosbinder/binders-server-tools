@@ -55,7 +55,7 @@ module.exports = {
         }
 
         const session = getOrCreateStudioSession(interaction.user.id);
-        const payload = buildStudioPayload(session, interaction.guild);
+        const payload = buildStudioPayload(session, interaction.guild, lang);
 
         return safeReply(interaction, payload);
     },

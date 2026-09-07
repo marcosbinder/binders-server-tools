@@ -29,14 +29,17 @@ function isUnknownWebhookError(err) {
  */
 async function submitFeedbackOrBug({ type, user, guild, channel, message, webhookClient, webhookUrl, client }) {
     const trimmed = (message || '').trim();
-    if (trimmed.length < 10) {
+    const isBug = type === 'bug';
+    const minLength = isBug ? 5 : 10;
+    if (trimmed.length < minLength) {
         return {
             success: false,
-            error: 'Mensagem muito curta! Digite pelo menos 10 caracteres detalhando sua solicitação.',
+            error: isBug
+                ? 'Mensagem muito curta! Digite pelo menos 5 caracteres detalhando seu relatório.'
+                : 'Mensagem muito curta! Digite pelo menos 10 caracteres detalhando sua solicitação.',
         };
     }
 
-    const isBug = type === 'bug';
     const discordClient = client || guild?.client || channel?.client || user?.client;
     const avatarURL = typeof discordClient?.user?.displayAvatarURL === 'function'
         ? discordClient.user.displayAvatarURL()
@@ -57,7 +60,7 @@ async function submitFeedbackOrBug({ type, user, guild, channel, message, webhoo
 
     const embed = {
         title: isBug ? `${getEmoji('bughunter')} Novo Relatório de Bug` : `${getEmoji('lampada')} Nova Sugestão / Feedback`,
-        color: isBug ? 0xED4245 : 0xAEA7BD,
+        color: 0xAEA7BD,
         fields: [
             { name: `${getEmoji('pessoa')} Autor`, value: `**${userTag}** (\`${userId}\`)`, inline: true },
             { name: `${getEmoji('casa')} Servidor`, value: guild ? `**${guild.name}** (\`${guild.id}\`)` : 'Direct Message (DM)', inline: true },

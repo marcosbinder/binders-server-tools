@@ -12,6 +12,17 @@ function getCommandsList() {
     const commands = [];
     const commandsPath = path.join(__dirname, 'src', 'commands');
 
+    // Standalone commands that are already unified under /binder or /user subcommands
+    const DUPLICATE_COMMAND_NAMES = new Set([
+        'avatar',
+        'botinfo',
+        'novidades',
+        'ping',
+        'convidar',
+        'feedback',
+        'bugreport',
+    ]);
+
     function loadCommandsRecursively(dir) {
         if (!fs.existsSync(dir)) return;
         const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -23,6 +34,10 @@ function getCommandsList() {
                 try {
                     const command = require(fullPath);
                     if ('data' in command && 'execute' in command) {
+                        const name = command.data.name;
+                        if (command.deploy === false || DUPLICATE_COMMAND_NAMES.has(name)) {
+                            continue;
+                        }
                         commands.push(command.data.toJSON());
                     } else {
                         console.warn(`[AVISO] O comando em ${fullPath} não possui 'data' ou 'execute'.`);

@@ -8,6 +8,7 @@ const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
 const { submitFeedbackOrBug } = require('../../../utils/feedbackDispatcher.js');
 const { getEmoji } = require('../../../config/emojis.js');
+const colors = require('../../../config/colors.js');
 const safeReply = require('../../../utils/safeReply.js');
 
 module.exports = {
@@ -34,7 +35,7 @@ module.exports = {
 
         if (!result.success) {
             return safeReply(interaction, {
-                content: isPtBr ? result.error : 'Message too short! Please enter at least 10 characters detailing your report.',
+                content: isPtBr ? result.error : 'Message too short! Please enter at least 5 characters detailing your report.',
                 flags: [MessageFlags.Ephemeral],
             });
         }
@@ -42,7 +43,7 @@ module.exports = {
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${getEmoji('bughunter')} Bug Reportado!` : `${getEmoji('bughunter')} Bug Reported!`,
             description: isPtBr ? result.userConfirmation : 'Your bug report has been successfully sent to the development team! Thank you.',
-            color: 0xED4245,
+            color: colors.primary || 0xAEA7BD,
         });
 
         return safeReply(interaction, {

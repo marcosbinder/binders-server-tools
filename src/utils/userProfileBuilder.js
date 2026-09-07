@@ -91,25 +91,27 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
     if (isGuild && targetMember) {
         const highestRoleName = targetMember.roles?.highest?.name || (Array.isArray(targetMember.roles) ? '@everyone' : '@everyone');
         const totalRoles = targetMember.roles?.cache?.size ?? (Array.isArray(targetMember.roles) ? targetMember.roles.length : 0);
+        let rolesValue = `**${isPtBr ? 'Maior Cargo' : 'Highest Role'}:** ${highestRoleName}\n**${isPtBr ? 'Total' : 'Total'}:** ${totalRoles}`;
+        const memberRolesList = targetMember.roles?.cache ? Array.from(targetMember.roles.cache.values()).filter(r => r.name !== '@everyone') : [];
+        if (memberRolesList.length > 0) {
+            const displayRoles = memberRolesList.slice(0, 6).map(r => `<@&${r.id}>`).join(' ');
+            const remaining = memberRolesList.length - 6;
+            rolesValue += `\n${displayRoles}${remaining > 0 ? ` *+${remaining}*` : ''}`;
+        }
+
         fields.push({
             name: isPtBr ? `${getEmoji('selostaff')} Hierarquia & Cargos` : `${getEmoji('selostaff')} Hierarchy & Roles`,
-            value: `**${isPtBr ? 'Maior Cargo' : 'Highest Role'}:** ${highestRoleName}\n**${isPtBr ? 'Total' : 'Total'}:** ${totalRoles}`,
+            value: rolesValue,
             inline: true,
         });
 
         if (targetMember.premiumSince) {
             const premTimestamp = Math.floor(new Date(targetMember.premiumSince).getTime() / 1000);
             fields.push({
-                name: `${getEmoji('booster')} Booster`,
+                name: isPtBr ? `${getEmoji('booster')} Impulsionamento (Booster)` : `${getEmoji('booster')} Boosting Status`,
                 value: !isNaN(premTimestamp)
-                    ? `${isPtBr ? 'Desde' : 'Since'} <t:${premTimestamp}:R>`
+                    ? `${getEmoji('diamante')} ${isPtBr ? 'Desde' : 'Since'} <t:${premTimestamp}:D> (<t:${premTimestamp}:R>)`
                     : (isPtBr ? 'Sim' : 'Yes'),
-                inline: true,
-            });
-        } else {
-            fields.push({
-                name: `${getEmoji('booster')} Booster`,
-                value: isPtBr ? 'Não' : 'No',
                 inline: true,
             });
         }
@@ -119,7 +121,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
             if (!isNaN(joinedTimestamp)) {
                 fields.push({
                     name: isPtBr ? `${getEmoji('calendario')} Entrada no Servidor` : `${getEmoji('calendario')} Server Join Date`,
-                    value: `<t:${joinedTimestamp}:F>`,
+                    value: `<t:${joinedTimestamp}:D> (<t:${joinedTimestamp}:R>)`,
                     inline: false,
                 });
             }
@@ -129,7 +131,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
     if (createdTimestamp) {
         fields.push({
             name: isPtBr ? `${getEmoji('calendario')} Criação da Conta` : `${getEmoji('calendario')} Account Created`,
-            value: `<t:${createdTimestamp}:F>`,
+            value: `<t:${createdTimestamp}:D> (<t:${createdTimestamp}:R>)`,
             inline: false,
         });
     }

@@ -13,6 +13,7 @@ const colors = require('../config/colors.js');
 const emojis = require('../config/emojis.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('avatar')
         .setDescription('Usuário ❯ Exibe o avatar de um usuário em alta resolução.')

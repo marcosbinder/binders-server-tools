@@ -30,6 +30,16 @@ module.exports = {
         )
         .addSubcommand(subcommand =>
             subcommand
+                .setName('commands')
+                .setNameLocalizations({ 'pt-BR': 'comandos' })
+                .setDescription('Bot ❯ Mostra o menu de ajuda interativo com todos os comandos.')
+                .setDescriptionLocalizations({
+                    'en-US': 'Bot ❯ Displays the interactive help menu with all available commands.',
+                    'pt-BR': 'Bot ❯ Mostra o menu de ajuda interativo com todos os comandos.',
+                })
+        )
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('info')
                 .setDescription('Bot ❯ Mostra informações detalhadas sobre mim.')
                 .setDescriptionLocalizations({
@@ -96,12 +106,12 @@ module.exports = {
                             'en-US': 'description',
                             'pt-BR': 'descricao',
                         })
-                        .setDescription('Descreva o problema encontrado em detalhes (mínimo 10 caracteres).')
+                        .setDescription('Descreva o problema encontrado em detalhes (mínimo 5 caracteres).')
                         .setDescriptionLocalizations({
-                            'en-US': 'Describe the encountered problem in detail (minimum 10 characters).',
-                            'pt-BR': 'Descreva o problema encontrado em detalhes (mínimo 10 caracteres).',
+                            'en-US': 'Describe the encountered problem in detail (minimum 5 characters).',
+                            'pt-BR': 'Descreva o problema encontrado em detalhes (mínimo 5 caracteres).',
                         })
-                        .setMinLength(10)
+                        .setMinLength(5)
                         .setMaxLength(2000)
                         .setRequired(true)
                 )
@@ -135,6 +145,8 @@ module.exports = {
         const subcommandCanonicalMap = {
             'ajuda': 'ajuda',
             'help': 'ajuda',
+            'commands': 'ajuda',
+            'comandos': 'ajuda',
             'info': 'info',
             'ping': 'ping',
             'convidar': 'convidar',
@@ -154,6 +166,8 @@ module.exports = {
         
         const categoryMap = {
             'ajuda': 'bot',
+            'commands': 'bot',
+            'comandos': 'bot',
             'info': 'bot',
             'ping': 'bot',
             'convidar': 'bot',
