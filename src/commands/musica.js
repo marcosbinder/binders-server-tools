@@ -9,16 +9,22 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const { searchMusicWithFallback, fetchTop10Tracks } = require('../utils/musicProvider.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 const RANK_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('musica')
-        .setDescription('Busca informações sobre músicas ou exibe o Top 10 mais tocado.')
+        .setNameLocalizations({
+            'en-US': 'music',
+            'en-GB': 'music',
+            'pt-BR': 'musica',
+        })
+        .setDescription('Música ❯ Busca informações sobre músicas ou exibe o Top 10 mais tocado.')
         .setDescriptionLocalizations({
-            'en-US': 'Searches for song information or displays the global Top 10 charts.',
-            'pt-BR': 'Busca informações sobre músicas ou exibe o Top 10 mais tocado.',
+            'en-US': 'Music ❯ Searches for song information or displays the global Top 10 charts.',
+            'pt-BR': 'Música ❯ Busca informações sobre músicas ou exibe o Top 10 mais tocado.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])
@@ -69,23 +75,18 @@ module.exports = {
                 return `${emoji} **[${t.title}](${t.spotifyUrl || t.url})**\n┗ 👤 *${t.artist}* • ⏱️ \`${t.duration}\``;
             });
 
+            const top10Description = [
+                `### 📈 ${isPtBr ? 'Top 10 Músicas Mais Tocadas no Mundo' : 'Top 10 Most Played Songs Worldwide'}`,
+                `> ${isPtBr ? `Métricas em tempo real via **${chartData.provider}** • Plataformas: **Spotify & Deezer**` : `Real-time metrics via **${chartData.provider}** • Platforms: **Spotify & Deezer**`}`,
+                ``,
+                trackLines.join('\n\n'),
+            ].join('\n');
+
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `${getEmoji('musica')} Top 10 Músicas Mais Tocadas (Global)` : `${getEmoji('musica')} Top 10 Most Played Music (Global)`,
-                description: trackLines.join('\n\n'),
-                fields: [
-                    {
-                        name: isPtBr ? '🌐 Provedor dos Dados' : '🌐 Data Provider',
-                        value: chartData.provider,
-                        inline: true,
-                    },
-                    {
-                        name: isPtBr ? '🎧 Plataformas' : '🎧 Platforms',
-                        value: 'Spotify & Deezer',
-                        inline: true,
-                    },
-                ],
+                description: top10Description,
                 thumbnail: chartData.tracks[0]?.artworkUrl || null,
-                color: 0x1DB954, // Spotify Green
+                color: colors.primary,
             });
 
             const buttons = [
@@ -110,24 +111,26 @@ module.exports = {
         // 2. ROTA DE BUSCA INDIVIDUAL
         const track = await searchMusicWithFallback(query);
 
-        const fields = [
-            { name: isPtBr ? '👤 Artista' : '👤 Artist', value: track.artist || 'N/A', inline: true },
-            { name: isPtBr ? '💿 Álbum' : '💿 Album', value: track.album || 'N/A', inline: true },
-            { name: isPtBr ? `${getEmoji('tempo')} Duração` : `${getEmoji('tempo')} Duration`, value: track.duration || 'N/A', inline: true },
+        const trackDescription = [
+            `### 🎵 [${track.title}](${track.url || 'https://open.spotify.com'})`,
+            `> • **👤 ${isPtBr ? 'Artista' : 'Artist'}:** **${track.artist || 'N/A'}**`,
+            `> • **💿 ${isPtBr ? 'Álbum' : 'Album'}:** \`${track.album || 'Single'}\``,
+            `> • **${getEmoji('tempo')} ${isPtBr ? 'Duração' : 'Duration'}:** \`${track.duration || 'N/A'}\``,
         ];
 
         if (track.releaseDate) {
-            fields.push({ name: isPtBr ? `${getEmoji('calendario')} Lançamento` : `${getEmoji('calendario')} Release Date`, value: track.releaseDate, inline: true });
+            trackDescription.push(`> • **${getEmoji('calendario')} ${isPtBr ? 'Lançamento' : 'Release'}:** \`${track.releaseDate}\``);
         }
         if (track.genre) {
-            fields.push({ name: isPtBr ? '🎸 Gênero' : '🎸 Genre', value: track.genre, inline: true });
+            trackDescription.push(`> • **🎸 ${isPtBr ? 'Gênero' : 'Genre'}:** \`${track.genre}\``);
         }
-        fields.push({ name: isPtBr ? `${getEmoji('mundo')} Provedor` : `${getEmoji('mundo')} Provider`, value: track.provider, inline: true });
+        trackDescription.push(`> • **${getEmoji('mundo')} ${isPtBr ? 'Provedor' : 'Provider'}:** \`${track.provider}\``);
 
         const embed = await createEmbed(interaction, {
             title: `${getEmoji('musica')} ${track.title}`,
-            fields,
+            description: trackDescription.join('\n'),
             thumbnail: track.artworkUrl,
+            color: colors.primary,
         });
 
         const buttons = [];

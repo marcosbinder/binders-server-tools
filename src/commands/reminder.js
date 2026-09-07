@@ -81,8 +81,8 @@ module.exports = {
             sub
                 .setName('criar')
                 .setNameLocalizations({ 'en-US': 'create', 'pt-BR': 'criar' })
-                .setDescription('Agenda um novo lembrete.')
-                .setDescriptionLocalizations({ 'en-US': 'Schedules a new reminder.', 'pt-BR': 'Agenda um novo lembrete.' })
+                .setDescription('Utilidades ❯ Agenda um novo lembrete.')
+                .setDescriptionLocalizations({ 'en-US': 'Utilities ❯ Schedules a new reminder.', 'pt-BR': 'Utilidades ❯ Agenda um novo lembrete.' })
                 .addStringOption(opt =>
                     opt
                         .setName('tempo')
@@ -102,15 +102,15 @@ module.exports = {
             sub
                 .setName('listar')
                 .setNameLocalizations({ 'en-US': 'list', 'pt-BR': 'listar' })
-                .setDescription('Lista todos os seus lembretes pendentes.')
-                .setDescriptionLocalizations({ 'en-US': 'Lists all your active pending reminders.', 'pt-BR': 'Lista todos os seus lembretes pendentes.' })
+                .setDescription('Utilidades ❯ Lista todos os seus lembretes pendentes.')
+                .setDescriptionLocalizations({ 'en-US': 'Utilities ❯ Lists all your active pending reminders.', 'pt-BR': 'Utilidades ❯ Lista todos os seus lembretes pendentes.' })
         )
         .addSubcommand(sub =>
             sub
                 .setName('cancelar')
                 .setNameLocalizations({ 'en-US': 'cancel', 'pt-BR': 'cancelar' })
-                .setDescription('Cancela um lembrete pendente pelo ID.')
-                .setDescriptionLocalizations({ 'en-US': 'Cancels a pending reminder by its ID.', 'pt-BR': 'Cancela um lembrete pendente pelo ID.' })
+                .setDescription('Utilidades ❯ Cancela um lembrete pendente pelo ID.')
+                .setDescriptionLocalizations({ 'en-US': 'Utilities ❯ Cancels a pending reminder by its ID.', 'pt-BR': 'Utilidades ❯ Cancela um lembrete pendente pelo ID.' })
                 .addStringOption(opt =>
                     opt
                         .setName('id')

@@ -23,21 +23,22 @@ module.exports = {
 
         const pingColor = roundtrip < 200 ? colors.success : roundtrip < 500 ? colors.warning : colors.error;
 
+        const statusText = roundtrip < 200
+            ? (isPtBr ? 'Excelente' : 'Excellent')
+            : (roundtrip < 500 ? (isPtBr ? 'Bom' : 'Good') : (isPtBr ? 'Instável' : 'Unstable'));
+
+        const descriptionLines = [
+            `### 🚀 ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
+            `> • **${emojis.wifi || '📶'} Gateway (WebSocket):** \`${wsPing}ms\``,
+            `> • **${emojis.tempo || '⏱️'} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
+            `> • **${emojis.estrela || '⭐'} Status:** \`${statusText}\``,
+            ``,
+            `-# ⚡ ${isPtBr ? 'Medição em tempo real diretamente com os servidores do Discord.' : 'Real-time measurement directly with Discord gateway servers.'}`
+        ];
+
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${emojis.foguete || '🚀'} Latência do Bot` : `${emojis.foguete || '🚀'} Bot Latency`,
-            description: `> ${isPtBr ? 'Métricas de conectividade e tempo de resposta em tempo real.' : 'Real-time connectivity and latency response metrics.'}`,
-            fields: [
-                {
-                    name: `${emojis.wifi || '📶'} Gateway (WebSocket)`,
-                    value: `> \`${wsPing}ms\``,
-                    inline: true,
-                },
-                {
-                    name: isPtBr ? `${emojis.tempo || '⏱️'} Ida e Volta (REST)` : `${emojis.tempo || '⏱️'} Roundtrip (REST)`,
-                    value: `> \`${roundtrip}ms\``,
-                    inline: true,
-                },
-            ],
+            description: descriptionLines.join('\n'),
             color: pingColor,
         });
 

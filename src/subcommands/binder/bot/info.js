@@ -51,10 +51,10 @@ module.exports = {
                 .setCustomId(`botinfo_nav_${interaction.user.id}`)
                 .setPlaceholder(lang === 'pt_BR' ? 'Navegue pelas informações...' : 'Navigate through the info...')
                 .addOptions([
-                    { label: 'Página Inicial', value: 'page_home', emoji: '🏠', default: true },
-                    { label: 'RG do Bot', value: 'page_credits', emoji: '📜' },
-                    { label: 'Hospedagem', value: 'page_host', emoji: '🖥️' },
-                    { label: 'Agradecimentos', value: 'page_thanks', emoji: '💖' },
+                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: '🏠', default: true },
+                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: '📜' },
+                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: '🖥️' },
+                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: '💖' },
                 ])
         );
 

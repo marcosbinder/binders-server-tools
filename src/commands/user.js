@@ -34,10 +34,10 @@ module.exports = {
                     'en-US': 'info',
                     'pt-BR': 'info',
                 })
-                .setDescription('Mostra informações detalhadas, medalhas, cargos e perfil de um usuário.')
+                .setDescription('Usuário ❯ Mostra informações detalhadas, medalhas, cargos e perfil de um usuário.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Displays detailed information, badges, roles, and profile of a user.',
-                    'pt-BR': 'Mostra informações detalhadas, medalhas, cargos e perfil de um usuário.',
+                    'en-US': 'User ❯ Displays detailed information, badges, roles, and profile of a user.',
+                    'pt-BR': 'Usuário ❯ Mostra informações detalhadas, medalhas, cargos e perfil de um usuário.',
                 })
                 .addUserOption(option =>
                     option
@@ -61,10 +61,10 @@ module.exports = {
                     'en-US': 'avatar',
                     'pt-BR': 'avatar',
                 })
-                .setDescription('Exibe o avatar global e do servidor de um usuário.')
+                .setDescription('Usuário ❯ Exibe o avatar global e do servidor de um usuário.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Displays the global and server avatar of a user.',
-                    'pt-BR': 'Exibe o avatar global e do servidor de um usuário.',
+                    'en-US': 'User ❯ Displays the global and server avatar of a user.',
+                    'pt-BR': 'Usuário ❯ Exibe o avatar global e do servidor de um usuário.',
                 })
                 .addUserOption(option =>
                     option

@@ -13,10 +13,10 @@ const colors = require('../config/colors.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('Mostra a latência do WebSocket e tempo de resposta da API.')
+        .setDescription('Bot ❯ Mostra a latência do WebSocket e tempo de resposta da API.')
         .setDescriptionLocalizations({
-            'en-US': 'Displays WebSocket latency and API roundtrip response time.',
-            'pt-BR': 'Mostra a latência do WebSocket e tempo de resposta da API.',
+            'en-US': 'Bot ❯ Displays WebSocket latency and API roundtrip response time.',
+            'pt-BR': 'Bot ❯ Mostra a latência do WebSocket e tempo de resposta da API.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])
@@ -39,21 +39,22 @@ module.exports = {
 
         const pingColor = roundtrip < 200 ? colors.success : roundtrip < 500 ? colors.warning : colors.error;
 
+        const statusText = roundtrip < 200
+            ? (isPtBr ? 'Excelente' : 'Excellent')
+            : (roundtrip < 500 ? (isPtBr ? 'Bom' : 'Good') : (isPtBr ? 'Instável' : 'Unstable'));
+
+        const descriptionLines = [
+            `### 🚀 ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
+            `> • **${emojis.wifi || '📶'} Gateway (WebSocket):** \`${wsPing}ms\``,
+            `> • **${emojis.tempo || '⏱️'} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
+            `> • **${emojis.estrela || '⭐'} Status:** \`${statusText}\``,
+            ``,
+            `-# ⚡ ${isPtBr ? 'Medição em tempo real diretamente com os servidores do Discord.' : 'Real-time measurement directly with Discord gateway servers.'}`
+        ];
+
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${emojis.foguete || '🚀'} Latência do Bot` : `${emojis.foguete || '🚀'} Bot Latency`,
-            description: `> ${isPtBr ? 'Métricas de conectividade e tempo de resposta em tempo real.' : 'Real-time connectivity and latency response metrics.'}`,
-            fields: [
-                {
-                    name: `${emojis.wifi || '📶'} Gateway (WebSocket)`,
-                    value: `> \`${wsPing}ms\``,
-                    inline: true,
-                },
-                {
-                    name: isPtBr ? `${emojis.tempo || '⏱️'} Ida e Volta (REST)` : `${emojis.tempo || '⏱️'} Roundtrip (REST)`,
-                    value: `> \`${roundtrip}ms\``,
-                    inline: true,
-                },
-            ],
+            description: descriptionLines.join('\n'),
             color: pingColor,
         });
 

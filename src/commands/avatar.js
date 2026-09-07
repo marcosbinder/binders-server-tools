@@ -15,10 +15,10 @@ const emojis = require('../config/emojis.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('avatar')
-        .setDescription('Exibe o avatar de um usuário em alta resolução.')
+        .setDescription('Usuário ❯ Exibe o avatar de um usuário em alta resolução.')
         .setDescriptionLocalizations({
-            'en-US': 'Displays a user avatar in high resolution.',
-            'pt-BR': 'Exibe o avatar de um usuário em alta resolução.',
+            'en-US': 'User ❯ Displays a user avatar in high resolution.',
+            'pt-BR': 'Usuário ❯ Exibe o avatar de um usuário em alta resolução.',
         })
         .addUserOption(opt =>
             opt

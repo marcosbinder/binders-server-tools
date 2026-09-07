@@ -49,6 +49,13 @@ if (fs.existsSync(commandsPath)) {
                     const command = require(fullPath);
                     if ('data' in command && 'execute' in command) {
                         client.commands.set(command.data.name, command);
+                        if (command.data.name_localizations) {
+                            for (const loc of Object.values(command.data.name_localizations)) {
+                                if (loc && !client.commands.has(loc)) {
+                                    client.commands.set(loc, command);
+                                }
+                            }
+                        }
                     } else {
                         console.warn(`[AVISO] Comando em ${fullPath} não possui 'data' ou 'execute'.`);
                     }

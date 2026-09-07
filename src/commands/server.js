@@ -10,6 +10,7 @@ const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const emojis = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
 
 module.exports = {
@@ -34,10 +35,10 @@ module.exports = {
                     'en-US': 'info',
                     'pt-BR': 'info',
                 })
-                .setDescription('Mostra informações completas e estatísticas do servidor atual.')
+                .setDescription('Servidor ❯ Mostra informações completas e estatísticas do servidor atual.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Displays complete information and statistics for the current server.',
-                    'pt-BR': 'Mostra informações completas e estatísticas do servidor atual.',
+                    'en-US': 'Server ❯ Displays complete information and statistics for the current server.',
+                    'pt-BR': 'Servidor ❯ Mostra informações completas e estatísticas do servidor atual.',
                 })
         )
         .addSubcommand(sub =>
@@ -47,10 +48,10 @@ module.exports = {
                     'en-US': 'avatar',
                     'pt-BR': 'avatar',
                 })
-                .setDescription('Exibe o ícone, banner e splash do servidor atual.')
+                .setDescription('Servidor ❯ Exibe o ícone, banner e splash do servidor atual.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Displays the icon, banner, and splash of the current server.',
-                    'pt-BR': 'Exibe o ícone, banner e splash do servidor atual.',
+                    'en-US': 'Server ❯ Displays the icon, banner, and splash of the current server.',
+                    'pt-BR': 'Servidor ❯ Exibe o ícone, banner e splash do servidor atual.',
                 })
         ),
 
@@ -109,42 +110,29 @@ module.exports = {
 
             const ownerMention = guild.ownerId ? `<@${guild.ownerId}>` : (isPtBr ? 'Desconhecido' : 'Unknown');
 
+            const serverDescLines = [
+                guild.description ? `> *${guild.description}*\n` : '',
+                `### 🏰 ${isPtBr ? 'Identificação & Criação' : 'Identification & Creation'}`,
+                `> • **ID:** \`${guild.id}\``,
+                `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${ownerMention}`,
+                `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
+                ``,
+                `### 👥 ${isPtBr ? 'Membros' : 'Members'}`,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `👤 \`${humanCount}\` humanos • 🤖 \`${botCount}\` bots` : `👤 \`${humanCount}\` humans • 🤖 \`${botCount}\` bots`})`,
+                ``,
+                `### 💬 ${isPtBr ? 'Canais & Categorias' : 'Channels & Categories'}`,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `💬 \`${textChannels}\` texto • 🔊 \`${voiceChannels}\` voz • 📁 \`${categoryChannels}\` categorias` : `💬 \`${textChannels}\` text • 🔊 \`${voiceChannels}\` voice • 📁 \`${categoryChannels}\` categories`})`,
+                ``,
+                `### 💎 ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
+                `> • **${isPtBr ? 'Nível de Boost' : 'Boost Tier'}:** \`${boostTier}\` (\`${boostCount}\` ${isPtBr ? 'impulsos' : 'boosts'})`,
+                `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** \`${verificationText}\``,
+                `> • **${isPtBr ? 'Recursos' : 'Assets'}:** \`${totalRoles}\` ${isPtBr ? 'cargos' : 'roles'} • \`${totalEmojis}\` emojis • \`${totalStickers}\` ${isPtBr ? 'figurinhas' : 'stickers'}`
+            ].filter(Boolean);
+
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
-                description: guild.description || (isPtBr ? 'Servidor sem descrição pública.' : 'No public description provided.'),
-                color: 0x5865F2,
-                fields: [
-                    {
-                        name: isPtBr ? '🆔 Identificação' : '🆔 Identification',
-                        value: `**ID:** \`${guild.id}\`\n**${isPtBr ? 'Dono' : 'Owner'}:** ${ownerMention}\n**${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
-                        inline: false,
-                    },
-                    {
-                        name: isPtBr ? '👥 Membros' : '👥 Members',
-                        value: `**${isPtBr ? 'Total' : 'Total'}:** ${totalMembers}\n**${isPtBr ? 'Humanos' : 'Humans'}:** ${humanCount}\n**Bots:** ${botCount}`,
-                        inline: true,
-                    },
-                    {
-                        name: isPtBr ? '💬 Canais' : '💬 Channels',
-                        value: `**${isPtBr ? 'Total' : 'Total'}:** ${totalChannels}\n**${isPtBr ? 'Texto' : 'Text'}:** ${textChannels}\n**${isPtBr ? 'Voz' : 'Voice'}:** ${voiceChannels}\n**${isPtBr ? 'Categorias' : 'Categories'}:** ${categoryChannels}`,
-                        inline: true,
-                    },
-                    {
-                        name: isPtBr ? '💎 Impulsos (Boost)' : '💎 Boost Status',
-                        value: `**${isPtBr ? 'Nível' : 'Tier'}:** ${boostTier}\n**${isPtBr ? 'Impulsos' : 'Boosts'}:** ${boostCount}`,
-                        inline: true,
-                    },
-                    {
-                        name: isPtBr ? '🎭 Estrutura & Mídia' : '🎭 Structure & Media',
-                        value: `**${isPtBr ? 'Cargos' : 'Roles'}:** ${totalRoles}\n**Emojis:** ${totalEmojis}\n**${isPtBr ? 'Figurinhas' : 'Stickers'}:** ${totalStickers}`,
-                        inline: true,
-                    },
-                    {
-                        name: isPtBr ? '🔒 Segurança' : '🔒 Security',
-                        value: `**${isPtBr ? 'Verificação' : 'Verification'}:** ${verificationText}`,
-                        inline: true,
-                    },
-                ],
+                description: serverDescLines.join('\n'),
+                color: colors.primary,
             });
 
             if (iconUrl && embed.setThumbnail) {

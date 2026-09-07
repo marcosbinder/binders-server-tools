@@ -64,16 +64,16 @@ module.exports = {
 
         if (subject === 'btn_builder_confirmar') {
             if (!session.targetChannelId) {
-                return safeReply(interaction, { content: `${getEmoji('errado')} Selecione um canal de destino primeiro!`, flags: [MessageFlags.Ephemeral] });
+                return safeReply(interaction, { content: isPtBr ? `${getEmoji('errado')} Selecione um canal de destino primeiro!` : `${getEmoji('errado')} Select a destination channel first!`, flags: [MessageFlags.Ephemeral] });
             }
 
             if (!interaction.guild) {
-                return safeReply(interaction, { content: `${getEmoji('errado')} Essa ação somente pode ser executada dentro de um servidor.`, flags: [MessageFlags.Ephemeral] });
+                return safeReply(interaction, { content: isPtBr ? `${getEmoji('errado')} Essa ação somente pode ser executada dentro de um servidor.` : `${getEmoji('errado')} This action can only be performed within a server.`, flags: [MessageFlags.Ephemeral] });
             }
 
             const targetChannel = interaction.guild.channels.cache?.get(session.targetChannelId) || await interaction.guild.channels.fetch?.(session.targetChannelId).catch(() => null);
             if (!targetChannel || typeof targetChannel.send !== 'function') {
-                return safeReply(interaction, { content: `${getEmoji('errado')} Canal inválido ou não encontrado.`, flags: [MessageFlags.Ephemeral] });
+                return safeReply(interaction, { content: isPtBr ? `${getEmoji('errado')} Canal inválido ou não encontrado.` : `${getEmoji('errado')} Invalid channel or channel not found.`, flags: [MessageFlags.Ephemeral] });
             }
 
             const userChannelPerms = typeof targetChannel.permissionsFor === 'function' ? targetChannel.permissionsFor(interaction.member) : null;
@@ -94,9 +94,9 @@ module.exports = {
                 session.isPublishing = false;
                 const resultPayload = buildStudioPayload(session, interaction.guild);
                 await interaction.update(resultPayload).catch(() => null);
-                return interaction.followUp({ content: `${getEmoji('confere')} Contêiner publicado com sucesso no canal <#${targetChannel.id}>!`, flags: [MessageFlags.Ephemeral] });
+                return interaction.followUp({ content: isPtBr ? `${getEmoji('confere')} Contêiner publicado com sucesso no canal <#${targetChannel.id}>!` : `${getEmoji('confere')} Container successfully published to <#${targetChannel.id}>!`, flags: [MessageFlags.Ephemeral] });
             } catch (err) {
-                return safeReply(interaction, { content: `${getEmoji('errado')} Falha ao publicar no canal: ${err.message}`, flags: [MessageFlags.Ephemeral] });
+                return safeReply(interaction, { content: isPtBr ? `${getEmoji('errado')} Falha ao publicar no canal: ${err.message}` : `${getEmoji('errado')} Failed to publish to channel: ${err.message}`, flags: [MessageFlags.Ephemeral] });
             }
         }
     }

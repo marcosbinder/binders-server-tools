@@ -16,10 +16,10 @@ const path = require('node:path');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('botinfo')
-        .setDescription('Mostra informações detalhadas e estatísticas sobre o Binder.')
+        .setDescription('Bot ❯ Mostra informações detalhadas e estatísticas sobre o Binder.')
         .setDescriptionLocalizations({
-            'en-US': 'Displays detailed information and statistics about Binder.',
-            'pt-BR': 'Mostra informações detalhadas e estatísticas sobre o Binder.',
+            'en-US': 'Bot ❯ Displays detailed information and statistics about Binder.',
+            'pt-BR': 'Bot ❯ Mostra informações detalhadas e estatísticas sobre o Binder.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])
@@ -46,37 +46,33 @@ module.exports = {
 
         const memUsedMb = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
 
-        const fields = [
-            {
-                name: isPtBr ? `${emojis.bot || '🤖'} Identidade` : `${emojis.bot || '🤖'} Identity`,
-                value: `> **Nome:** Binder's Server Tools\n> **ID:** \`${client?.user?.id || '1310336375261892608'}\`\n> **${isPtBr ? 'Desenvolvedor' : 'Developer'}:** Marcos (\`659214571634032667\`)`,
-                inline: true,
-            },
-            {
-                name: isPtBr ? `${emojis.trofeu || '📊'} Estatísticas` : `${emojis.trofeu || '📊'} Statistics`,
-                value: `> **${isPtBr ? 'Servidores' : 'Servers'}:** \`${serverCount.toLocaleString('pt-BR')}\`\n> **${isPtBr ? 'Usuários' : 'Users'}:** \`${userCount.toLocaleString('pt-BR')}\`\n> **Ping:** \`${wsPing}ms\``,
-                inline: true,
-            },
-            {
-                name: isPtBr ? `${emojis.ferramenta1 || '⚙️'} Sistema & Recursos` : `${emojis.ferramenta1 || '⚙️'} System & Tech`,
-                value: `> **Discord.js:** \`v14.15.3\`\n> **Node.js:** \`${process.version}\`\n> **RAM:** \`${memUsedMb} MB\`\n> **Uptime:** \`${uptimeStr}\``,
-                inline: false,
-            },
-            {
-                name: isPtBr ? `${emojis.coracao1 || '💖'} Créditos` : `${emojis.coracao1 || '💖'} Credits`,
-                value: isPtBr
-                    ? '> • **Marcos**: Criador, Desenvolvedor Principal e Proprietário.\n> • **Vitória**: Artista e Apoiadora.\n\n-# Agradecimentos especiais a toda a comunidade pelo carinho!'
-                    : '> • **Marcos**: Creator, Lead Developer, and Owner.\n> • **Vitória**: Artist and Supporter.\n\n-# Special thanks to the community for continuous support!',
-                inline: false,
-            },
-        ];
+        const intro = isPtBr
+            ? `> Olá! Sou o **Binder's Server Tools**, bot multifuncional focado em moderação avançada, Components V2, utilidades gamer e segurança.`
+            : `> Hello! I'm **Binder's Server Tools**, a multipurpose bot focusing on advanced moderation, Components V2, gaming utilities, and server security.`;
+
+        const description = [
+            intro,
+            ``,
+            `### ${emojis.bot || '🤖'} ${isPtBr ? 'Identidade & Criação' : 'Identity & Creation'}`,
+            `> • **${isPtBr ? 'Desenvolvedor' : 'Developer'}:** Marcos (\`659214571634032667\`)`,
+            `> • **${isPtBr ? 'Biblioteca' : 'Library'}:** \`Discord.js v14.15.3\` • **Node.js:** \`${process.version}\``,
+            ``,
+            `### ${emojis.trofeu || '📊'} ${isPtBr ? 'Estatísticas Globais' : 'Global Statistics'}`,
+            `> • **${isPtBr ? 'Servidores' : 'Servers'}:** \`${serverCount.toLocaleString('pt-BR')}\``,
+            `> • **${isPtBr ? 'Usuários Atendidos' : 'Users Reached'}:** \`${userCount.toLocaleString('pt-BR')}\``,
+            `> • **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** \`${uptimeStr}\``,
+            `> • **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${wsPing}ms\``,
+            ``,
+            `### ${emojis.coracao1 || '💖'} ${isPtBr ? 'Agradecimentos Especiais' : 'Special Thanks'}`,
+            `> • **Marcos**: ${isPtBr ? 'Criador, Desenvolvedor Principal e Proprietário.' : 'Creator, Lead Developer and Owner.'}`,
+            `> • **Vitória**: ${isPtBr ? 'Artista e Apoiadora.' : 'Artist and Supporter.'}`,
+            ``,
+            `-# ${isPtBr ? 'Use o menu abaixo para navegar pelas outras páginas detalhadas!' : 'Use the select menu below to navigate through other detailed pages!'}`
+        ].join('\n');
 
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${emojis.bot || '🤖'} Informações do Binder` : `${emojis.bot || '🤖'} Binder Information`,
-            description: isPtBr
-                ? `> Olá! Sou o **Binder's Server Tools**, bot multifuncional focado em moderação avançada, Components V2, utilidades gamer e segurança.`
-                : `> Hello! I'm **Binder's Server Tools**, a multipurpose bot focusing on advanced moderation, Components V2, gaming utilities, and server security.`,
-            fields,
+            description,
             color: colors.primary,
         });
 

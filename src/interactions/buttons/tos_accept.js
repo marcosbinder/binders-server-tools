@@ -62,9 +62,24 @@ module.exports = {
                     .setCustomId(`lang_select_${interaction.user.id}`)
                     .setPlaceholder(texts.lang_screen.menu_placeholder[lang])
                     .addOptions([
-                        { label: 'Automático (padrão)', description: 'Minha língua vai seguir a do seu Discord.', value: 'lang_auto', emoji: '⚙️' },
-                        { label: 'Sempre Português', description: 'Eu sempre vou te responder em português.', value: 'lang_pt_br', emoji: '🇧🇷' },
-                        { label: 'Always English', description: 'I will always answer you in English.', value: 'lang_en_us', emoji: '🇬🇧' },
+                        {
+                            label: lang === 'pt_BR' ? 'Automático (padrão)' : 'Automatic (default)',
+                            description: lang === 'pt_BR' ? 'Minha língua vai seguir a do seu Discord.' : 'My language will follow your Discord client.',
+                            value: 'lang_auto',
+                            emoji: '⚙️'
+                        },
+                        {
+                            label: lang === 'pt_BR' ? 'Português (Brasil)' : 'Portuguese (Brazil)',
+                            description: lang === 'pt_BR' ? 'Eu sempre vou te responder em português.' : 'I will always reply in Portuguese.',
+                            value: 'lang_pt_br',
+                            emoji: '🇧🇷'
+                        },
+                        {
+                            label: lang === 'pt_BR' ? 'Inglês (English)' : 'English (US/UK)',
+                            description: lang === 'pt_BR' ? 'Eu sempre vou te responder em inglês.' : 'I will always reply in English.',
+                            value: 'lang_en_us',
+                            emoji: '🇬🇧'
+                        },
                     ])
             );
             return interaction.update({ embeds: [langEmbed], components: [langMenu] });

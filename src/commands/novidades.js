@@ -14,10 +14,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('novidades')
         .setNameLocalizations({ 'en-US': 'news', 'pt-BR': 'novidades' })
-        .setDescription('Veja as últimas atualizações e novidades do Binder\'s Server Tools.')
+        .setDescription('Bot ❯ Veja as últimas atualizações e novidades do Binder\'s Server Tools.')
         .setDescriptionLocalizations({
-            'en-US': 'View the latest features and changelogs for Binder\'s Server Tools.',
-            'pt-BR': 'Veja as últimas atualizações e novidades do Binder\'s Server Tools.',
+            'en-US': 'Bot ❯ View the latest features and changelogs for Binder\'s Server Tools.',
+            'pt-BR': 'Bot ❯ Veja as últimas atualizações e novidades do Binder\'s Server Tools.',
         }),
 
     async execute(interaction, client) {

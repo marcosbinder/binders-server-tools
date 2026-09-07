@@ -18,10 +18,10 @@ module.exports = {
             'en-US': 'invite',
             'pt-BR': 'convidar',
         })
-        .setDescription('Receba os links de convite e suporte do Binder\'s Server Tools.')
+        .setDescription('Bot ❯ Receba os links de convite e suporte do Binder\'s Server Tools.')
         .setDescriptionLocalizations({
-            'en-US': 'Get invite and support links for Binder\'s Server Tools.',
-            'pt-BR': 'Receba os links de convite e suporte do Binder\'s Server Tools.',
+            'en-US': 'Bot ❯ Get invite and support links for Binder\'s Server Tools.',
+            'pt-BR': 'Bot ❯ Receba os links de convite e suporte do Binder\'s Server Tools.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

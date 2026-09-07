@@ -12,10 +12,10 @@ const safeReply = require('../utils/safeReply.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('coinflip')
-        .setDescription('Gira uma moeda para tirar Cara ou Coroa.')
+        .setDescription('Jogos ❯ Gira uma moeda para tirar Cara ou Coroa.')
         .setDescriptionLocalizations({
-            'en-US': 'Flips a coin to get Heads or Tails.',
-            'pt-BR': 'Gira uma moeda para tirar Cara ou Coroa.',
+            'en-US': 'Games ❯ Flips a coin to get Heads or Tails.',
+            'pt-BR': 'Jogos ❯ Gira uma moeda para tirar Cara ou Coroa.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

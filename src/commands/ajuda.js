@@ -10,10 +10,14 @@ const { buildHelpPayload } = require('../utils/helpMenuBuilder.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ajuda')
-        .setDescription('Mostra o menu de ajuda interativo com todos os comandos.')
+        .setNameLocalizations({
+            'en-US': 'help',
+            'pt-BR': 'ajuda',
+        })
+        .setDescription('Bot ❯ Mostra o menu de ajuda interativo com todos os comandos.')
         .setDescriptionLocalizations({
-            'en-US': 'Displays the interactive help menu with all available commands.',
-            'pt-BR': 'Mostra o menu de ajuda interativo com todos os comandos.',
+            'en-US': 'Bot ❯ Displays the interactive help menu with all available commands.',
+            'pt-BR': 'Bot ❯ Mostra o menu de ajuda interativo com todos os comandos.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

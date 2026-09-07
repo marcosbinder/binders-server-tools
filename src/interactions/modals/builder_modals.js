@@ -36,8 +36,8 @@ module.exports = {
         const maxBlocks = MAX_CONTAINER_BLOCKS || 25;
         if (session.blocks.length >= maxBlocks) {
             return interaction.reply({
-                content: `⚠️ | Limite de ${maxBlocks} blocos atingido! Remova algum elemento antes de adicionar novos.`,
-                flags: 64
+                content: isPtBr ? `⚠️ | Limite de ${maxBlocks} blocos atingido! Remova algum elemento antes de adicionar novos.` : `⚠️ | Block limit of ${maxBlocks} reached! Remove an element before adding new ones.`,
+                flags: [MessageFlags.Ephemeral]
             });
         }
 

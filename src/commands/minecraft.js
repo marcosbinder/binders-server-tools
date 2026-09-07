@@ -21,10 +21,10 @@ module.exports = {
             sub
                 .setName('jogador')
                 .setNameLocalizations({ 'en-US': 'player', 'pt-BR': 'jogador' })
-                .setDescription('Veja a skin, UUID e dados de um jogador do Minecraft.')
+                .setDescription('Minecraft ❯ Veja a skin, UUID e dados de um jogador do Minecraft.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Views skin, UUID, and information for a Minecraft player.',
-                    'pt-BR': 'Veja a skin, UUID e dados de um jogador do Minecraft.',
+                    'en-US': 'Minecraft ❯ Views skin, UUID, and information for a Minecraft player.',
+                    'pt-BR': 'Minecraft ❯ Veja a skin, UUID e dados de um jogador do Minecraft.',
                 })
                 .addStringOption(opt =>
                     opt
@@ -38,10 +38,10 @@ module.exports = {
             sub
                 .setName('servidor')
                 .setNameLocalizations({ 'en-US': 'server', 'pt-BR': 'servidor' })
-                .setDescription('Consulta o status, MOTD e jogadores online de um servidor.')
+                .setDescription('Minecraft ❯ Consulta o status, MOTD e jogadores online de um servidor.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Checks online status, MOTD, and players for a Minecraft server.',
-                    'pt-BR': 'Consulta o status, MOTD e jogadores online de um servidor.',
+                    'en-US': 'Minecraft ❯ Checks online status, MOTD, and players for a Minecraft server.',
+                    'pt-BR': 'Minecraft ❯ Consulta o status, MOTD e jogadores online de um servidor.',
                 })
                 .addStringOption(opt =>
                     opt

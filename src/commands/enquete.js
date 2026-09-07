@@ -13,10 +13,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('enquete')
         .setNameLocalizations({ 'en-US': 'poll', 'pt-BR': 'enquete' })
-        .setDescription('Cria uma enquete para os membros do servidor.')
+        .setDescription('Utilidades ❯ Cria uma enquete para os membros do servidor.')
         .setDescriptionLocalizations({
-            'en-US': 'Creates a poll for server members.',
-            'pt-BR': 'Cria uma enquete para os membros do servidor.',
+            'en-US': 'Utilities ❯ Creates a poll for server members.',
+            'pt-BR': 'Utilidades ❯ Cria uma enquete para os membros do servidor.',
         })
         .setDMPermission(false)
         .addStringOption(opt =>

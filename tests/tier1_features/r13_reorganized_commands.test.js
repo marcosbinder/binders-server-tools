@@ -231,8 +231,10 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
             await botinfoCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
-            assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Identidade') || f.name.includes('Identity')));
-            assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Estatísticas') || f.name.includes('Statistics')));
+            const embed = res.embeds[0].data;
+            const content = (embed.fields ? embed.fields.map(f => f.name + ' ' + f.value).join(' ') : '') + ' ' + (embed.description || '');
+            assert.ok(content.includes('Identidade') || content.includes('Identity'));
+            assert.ok(content.includes('Estatísticas') || content.includes('Statistics'));
         });
     });
 
@@ -337,8 +339,10 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
             await serverCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
-            assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Identificação') || f.name.includes('Identification')));
-            assert.ok(res.embeds[0].data.fields.some(f => f.name.includes('Membros') || f.name.includes('Members')));
+            const embed = res.embeds[0].data;
+            const content = (embed.fields ? embed.fields.map(f => f.name + ' ' + f.value).join(' ') : '') + ' ' + (embed.description || '');
+            assert.ok(content.includes('Identificação') || content.includes('Identification') || content.includes('Identity'));
+            assert.ok(content.includes('Membros') || content.includes('Members'));
         });
 
         test('/server info rejects execution in DM context', async () => {

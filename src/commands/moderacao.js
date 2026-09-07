@@ -25,16 +25,16 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('kick')
-                .setDescription('Expulsa um membro do servidor.')
-                .setDescriptionLocalizations({ 'en-US': 'Kicks a member from the server.', 'pt-BR': 'Expulsa um membro do servidor.' })
+                .setDescription('Moderação ❯ Expulsa um membro do servidor.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Kicks a member from the server.', 'pt-BR': 'Moderação ❯ Expulsa um membro do servidor.' })
                 .addUserOption(opt => opt.setName('usuario').setNameLocalizations({ 'en-US': 'user' }).setDescription('Membro a ser expulso').setRequired(true))
                 .addStringOption(opt => opt.setName('motivo').setNameLocalizations({ 'en-US': 'reason' }).setDescription('Motivo da expulsão').setRequired(false))
         )
         .addSubcommand(sub =>
             sub
                 .setName('ban')
-                .setDescription('Bane um membro do servidor.')
-                .setDescriptionLocalizations({ 'en-US': 'Bans a member from the server.', 'pt-BR': 'Bane um membro do servidor.' })
+                .setDescription('Moderação ❯ Bane um membro do servidor.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Bans a member from the server.', 'pt-BR': 'Moderação ❯ Bane um membro do servidor.' })
                 .addUserOption(opt => opt.setName('usuario').setNameLocalizations({ 'en-US': 'user' }).setDescription('Membro a ser banido').setRequired(true))
                 .addStringOption(opt => opt.setName('motivo').setNameLocalizations({ 'en-US': 'reason' }).setDescription('Motivo do banimento').setRequired(false))
                 .addIntegerOption(opt => opt.setName('deletar_mensagens').setNameLocalizations({ 'en-US': 'delete_messages' }).setDescription('Dias de mensagens a apagar (0-7)').setMinValue(0).setMaxValue(7).setRequired(false))
@@ -42,8 +42,8 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('timeout')
-                .setDescription('Aplica um castigo temporário (silenciamento) a um membro.')
-                .setDescriptionLocalizations({ 'en-US': 'Times out a member temporarily.', 'pt-BR': 'Aplica um castigo temporário a um membro.' })
+                .setDescription('Moderação ❯ Aplica um castigo temporário a um membro.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Times out a member temporarily.', 'pt-BR': 'Moderação ❯ Aplica um castigo temporário a um membro.' })
                 .addUserOption(opt => opt.setName('usuario').setNameLocalizations({ 'en-US': 'user' }).setDescription('Membro a ser castigado').setRequired(true))
                 .addStringOption(opt => opt.setName('duracao').setNameLocalizations({ 'en-US': 'duration' }).setDescription('Tempo do castigo (ex: 5m, 1h, 1d, max 28d)').setRequired(true))
                 .addStringOption(opt => opt.setName('motivo').setNameLocalizations({ 'en-US': 'reason' }).setDescription('Motivo do castigo').setRequired(false))
@@ -51,24 +51,24 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('lock')
-                .setDescription('Tranca o canal para membros sem permissões especiais.')
-                .setDescriptionLocalizations({ 'en-US': 'Locks a channel to prevent standard members from sending messages.', 'pt-BR': 'Tranca o canal para envio de mensagens.' })
+                .setDescription('Moderação ❯ Tranca o canal para envio de mensagens.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Locks a channel to prevent standard members from sending messages.', 'pt-BR': 'Moderação ❯ Tranca o canal para envio de mensagens.' })
                 .addChannelOption(opt => opt.setName('canal').setNameLocalizations({ 'en-US': 'channel' }).setDescription('Canal a ser trancado (padrão: canal atual)').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement).setRequired(false))
                 .addStringOption(opt => opt.setName('motivo').setNameLocalizations({ 'en-US': 'reason' }).setDescription('Motivo do bloqueio').setRequired(false))
         )
         .addSubcommand(sub =>
             sub
                 .setName('unlock')
-                .setDescription('Destranca um canal previamente bloqueado.')
-                .setDescriptionLocalizations({ 'en-US': 'Unlocks a previously locked channel.', 'pt-BR': 'Destranca um canal previamente bloqueado.' })
+                .setDescription('Moderação ❯ Destranca um canal previamente bloqueado.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Unlocks a previously locked channel.', 'pt-BR': 'Moderação ❯ Destranca um canal previamente bloqueado.' })
                 .addChannelOption(opt => opt.setName('canal').setNameLocalizations({ 'en-US': 'channel' }).setDescription('Canal a ser destrancado (padrão: canal atual)').addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement).setRequired(false))
                 .addStringOption(opt => opt.setName('motivo').setNameLocalizations({ 'en-US': 'reason' }).setDescription('Motivo do desbloqueio').setRequired(false))
         )
         .addSubcommand(sub =>
             sub
                 .setName('clear')
-                .setDescription('Apaga mensagens em massa de um canal.')
-                .setDescriptionLocalizations({ 'en-US': 'Purges messages in bulk from the channel.', 'pt-BR': 'Apaga mensagens em massa de um canal.' })
+                .setDescription('Moderação ❯ Apaga mensagens em massa de um canal.')
+                .setDescriptionLocalizations({ 'en-US': 'Moderation ❯ Purges messages in bulk from the channel.', 'pt-BR': 'Moderação ❯ Apaga mensagens em massa de um canal.' })
                 .addIntegerOption(opt => opt.setName('quantidade').setNameLocalizations({ 'en-US': 'amount' }).setDescription('Número de mensagens a apagar (1-100)').setMinValue(1).setMaxValue(100).setRequired(true))
                 .addUserOption(opt => opt.setName('usuario').setNameLocalizations({ 'en-US': 'user' }).setDescription('Filtrar mensagens apenas deste usuário').setRequired(false))
         ),

@@ -53,10 +53,10 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('eval')
-                .setDescription('Executa código JavaScript diretamente no processo (Apenas Proprietário).')
+                .setDescription('Desenvolvedor ❯ Executa código JavaScript diretamente no processo (Apenas Proprietário).')
                 .setDescriptionLocalizations({
-                    'en-US': 'Execute JavaScript code directly in process (Owner Only).',
-                    'pt-BR': 'Executa código JavaScript diretamente no processo (Apenas Proprietário).',
+                    'en-US': 'Developer ❯ Execute JavaScript code directly in process (Owner Only).',
+                    'pt-BR': 'Desenvolvedor ❯ Executa código JavaScript diretamente no processo (Apenas Proprietário).',
                 })
                 .addStringOption(opt =>
                     opt
@@ -77,10 +77,10 @@ module.exports = {
             sub
                 .setName('adicionar')
                 .setNameLocalizations({ 'en-US': 'add' })
-                .setDescription('Adiciona um desenvolvedor confiável no sistema (Apenas Proprietário).')
+                .setDescription('Desenvolvedor ❯ Adiciona um desenvolvedor confiável no sistema (Apenas Proprietário).')
                 .setDescriptionLocalizations({
-                    'en-US': 'Add a trusted developer to system (Owner Only).',
-                    'pt-BR': 'Adiciona um desenvolvedor confiável no sistema (Apenas Proprietário).',
+                    'en-US': 'Developer ❯ Add a trusted developer to system (Owner Only).',
+                    'pt-BR': 'Desenvolvedor ❯ Adiciona um desenvolvedor confiável no sistema (Apenas Proprietário).',
                 })
                 .addUserOption(opt =>
                     opt
@@ -101,10 +101,10 @@ module.exports = {
             sub
                 .setName('remover')
                 .setNameLocalizations({ 'en-US': 'remove' })
-                .setDescription('Remove um desenvolvedor confiável do sistema (Apenas Proprietário).')
+                .setDescription('Desenvolvedor ❯ Remove um desenvolvedor confiável do sistema (Apenas Proprietário).')
                 .setDescriptionLocalizations({
-                    'en-US': 'Remove a trusted developer from system (Owner Only).',
-                    'pt-BR': 'Remove um desenvolvedor confiável do sistema (Apenas Proprietário).',
+                    'en-US': 'Developer ❯ Remove a trusted developer from system (Owner Only).',
+                    'pt-BR': 'Desenvolvedor ❯ Remove um desenvolvedor confiável do sistema (Apenas Proprietário).',
                 })
                 .addUserOption(opt =>
                     opt
@@ -124,10 +124,10 @@ module.exports = {
         .addSubcommand(sub =>
             sub
                 .setName('stats')
-                .setDescription('Exibe métricas e diagnóstico interno de runtime.')
+                .setDescription('Desenvolvedor ❯ Exibe métricas e diagnóstico interno de runtime.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Displays internal runtime metrics and diagnostics.',
-                    'pt-BR': 'Exibe métricas e diagnóstico interno de runtime.',
+                    'en-US': 'Developer ❯ Displays internal runtime metrics and diagnostics.',
+                    'pt-BR': 'Desenvolvedor ❯ Exibe métricas e diagnóstico interno de runtime.',
                 })
         ),
 

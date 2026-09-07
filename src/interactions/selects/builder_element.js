@@ -43,10 +43,10 @@ module.exports = {
         if (selectedType === 'titulo') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_titulo')
-                .setTitle('Adicionar Título Principal');
+                .setTitle(isPtBr ? 'Adicionar Título Principal' : 'Add Main Title');
             const input = new TextInputBuilder()
                 .setCustomId('titulo_val')
-                .setLabel('Título de Destaque')
+                .setLabel(isPtBr ? 'Título de Destaque' : 'Featured Title')
                 .setStyle(TextInputStyle.Short)
                 .setMaxLength(100)
                 .setRequired(true);
@@ -57,10 +57,10 @@ module.exports = {
         if (selectedType === 'texto') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_texto')
-                .setTitle('Adicionar Corpo de Texto');
+                .setTitle(isPtBr ? 'Adicionar Corpo de Texto' : 'Add Text Body');
             const input = new TextInputBuilder()
                 .setCustomId('texto_val')
-                .setLabel('Texto / Parágrafos')
+                .setLabel(isPtBr ? 'Texto / Parágrafos' : 'Text / Paragraphs')
                 .setStyle(TextInputStyle.Paragraph)
                 .setMaxLength(2000)
                 .setRequired(true);
@@ -71,10 +71,10 @@ module.exports = {
         if (selectedType === 'cor') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_cor')
-                .setTitle('Alterar Cor do Contêiner');
+                .setTitle(isPtBr ? 'Alterar Cor do Contêiner' : 'Change Container Color');
             const input = new TextInputBuilder()
                 .setCustomId('cor_val')
-                .setLabel('Cor Hex (ex: #5865F2)')
+                .setLabel(isPtBr ? 'Cor Hex (ex: #5865F2)' : 'Hex Color (e.g. #5865F2)')
                 .setStyle(TextInputStyle.Short)
                 .setMaxLength(10)
                 .setRequired(true);
@@ -85,10 +85,10 @@ module.exports = {
         if (selectedType === 'imagem') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_imagem')
-                .setTitle('Anexar Imagem / Banner');
+                .setTitle(isPtBr ? 'Anexar Imagem / Banner' : 'Attach Image / Banner');
             const input = new TextInputBuilder()
                 .setCustomId('imagem_url')
-                .setLabel('URL da Imagem (https://...)')
+                .setLabel(isPtBr ? 'URL da Imagem (https://...)' : 'Image URL (https://...)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             modal.addComponents(new ActionRowBuilder().addComponents(input));
@@ -98,10 +98,10 @@ module.exports = {
         if (selectedType === 'thumb') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_thumb')
-                .setTitle('Adicionar Miniatura');
+                .setTitle(isPtBr ? 'Adicionar Miniatura' : 'Add Thumbnail');
             const input = new TextInputBuilder()
                 .setCustomId('thumb_url')
-                .setLabel('URL da Miniatura (https://...)')
+                .setLabel(isPtBr ? 'URL da Miniatura (https://...)' : 'Thumbnail URL (https://...)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             modal.addComponents(new ActionRowBuilder().addComponents(input));
@@ -111,15 +111,15 @@ module.exports = {
         if (selectedType === 'autor') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_autor')
-                .setTitle('Assinatura do Autor');
+                .setTitle(isPtBr ? 'Assinatura do Autor' : 'Author Signature');
             const nomeInput = new TextInputBuilder()
                 .setCustomId('autor_nome')
-                .setLabel('Nome do Autor')
+                .setLabel(isPtBr ? 'Nome do Autor' : 'Author Name')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             const iconeInput = new TextInputBuilder()
                 .setCustomId('autor_icone')
-                .setLabel('Ícone URL (opcional)')
+                .setLabel(isPtBr ? 'Ícone URL (opcional)' : 'Icon URL (optional)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false);
             modal.addComponents(
@@ -132,15 +132,15 @@ module.exports = {
         if (selectedType === 'rodape') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_rodape')
-                .setTitle('Notas de Rodapé');
+                .setTitle(isPtBr ? 'Notas de Rodapé' : 'Footer Notes');
             const textoInput = new TextInputBuilder()
                 .setCustomId('rodape_texto')
-                .setLabel('Texto do Rodapé')
+                .setLabel(isPtBr ? 'Texto do Rodapé' : 'Footer Text')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             const iconeInput = new TextInputBuilder()
                 .setCustomId('rodape_icone')
-                .setLabel('Ícone URL (opcional)')
+                .setLabel(isPtBr ? 'Ícone URL (opcional)' : 'Icon URL (optional)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false);
             modal.addComponents(
@@ -153,20 +153,20 @@ module.exports = {
         if (selectedType === 'botao') {
             const modal = new ModalBuilder()
                 .setCustomId('modal_builder_botao')
-                .setTitle('Adicionar Botão Interativo');
+                .setTitle(isPtBr ? 'Adicionar Botão Interativo' : 'Add Interactive Button');
             const labelInput = new TextInputBuilder()
                 .setCustomId('botao_label')
-                .setLabel('Texto do Botão')
+                .setLabel(isPtBr ? 'Texto do Botão' : 'Button Text')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             const urlInput = new TextInputBuilder()
                 .setCustomId('botao_url')
-                .setLabel('URL de Destino (https://...)')
+                .setLabel(isPtBr ? 'URL de Destino (https://...)' : 'Destination URL (https://...)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(true);
             const emojiInput = new TextInputBuilder()
                 .setCustomId('botao_emoji')
-                .setLabel('Emoji do Botão (opcional)')
+                .setLabel(isPtBr ? 'Emoji do Botão (opcional)' : 'Button Emoji (optional)')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false);
             modal.addComponents(

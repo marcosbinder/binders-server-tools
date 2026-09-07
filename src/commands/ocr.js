@@ -28,10 +28,10 @@ function isValidImageUrl(url) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ocr')
-        .setDescription('Extrai o texto contido em uma imagem (upload ou link).')
+        .setDescription('Utilidades ❯ Extrai o texto contido em uma imagem (upload ou link).')
         .setDescriptionLocalizations({
-            'en-US': 'Extracts readable text from an image (upload or URL).',
-            'pt-BR': 'Extrai o texto contido em uma imagem (upload ou link).',
+            'en-US': 'Utilities ❯ Extracts readable text from an image (upload or URL).',
+            'pt-BR': 'Utilidades ❯ Extrai o texto contido em uma imagem (upload ou link).',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

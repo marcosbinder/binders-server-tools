@@ -24,6 +24,13 @@ const aiHistoryMemory = [];
 const remindersMemory = [];
 const commandStatsMemory = new Map();
 const CACHE_TTL_MS = 60 * 1000; // 1 minuto de cache
+let supabaseHasCommandStats = null; // null = unverified, true = exists, false = table missing on Supabase
+
+function isTableMissingError(err) {
+    if (!err) return false;
+    const msg = String(err.message || err.details || err || '');
+    return msg.includes('schema cache') || msg.includes('Could not find the table') || msg.includes('relation') || msg.includes('does not exist') || err.code === '42P01' || err.code === 'PGRST205' || err.code === 'PGRST204';
+}
 
 // Cache de prepared statements para reaproveitamento e prevenção de destructors de GC
 const preparedStatements = new Map();
@@ -480,10 +487,33 @@ async function flushSyncQueue() {
                         .eq('id', item.entityId);
                     if (error) throw error;
                 } else if (item.type === 'RECORD_COMMAND_USAGE') {
+                    if (supabaseHasCommandStats === false) {
+                        if (item.dbId && sqliteDb) {
+                            try {
+                                const delStmt = getPreparedStatement('DELETE FROM sync_queue WHERE id = ?');
+                                if (delStmt) delStmt.run(item.dbId);
+                            } catch (_) {}
+                        }
+                        processedCount++;
+                        continue;
+                    }
                     const { error } = await supabaseClient
                         .from('command_stats')
                         .upsert(item.payload);
-                    if (error) throw error;
+                    if (error) {
+                        if (isTableMissingError(error)) {
+                            supabaseHasCommandStats = false;
+                            if (item.dbId && sqliteDb) {
+                                try {
+                                    const delStmt = getPreparedStatement('DELETE FROM sync_queue WHERE id = ?');
+                                    if (delStmt) delStmt.run(item.dbId);
+                                } catch (_) {}
+                            }
+                            processedCount++;
+                            continue;
+                        }
+                        throw error;
+                    }
                 }
 
                 if (item.dbId && sqliteDb) {
@@ -1512,7 +1542,7 @@ async function recordCommandUsage(commandName, userId) {
     const fallbackResult = recordFallbackCommandUsage(cmdName, userId);
     const now = Date.now();
 
-    if (isSupabaseAvailable()) {
+    if (isSupabaseAvailable() && supabaseHasCommandStats !== false) {
         try {
             const { data, error } = await supabaseClient
                 .from('command_stats')
@@ -1521,15 +1551,20 @@ async function recordCommandUsage(commandName, userId) {
                 .maybeSingle();
 
             if (error) {
-                recordSupabaseFailure(error);
-                console.error('[Database/Supabase] Erro ao consultar command_stats:', error.message);
-                enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
-                    commandName: cmdName,
-                    executionCount: fallbackResult.executionCount,
-                    uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
-                    lastUsedAt: now,
-                });
+                if (isTableMissingError(error)) {
+                    supabaseHasCommandStats = false;
+                } else {
+                    recordSupabaseFailure(error);
+                    console.error('[Database/Supabase] Erro ao consultar command_stats:', error.message);
+                    enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
+                        commandName: cmdName,
+                        executionCount: fallbackResult.executionCount,
+                        uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
+                        lastUsedAt: now,
+                    });
+                }
             } else {
+                supabaseHasCommandStats = true;
                 recordSupabaseSuccess();
                 let users = [];
                 let count = 0;
@@ -1564,9 +1599,13 @@ async function recordCommandUsage(commandName, userId) {
                     .upsert(payload);
 
                 if (upsertErr) {
-                    recordSupabaseFailure(upsertErr);
-                    console.error('[Database/Supabase] Erro ao gravar command_stats:', upsertErr.message);
-                    enqueueSync('RECORD_COMMAND_USAGE', cmdName, payload);
+                    if (isTableMissingError(upsertErr)) {
+                        supabaseHasCommandStats = false;
+                    } else {
+                        recordSupabaseFailure(upsertErr);
+                        console.error('[Database/Supabase] Erro ao gravar command_stats:', upsertErr.message);
+                        enqueueSync('RECORD_COMMAND_USAGE', cmdName, payload);
+                    }
                 } else {
                     recordSupabaseSuccess();
                     const mem = commandStatsMemory.get(cmdName);
@@ -1584,16 +1623,20 @@ async function recordCommandUsage(commandName, userId) {
                 }
             }
         } catch (err) {
-            recordSupabaseFailure(err);
-            console.error('[Database/Supabase] Exceção em recordCommandUsage:', err.message);
-            enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
-                commandName: cmdName,
-                executionCount: fallbackResult.executionCount,
-                uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
-                lastUsedAt: now,
-            });
+            if (isTableMissingError(err)) {
+                supabaseHasCommandStats = false;
+            } else {
+                recordSupabaseFailure(err);
+                console.error('[Database/Supabase] Exceção em recordCommandUsage:', err.message);
+                enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
+                    commandName: cmdName,
+                    executionCount: fallbackResult.executionCount,
+                    uniqueUsers: JSON.stringify(fallbackResult.uniqueUsers),
+                    lastUsedAt: now,
+                });
+            }
         }
-    } else {
+    } else if (supabaseHasCommandStats !== false) {
         enqueueSync('RECORD_COMMAND_USAGE', cmdName, {
             commandName: cmdName,
             executionCount: fallbackResult.executionCount,
@@ -1654,7 +1697,7 @@ function getFallbackCommandStats() {
 async function getCommandStats() {
     let stats = [];
 
-    if (isSupabaseAvailable()) {
+    if (isSupabaseAvailable() && supabaseHasCommandStats !== false) {
         try {
             const { data, error } = await supabaseClient
                 .from('command_stats')
@@ -1662,15 +1705,24 @@ async function getCommandStats() {
                 .order('executionCount', { ascending: false });
 
             if (!error && Array.isArray(data) && data.length > 0) {
+                supabaseHasCommandStats = true;
                 recordSupabaseSuccess();
                 stats = data.map(normalizeCommandStat).filter(Boolean);
             } else if (error) {
-                recordSupabaseFailure(error);
-                console.error('[Database/Supabase] Erro em getCommandStats:', error.message);
+                if (isTableMissingError(error)) {
+                    supabaseHasCommandStats = false;
+                } else {
+                    recordSupabaseFailure(error);
+                    console.error('[Database/Supabase] Erro em getCommandStats:', error.message);
+                }
             }
         } catch (err) {
-            recordSupabaseFailure(err);
-            console.error('[Database/Supabase] Exceção em getCommandStats:', err.message);
+            if (isTableMissingError(err)) {
+                supabaseHasCommandStats = false;
+            } else {
+                recordSupabaseFailure(err);
+                console.error('[Database/Supabase] Exceção em getCommandStats:', err.message);
+            }
         }
     }
 
@@ -1701,6 +1753,10 @@ function closeDatabase() {
     }
     sqliteDb = null;
 }
+
+process.once('beforeExit', () => {
+    closeDatabase();
+});
 
 // Auto-inicialização assíncrona não bloqueante
 initDatabase().catch(err => console.error('[Database] Falha na auto-inicialização:', err));

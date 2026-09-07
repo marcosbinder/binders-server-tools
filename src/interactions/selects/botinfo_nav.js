@@ -45,19 +45,31 @@ async function buildPage(page, interaction, client) {
             break;
 
         case 'page_host':
-            const uptime = os.uptime();
-            const uptimeString = `${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m ${Math.floor(uptime%60)}s`;
+            const botUptimeSec = Math.floor(process.uptime());
+            const days = Math.floor(botUptimeSec / 86400);
+            const hours = Math.floor((botUptimeSec % 86400) / 3600);
+            const minutes = Math.floor((botUptimeSec % 3600) / 60);
+            const seconds = botUptimeSec % 60;
+            const uptimeStr = `${days > 0 ? `${days}d ` : ''}${hours}h ${minutes}m ${seconds}s`;
+            const startTimestamp = Math.floor((Date.now() - (botUptimeSec * 1000)) / 1000);
+            const ramUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+            const ramTotal = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
+
+            const hostDescription = [
+                `### 🖥️ ${isPtBr ? 'Telemetria & Ambiente de Hospedagem' : 'Telemetry & Hosting Environment'}`,
+                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** \`🟢 Online & Saudável\``,
+                `> • **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** <t:${startTimestamp}:R> (\`${uptimeStr}\`)`,
+                `> • **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${client.ws.ping}ms\``,
+                `> • **${isPtBr ? 'Uso de Memória RAM' : 'RAM Memory Usage'}:** \`${ramUsed} MB / ${ramTotal} MB\``,
+                `> • **${isPtBr ? 'Versão do Node.js' : 'Node.js Version'}:** \`${process.version}\``,
+                `> • **${isPtBr ? 'Sistema Operacional' : 'Operating System'}:** \`${os.type()} ${os.arch()}\``,
+                ``,
+                `-# ⚡ ${isPtBr ? 'Hospedado na nuvem com contingência de banco em alta disponibilidade.' : 'Cloud-hosted with high availability database failover.'}`
+            ].join('\n');
+
             embed = await createEmbed(interaction, {
                 title: `[3/4] ${emojis.ferramenta1 || '🖥️'} ${isPtBr ? 'Hospedagem' : 'Hosting'}`,
-                description: `> ${isPtBr ? 'Métricas da máquina servidora e telemetria do ambiente de execução.' : 'Host server metrics and runtime telemetry.'}`,
-                fields: [
-                    { name: 'Host', value: '> `Local (Self-hosted)`', inline: true },
-                    { name: 'Uptime', value: `> \`${uptimeString}\``, inline: true },
-                    { name: 'Ping da API', value: `> \`${client.ws.ping}ms\``, inline: true },
-                    { name: 'Uso de RAM', value: `> \`${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB\``, inline: true },
-                    { name: 'Node.js', value: `> \`${process.version}\``, inline: true },
-                    { name: 'Sistema Op.', value: `> \`${os.type()}\``, inline: true },
-                ],
+                description: hostDescription,
                 color: colors.primary,
             });
             break;
@@ -105,10 +117,10 @@ module.exports = {
                 .setCustomId(`botinfo_nav_${interaction.user.id}`)
                 .setPlaceholder(lang === 'pt_BR' ? 'Navegue pelas informações...' : 'Navigate through the info...')
                 .addOptions([
-                    { label: 'Página Inicial', value: 'page_home', emoji: '🏠', default: selectedPage === 'page_home' },
-                    { label: 'RG do Bot', value: 'page_credits', emoji: '📜', default: selectedPage === 'page_credits' },
-                    { label: 'Hospedagem', value: 'page_host', emoji: '🖥️', default: selectedPage === 'page_host' },
-                    { label: 'Agradecimentos', value: 'page_thanks', emoji: '💖', default: selectedPage === 'page_thanks' },
+                    { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: '🏠', default: selectedPage === 'page_home' },
+                    { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: '📜', default: selectedPage === 'page_credits' },
+                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: '🖥️', default: selectedPage === 'page_host' },
+                    { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: '💖', default: selectedPage === 'page_thanks' },
                 ])
         );
 

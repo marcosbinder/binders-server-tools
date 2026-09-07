@@ -14,10 +14,10 @@ const safeReply = require('../utils/safeReply.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('feedback')
-        .setDescription('Envia uma sugestão ou feedback para a equipe de desenvolvimento.')
+        .setDescription('Bot ❯ Envia uma sugestão ou feedback para a equipe de desenvolvimento.')
         .setDescriptionLocalizations({
-            'en-US': 'Send a suggestion or feedback to the development team.',
-            'pt-BR': 'Envia uma sugestão ou feedback para a equipe de desenvolvimento.',
+            'en-US': 'Bot ❯ Send a suggestion or feedback to the development team.',
+            'pt-BR': 'Bot ❯ Envia uma sugestão ou feedback para a equipe de desenvolvimento.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

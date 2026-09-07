@@ -12,10 +12,10 @@ const { getOrCreateStudioSession, buildStudioPayload } = require('../components/
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('containerbuilder')
-        .setDescription('🛠️ Estúdio visual interativo para criação de contêineres Discord Components V2.')
+        .setDescription('Estúdio ❯ Estúdio visual interativo para criação de contêineres Discord Components V2.')
         .setDescriptionLocalizations({
-            'en-US': 'Interactive visual studio for building Discord Components V2 containers.',
-            'pt-BR': '🛠️ Estúdio visual interativo para criação de contêineres Discord Components V2.',
+            'en-US': 'Studio ❯ Interactive visual studio for building Discord Components V2 containers.',
+            'pt-BR': 'Estúdio ❯ Estúdio visual interativo para criação de contêineres Discord Components V2.',
         })
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setIntegrationTypes([0])

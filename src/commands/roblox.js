@@ -21,10 +21,10 @@ module.exports = {
             sub
                 .setName('usuario')
                 .setNameLocalizations({ 'en-US': 'user' })
-                .setDescription('Consulta informações e o avatar de um jogador do Roblox.')
+                .setDescription('Roblox ❯ Consulta informações e o avatar de um jogador do Roblox.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Fetches information and avatar for a Roblox user.',
-                    'pt-BR': 'Consulta informações e o avatar de um jogador do Roblox.',
+                    'en-US': 'Roblox ❯ Fetches information and avatar for a Roblox user.',
+                    'pt-BR': 'Roblox ❯ Consulta informações e o avatar de um jogador do Roblox.',
                 })
                 .addStringOption(opt =>
                     opt
@@ -38,10 +38,10 @@ module.exports = {
             sub
                 .setName('jogo')
                 .setNameLocalizations({ 'en-US': 'game' })
-                .setDescription('Consulta informações de um jogo/experiência do Roblox por ID.')
+                .setDescription('Roblox ❯ Consulta informações de um jogo/experiência do Roblox por ID.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Fetches details of a Roblox game/experience by Place ID.',
-                    'pt-BR': 'Consulta informações de um jogo/experiência do Roblox por ID.',
+                    'en-US': 'Roblox ❯ Fetches details of a Roblox game/experience by Place ID.',
+                    'pt-BR': 'Roblox ❯ Consulta informações de um jogo/experiência do Roblox por ID.',
                 })
                 .addStringOption(opt =>
                     opt

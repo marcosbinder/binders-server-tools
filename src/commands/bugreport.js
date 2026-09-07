@@ -13,10 +13,10 @@ const safeReply = require('../utils/safeReply.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('bugreport')
-        .setDescription('Reporta um erro ou bug encontrado no bot.')
+        .setDescription('Bot ❯ Reporta um erro ou bug encontrado no bot.')
         .setDescriptionLocalizations({
-            'en-US': 'Report an issue or bug found in the bot.',
-            'pt-BR': 'Reporta um erro ou bug encontrado no bot.',
+            'en-US': 'Bot ❯ Report an issue or bug found in the bot.',
+            'pt-BR': 'Bot ❯ Reporta um erro ou bug encontrado no bot.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])
