@@ -355,7 +355,7 @@ function buildStudioPayload(session, guild) {
               .setCustomId('btn_builder_voltar')
               .setLabel('Retornar ao Estúdio')
               .setStyle(ButtonStyle.Secondary)
-              .setEmoji('⬅️')
+              .setEmoji(getEmoji('voltar'))
               .toJSON(),
             new ButtonBuilder()
               .setCustomId('btn_builder_confirmar')

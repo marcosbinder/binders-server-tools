@@ -95,7 +95,7 @@ module.exports = {
                 const skinDownload = `https://crafatar.com/skins/${uuid}`;
 
                 const embed = await createEmbed(interaction, {
-                    title: isPtBr ? `${getEmoji('videogame')} Jogador: ${name}` : `${getEmoji('videogame')} Minecraft Player: ${name}`,
+                    title: isPtBr ? `${getEmoji('minecraft')} Jogador: ${name}` : `${getEmoji('minecraft')} Minecraft Player: ${name}`,
                     fields: [
                         { name: 'Nick', value: '`' + name + '`', inline: true },
                         { name: 'UUID', value: '`' + uuid + '`', inline: true },
@@ -143,8 +143,8 @@ module.exports = {
 
                 if (!isOnline) {
                     const embed = await createEmbed(interaction, {
-                        title: isPtBr ? `${getEmoji('videogame')} Servidor Minecraft: ${ip}` : `${getEmoji('videogame')} Minecraft Server: ${ip}`,
-                        description: isPtBr ? `${getEmoji('errado')} O servidor encontra-se **Offline**.` : `${getEmoji('errado')} The server is currently **Offline**.`,
+                        title: isPtBr ? `${getEmoji('minecraft')} Servidor Minecraft: ${ip}` : `${getEmoji('minecraft')} Minecraft Server: ${ip}`,
+                        description: isPtBr ? `${getEmoji('vermelho')} O servidor encontra-se **Offline**.` : `${getEmoji('vermelho')} The server is currently **Offline**.`,
                         color: 0xED4245,
                     });
                     return interaction.editReply({ embeds: [embed] });
@@ -157,14 +157,14 @@ module.exports = {
                 const icon = data.icon || null;
 
                 const fields = [
-                    { name: isPtBr ? '📶 Status' : '📶 Status', value: `${getEmoji('confere')} Online`, inline: true },
-                    { name: isPtBr ? '👥 Jogadores' : '👥 Players', value: `**${playersOnline}** / **${playersMax}**`, inline: true },
-                    { name: isPtBr ? '📦 Versão' : '📦 Version', value: version, inline: true },
+                    { name: isPtBr ? `${getEmoji('wifi')} Status` : `${getEmoji('wifi')} Status`, value: `${getEmoji('verde')} Online`, inline: true },
+                    { name: isPtBr ? `${getEmoji('pessoas1')} Jogadores` : `${getEmoji('pessoas1')} Players`, value: `**${playersOnline}** / **${playersMax}**`, inline: true },
+                    { name: isPtBr ? `${getEmoji('pasta')} Versão` : `${getEmoji('pasta')} Version`, value: version, inline: true },
                     { name: 'MOTD', value: `\`\`\`${motdClean.length > 500 ? motdClean.substring(0, 497) + '...' : motdClean}\`\`\``, inline: false },
                 ];
 
                 const embed = await createEmbed(interaction, {
-                    title: isPtBr ? `${getEmoji('videogame')} Servidor Minecraft: ${ip}` : `${getEmoji('videogame')} Minecraft Server: ${ip}`,
+                    title: isPtBr ? `${getEmoji('minecraft')} Servidor Minecraft: ${ip}` : `${getEmoji('minecraft')} Minecraft Server: ${ip}`,
                     fields,
                     thumbnail: icon,
                     color: 0x57F287,

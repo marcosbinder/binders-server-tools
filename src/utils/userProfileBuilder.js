@@ -11,9 +11,9 @@ const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 
 const BADGE_MAP = {
-    HypeSquadOnlineHouse1: { pt: '🏠 HypeSquad Bravery', en: '🏠 HypeSquad Bravery' },
-    HypeSquadOnlineHouse2: { pt: '🏠 HypeSquad Brilliance', en: '🏠 HypeSquad Brilliance' },
-    HypeSquadOnlineHouse3: { pt: '🏠 HypeSquad Balance', en: '🏠 HypeSquad Balance' },
+    HypeSquadOnlineHouse1: { pt: `${getEmoji('bravery')} HypeSquad Bravery`, en: `${getEmoji('bravery')} HypeSquad Bravery` },
+    HypeSquadOnlineHouse2: { pt: `${getEmoji('brilliance')} HypeSquad Brilliance`, en: `${getEmoji('brilliance')} HypeSquad Brilliance` },
+    HypeSquadOnlineHouse3: { pt: `${getEmoji('balance')} HypeSquad Balance`, en: `${getEmoji('balance')} HypeSquad Balance` },
     ActiveDeveloper: { pt: `${getEmoji('selodev1')} Desenvolvedor Ativo`, en: `${getEmoji('selodev1')} Active Developer` },
     PremiumEarlySupporter: { pt: `${getEmoji('coroa')} Apoiador Inicial`, en: `${getEmoji('coroa')} Early Supporter` },
     VerifiedDeveloper: { pt: `${getEmoji('selodev2')} Dev de Bot Verificado`, en: `${getEmoji('selodev2')} Early Verified Bot Dev` },
