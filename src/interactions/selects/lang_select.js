@@ -2,12 +2,13 @@ const { updateUser } = require('../../../database/db.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const getLanguage = require('../../utils/getLanguage.js');
+const emojis = require('../../config/emojis.js');
 
 // central de textos pra esse handler
 const texts = {
     title: {
-        'pt_BR': '<:salvar:1394090159879753728> Configuração Salva!',
-        'en_US': '<:salvar:1394090159879753728> Settings Saved!',
+        'pt_BR': `${emojis.salvar} Configuração Salva!`,
+        'en_US': `${emojis.salvar} Settings Saved!`,
     },
     description: {
         'pt_BR': 'Sua preferência de idioma foi salva com sucesso. Tudo pronto! Você pode usar qualquer comando novamente.',

@@ -2,6 +2,7 @@ const { ActionRowBuilder, StringSelectMenuBuilder, version } = require('discord.
 const createEmbed = require('../../utils/createEmbed.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
+const emojis = require('../../config/emojis.js');
 const os = require('node:os');
 
 // config da equipe e inspirações
@@ -69,10 +70,10 @@ async function buildPage(page, interaction, client) {
             serverCount = client.guilds.cache.size;
             userCount = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
             description = isPtBr 
-                ? `Olá! Sou o Binder's Server Tools, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em <:djs:1397399961259474974> Discord.js e atualmente ajudo **${userCount.toLocaleString(locale)}** usuários em **${serverCount.toLocaleString(locale)}** servidores!`
-                : `Hello! I'm Binder's Server Tools, a multipurpose bot to make your life on Discord easier. I was developed in <:djs:1397399961259474974> Discord.js and I'm currently helping **${userCount.toLocaleString(locale)}** users across **${serverCount.toLocaleString(locale)}** servers!`;
+                ? `Olá! Sou o Binder's Server Tools, um bot multifuncional criado para facilitar sua vida no Discord. Fui desenvolvido em ${emojis.djs} Discord.js e atualmente ajudo **${userCount.toLocaleString(locale)}** usuários em **${serverCount.toLocaleString(locale)}** servidores!`
+                : `Hello! I'm Binder's Server Tools, a multipurpose bot to make your life on Discord easier. I was developed in ${emojis.djs} Discord.js and I'm currently helping **${userCount.toLocaleString(locale)}** users across **${serverCount.toLocaleString(locale)}** servers!`;
             
-            embed = await createEmbed(interaction, { title: `[1/4] <:foguete:1397390505171615827> ${isPtBr ? 'Sobre mim!' : 'About me!'}`, description: description });
+            embed = await createEmbed(interaction, { title: `[1/4] ${emojis.foguete} ${isPtBr ? 'Sobre mim!' : 'About me!'}`, description: description });
             embed.setImage('attachment://banner.png');
             break;
     }

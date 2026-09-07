@@ -4,12 +4,13 @@ const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const createEmbed = require('../../utils/createEmbed.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
 const getLanguage = require('../../utils/getLanguage.js');
+const emojis = require('../../config/emojis.js');
 
 const texts = {
     lang_screen: {
         title: {
-            'pt_BR': '<:mundo:1394088927794827350> Vamos personalizar sua experiência!',
-            'en_US': '<:mundo:1394088927794827350> Let\'s personalize your experience!',
+            'pt_BR': `${emojis.mundo} Vamos personalizar sua experiência!`,
+            'en_US': `${emojis.mundo} Let's personalize your experience!`,
         },
         description: {
             'pt_BR': 'Escolha como eu devo falar com você. Você poderá mudar isso a qualquer momento no futuro.',
@@ -22,8 +23,8 @@ const texts = {
     },
     updated_screen: {
         title: {
-            'pt_BR': '<:v_:1394894026678861825> Termos Atualizados!', //essa coisa ta uma bomba etm que mudar
-            'en_US': '<:v_:1394894026678861825> Terms Updated!',
+            'pt_BR': `${emojis.certo2} Termos Atualizados!`,
+            'en_US': `${emojis.certo2} Terms Updated!`,
         },
         description: {
             'pt_BR': 'Obrigado por aceitar a nova versão dos nossos termos. Você já pode usar o comando que tentou originalmente.',
