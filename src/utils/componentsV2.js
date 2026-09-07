@@ -308,16 +308,10 @@ function embedToV2Container(embed) {
 
     const containerComponents = [];
 
-    // 1. Author header
+    // 1. Author header (sleek compact subtext without blank Section gaps)
     if (data.author?.name) {
         const authorText = `-# ${getEmoji('pessoa')} **${data.author.name}**`;
-        if (data.author.icon_url) {
-            containerComponents.push(
-                createSection(authorText, { url: data.author.icon_url })
-            );
-        } else {
-            containerComponents.push(createTextDisplay(authorText));
-        }
+        containerComponents.push(createTextDisplay(authorText));
     }
 
     // 2. Title + Thumbnail Section
@@ -352,16 +346,10 @@ function embedToV2Container(embed) {
         containerComponents.push(createMediaGallery([data.image.url]));
     }
 
-    // 6. Footer (clean small text, with server icon if present)
+    // 6. Footer (sleek compact subtext without blank Section gaps)
     if (data.footer?.text) {
         const footerText = `-# ${getEmoji('bot')} ${data.footer.text}`;
-        if (data.footer.icon_url) {
-            containerComponents.push(
-                createSection(footerText, { url: data.footer.icon_url })
-            );
-        } else {
-            containerComponents.push(createTextDisplay(footerText));
-        }
+        containerComponents.push(createTextDisplay(footerText));
     }
 
     // Determine accent color

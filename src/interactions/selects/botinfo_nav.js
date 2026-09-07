@@ -30,17 +30,32 @@ async function buildPage(page, interaction, client) {
     switch (page) {
         case 'page_credits':
             userCount = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
-            const teamLinks = team.map(m => `> • [${m.name}](https://discord.com/users/${m.id}) - *${m.role[lang]}*`).join('\n');
+            serverCount = client.guilds.cache.size;
+            const ownerId = process.env.OWNER_ID || '659214571634032667';
+            const ownerUser = await client.users.fetch(ownerId).catch(() => null);
+            const ownerTag = ownerUser ? ownerUser.tag : 'Marcos';
+            const botId = client.user?.id || process.env.CLIENT_ID || '1310336375261892608';
+            const botCreationTimestamp = client.user?.createdTimestamp ? Math.floor(client.user.createdTimestamp / 1000) : 1732644000;
+
+            const creditsDescription = [
+                `### ${emojis.carta} ${isPtBr ? 'Certidão & Registro Geral do Bot' : "Bot's ID & General Registry"}`,
+                `> ${isPtBr ? 'Identificação formal, dados cadastrais e créditos oficiais do **Binder**.' : 'Formal identification, registration records, and development credits for **Binder**.'}`,
+                ``,
+                `> • **${isPtBr ? 'Nome Oficial' : 'Official Name'}:** \`${client.user?.username || "Binder's Server Tools"}\``,
+                `> • **${isPtBr ? 'ID da Aplicação' : 'Application ID'}:** \`${botId}\``,
+                `> • **${isPtBr ? 'Desenvolvedor Principal' : 'Lead Developer'}:** [${ownerTag}](https://discord.com/users/${ownerId}) ${emojis.selodev1 || ''}`,
+                `> • **${isPtBr ? 'Equipe & Arte' : 'Team & Art'}:** [Vitória](https://discord.com/users/1117890204569718885) — *${isPtBr ? 'Artista e Apoiadora' : 'Artist & Supporter'}*`,
+                `> • **${isPtBr ? 'Data de Criação' : 'Birthday (Created)'}:** <t:${botCreationTimestamp}:D> (<t:${botCreationTimestamp}:R>)`,
+                `> • **${isPtBr ? 'Biblioteca Central' : 'Core Library'}:** ${emojis.djs || ''} \`Discord.js v${version}\` • \`Node.js ${process.version}\``,
+                `> • **${isPtBr ? 'Banco de Dados' : 'Database'}:** \`Supabase (PostgreSQL) + Fallback Local\``,
+                `> • **${isPtBr ? 'Comandos & Arquitetura' : 'Commands & Architecture'}:** \`Slash Commands (/) • Components V2\``,
+                `> • **${isPtBr ? 'Comunidade Global' : 'Global Reach'}:** ${emojis.mundo || ''} \`${serverCount.toLocaleString(locale)} servidores\` servindo \`${userCount.toLocaleString(locale)} usuários\``,
+                `> • **${isPtBr ? 'Código Aberto' : 'Open Source'}:** [GitHub Repository](https://github.com/marcosbinder/binders-server-tools)`
+            ].join('\n');
+
             embed = await createEmbed(interaction, {
                 title: isPtBr ? `[2/4] ${emojis.carta || '📜'} RG do Bot` : `[2/4] ${emojis.carta || '📜'} Bot's ID`,
-                description: `> ${isPtBr ? 'Identificação formal, dados de registro e créditos de desenvolvimento.' : 'Formal identification, registration data, and development credits.'}`,
-                fields: [
-                    { name: isPtBr ? `${emojis.selodev1 || '🛠️'} Desenvolvedor` : `${emojis.selodev1 || '🛠️'} Developer`, value: `> [${(await client.users.fetch(process.env.OWNER_ID)).tag}](https://discord.com/users/${process.env.OWNER_ID})`, inline: true },
-                    { name: isPtBr ? `${emojis.djs || '🤖'} Biblioteca` : `${emojis.djs || '🤖'} Library`, value: `> \`Discord.js v${version}\``, inline: true },
-                    { name: isPtBr ? `${emojis.mundo || '🌐'} Servidores` : `${emojis.mundo || '🌐'} Servers`, value: `> \`${client.guilds.cache.size.toLocaleString(locale)}\``, inline: true },
-                    { name: isPtBr ? `${emojis.pessoas1 || '👥'} Usuários Totais` : `${emojis.pessoas1 || '👥'} Total Users`, value: `> \`${userCount.toLocaleString(locale)}\``, inline: true },
-                    { name: isPtBr ? `${emojis.coracao1 || '💖'} Equipe` : `${emojis.coracao1 || '💖'} Team`, value: teamLinks || (isPtBr ? '> *Ninguém por enquanto!*' : '> *No one yet!*') },
-                ],
+                description: creditsDescription,
                 color: colors.primary,
             });
             break;
@@ -55,17 +70,18 @@ async function buildPage(page, interaction, client) {
             const startTimestamp = Math.floor((Date.now() - (botUptimeSec * 1000)) / 1000);
             const ramUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
             const ramTotal = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
+            const hostTotalRamGb = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
 
             const hostDescription = [
-                `### ${emojis.vscode} ${isPtBr ? 'Telemetria & Ambiente de Hospedagem' : 'Telemetry & Hosting Environment'}`,
-                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** ${emojis.verde} \`Online & Saudável\``,
+                `### ${emojis.selodev2 || emojis.vscode} ${isPtBr ? 'Ambiente de Hospedagem' : 'Hosting Environment'}`,
+                `> • **${isPtBr ? 'Infraestrutura' : 'Infrastructure'}:** \`${isPtBr ? 'Host Externa (Cloud Hosted)' : 'External Host (Cloud Hosted)'}\``,
+                `> • **${isPtBr ? 'Sistema Operacional' : 'Operating System'}:** \`${os.type()} ${os.arch()}\``,
+                `> • **${isPtBr ? 'Memória do Servidor (Total)' : 'Server RAM (Total)'}:** \`${hostTotalRamGb} GB\``,
+                `> • **${isPtBr ? 'Uso do Bot (Heap / RSS)' : 'Bot RAM (Heap / RSS)'}:** \`${ramUsed} MB / ${ramTotal} MB\``,
+                `> • **${isPtBr ? 'Status do Sistema' : 'System Status'}:** ${emojis.verde} \`${isPtBr ? 'Online & Saudável' : 'Online & Healthy'}\``,
                 `> • **${isPtBr ? 'Tempo Online (Uptime)' : 'Online Time (Uptime)'}:** <t:${startTimestamp}:R> (\`${uptimeStr}\`)`,
                 `> • **${isPtBr ? 'Latência da API' : 'API Latency'}:** \`${client.ws.ping}ms\``,
-                `> • **${isPtBr ? 'Uso de Memória RAM' : 'RAM Memory Usage'}:** \`${ramUsed} MB / ${ramTotal} MB\``,
                 `> • **${isPtBr ? 'Versão do Node.js' : 'Node.js Version'}:** \`${process.version}\``,
-                `> • **${isPtBr ? 'Sistema Operacional' : 'Operating System'}:** \`${os.type()} ${os.arch()}\``,
-                ``,
-                `-# ${emojis.raio} ${isPtBr ? 'Hospedado na nuvem com contingência de banco em alta disponibilidade.' : 'Cloud-hosted with high availability database failover.'}`
             ].join('\n');
 
             embed = await createEmbed(interaction, {
@@ -121,7 +137,7 @@ module.exports = {
                 .addOptions([
                     { label: lang === 'pt_BR' ? 'Página Inicial' : 'Home', value: 'page_home', emoji: { id: '1397393887068160030', name: 'casa' }, default: selectedPage === 'page_home' },
                     { label: lang === 'pt_BR' ? 'RG do Bot' : "Bot's ID", value: 'page_credits', emoji: { id: '1394142002404135003', name: 'carta' }, default: selectedPage === 'page_credits' },
-                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: { id: '1397393671791312906', name: 'vscode' }, default: selectedPage === 'page_host' },
+                    { label: lang === 'pt_BR' ? 'Hospedagem' : 'Hosting', value: 'page_host', emoji: { id: '1397393732999053372', name: 'selodev2' }, default: selectedPage === 'page_host' },
                     { label: lang === 'pt_BR' ? 'Agradecimentos' : 'Acknowledgements', value: 'page_thanks', emoji: { id: '1397391540535431198', name: 'coracaopixel' }, default: selectedPage === 'page_thanks' },
                 ])
         );

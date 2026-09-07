@@ -25,7 +25,7 @@ module.exports = {
             'en-US': 'Server ❯ Server information and media commands for the current server.',
             'pt-BR': 'Servidor ❯ Comandos de informações e mídia do servidor atual.',
         })
-        .setIntegrationTypes([0])
+        .setIntegrationTypes([0, 1])
         .setContexts([0])
         .setDMPermission(false)
         .addSubcommand(sub =>
@@ -112,9 +112,9 @@ module.exports = {
 
             const serverDescLines = [
                 guild.description ? `> *${guild.description}*\n` : '',
-                `### 🏰 ${isPtBr ? 'Identificação & Criação' : 'Identification & Creation'}`,
+                `### ${getEmoji('casa')} ${isPtBr ? 'Identificação & Criação' : 'Identification & Creation'}`,
                 `> • **ID:** \`${guild.id}\``,
-                `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${ownerMention}`,
+                `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${getEmoji('coroa')} ${ownerMention}`,
                 `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
                 ``,
                 `### ${getEmoji('pessoas1')} ${isPtBr ? 'Membros' : 'Members'}`,
@@ -125,7 +125,7 @@ module.exports = {
                 ``,
                 `### ${getEmoji('diamante')} ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
                 `> • **${isPtBr ? 'Nível de Boost' : 'Boost Tier'}:** \`${boostTier}\` (\`${boostCount}\` ${isPtBr ? 'impulsos' : 'boosts'})`,
-                `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** \`${verificationText}\``,
+                `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** ${getEmoji('cadeadofechado')} \`${verificationText}\``,
                 `> • **${isPtBr ? 'Recursos' : 'Assets'}:** \`${totalRoles}\` ${isPtBr ? 'cargos' : 'roles'} • \`${totalEmojis}\` emojis • \`${totalStickers}\` ${isPtBr ? 'figurinhas' : 'stickers'}`
             ].filter(Boolean);
 
@@ -174,9 +174,9 @@ module.exports = {
 
             if (!iconUrl && !bannerUrl && !splashUrl) {
                 return safeReply(interaction, {
-                    content: isPtBr
-                        ? '❌ Este servidor não possui ícone nem banner configurados.'
-                        : '❌ This server has neither an icon nor a banner configured.',
+                    content: `${getEmoji('x_')} ${isPtBr
+                        ? 'Este servidor não possui ícone nem banner configurados.'
+                        : 'This server has neither an icon nor a banner configured.'}`,
                     ephemeral: true,
                 });
             }
@@ -184,7 +184,7 @@ module.exports = {
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Ícone e Mídia de ${guild.name}` : `Icon & Media for ${guild.name}`,
                 description: isPtBr ? 'Confira as imagens de perfil e divulgação do servidor:' : 'Check out the server profile and promotional imagery:',
-                color: 0x5865F2,
+                color: colors.primary || 0xAEA7BD,
             });
 
             if (iconUrl && embed.setThumbnail) {
@@ -203,6 +203,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Ícone (PNG)' : 'Icon (PNG)')
                         .setStyle(ButtonStyle.Link)
                         .setURL(guild.iconURL({ extension: 'png', size: 2048 }))
+                        .setEmoji(getEmoji('pasta'))
                 );
             }
             if (bannerUrl) {
@@ -211,6 +212,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Banner (PNG)' : 'Banner (PNG)')
                         .setStyle(ButtonStyle.Link)
                         .setURL(guild.bannerURL({ extension: 'png', size: 2048 }))
+                        .setEmoji(getEmoji('paletadecores'))
                 );
             }
             if (splashUrl) {
@@ -219,6 +221,7 @@ module.exports = {
                         .setLabel(isPtBr ? 'Splash (PNG)' : 'Splash (PNG)')
                         .setStyle(ButtonStyle.Link)
                         .setURL(guild.splashURL({ extension: 'png', size: 2048 }))
+                        .setEmoji(getEmoji('brilho'))
                 );
             }
 

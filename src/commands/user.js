@@ -11,6 +11,7 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 const { buildUserProfilePayload } = require('../utils/userProfileBuilder.js');
 
 module.exports = {
@@ -137,7 +138,7 @@ module.exports = {
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Avatar de ${targetUser.username}` : `Avatar of ${targetUser.username}`,
                 description,
-                color: (targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000') ? targetMember.displayHexColor : 0x5865F2,
+                color: (targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000') ? targetMember.displayHexColor : (colors.primary || 0xAEA7BD),
                 targetUser,
             });
 
