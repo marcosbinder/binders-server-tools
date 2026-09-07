@@ -24,6 +24,20 @@ const aiHistoryMemory = [];
 const remindersMemory = [];
 const CACHE_TTL_MS = 60 * 1000; // 1 minuto de cache
 
+// Cache de prepared statements para reaproveitamento e prevenção de destructors de GC
+const preparedStatements = new Map();
+
+function getPreparedStatement(sql) {
+    if (!sqliteDb || typeof sqliteDb.prepare !== 'function') return null;
+    let stmt = preparedStatements.get(sql);
+    if (!stmt) {
+        stmt = sqliteDb.prepare(sql);
+        preparedStatements.set(sql, stmt);
+    }
+    return stmt;
+}
+
+
 /**
  * Normaliza um registro de lembrete para conter chaves camelCase e snake_case
  */
@@ -353,12 +367,15 @@ function enqueueSync(type, entityId, payload) {
 
     if (sqliteDb) {
         try {
-            sqliteDb.prepare('INSERT INTO sync_queue (type, entityId, payload, createdAt) VALUES (?, ?, ?, ?)').run(
-                item.type,
-                item.entityId,
-                item.payload,
-                Math.floor(item.createdAt / 1000)
-            );
+            const stmt = getPreparedStatement('INSERT INTO sync_queue (type, entityId, payload, createdAt) VALUES (?, ?, ?, ?)');
+            if (stmt) {
+                stmt.run(
+                    item.type,
+                    item.entityId,
+                    item.payload,
+                    Math.floor(item.createdAt / 1000)
+                );
+            }
         } catch (e) {
             console.error('[Database/SyncQueue] Erro ao gravar na sync_queue SQLite:', e.message);
         }
@@ -372,7 +389,8 @@ function getSyncQueueSize() {
     let count = syncQueueMemory.length;
     if (sqliteDb) {
         try {
-            const row = sqliteDb.prepare('SELECT COUNT(*) as cnt FROM sync_queue').get();
+            const stmt = getPreparedStatement('SELECT COUNT(*) as cnt FROM sync_queue');
+            const row = stmt ? stmt.get() : null;
             if (row && typeof row.cnt === 'number') {
                 return row.cnt;
             }
@@ -396,7 +414,8 @@ async function flushSyncQueue() {
         let items = [];
         if (sqliteDb) {
             try {
-                const rows = sqliteDb.prepare('SELECT * FROM sync_queue ORDER BY id ASC LIMIT 50').all();
+                const stmt = getPreparedStatement('SELECT * FROM sync_queue ORDER BY id ASC LIMIT 50');
+                const rows = stmt ? stmt.all() : [];
                 if (rows && rows.length > 0) {
                     items = rows.map(r => ({
                         dbId: r.id,
@@ -452,7 +471,8 @@ async function flushSyncQueue() {
 
                 if (item.dbId && sqliteDb) {
                     try {
-                        sqliteDb.prepare('DELETE FROM sync_queue WHERE id = ?').run(item.dbId);
+                        const delStmt = getPreparedStatement('DELETE FROM sync_queue WHERE id = ?');
+                        if (delStmt) delStmt.run(item.dbId);
                     } catch (_) {}
                 }
                 processedCount++;
@@ -636,13 +656,15 @@ function getFallbackUser(userId, defaultUser) {
     }
     if (sqliteDb) {
         try {
-            const selectStmt = sqliteDb.prepare('SELECT * FROM users WHERE userId = ?');
-            let user = selectStmt.get(userId);
+            const selectStmt = getPreparedStatement('SELECT * FROM users WHERE userId = ?');
+            let user = selectStmt ? selectStmt.get(userId) : null;
 
             if (!user) {
-                const insertStmt = sqliteDb.prepare('INSERT OR IGNORE INTO users (userId, tosVersion, language, lastKnownLocale, badges, isDeveloper) VALUES (?, ?, ?, ?, ?, ?)');
-                insertStmt.run(userId, defaultUser.tosVersion, defaultUser.language, defaultUser.lastKnownLocale, defaultUser.badges, defaultUser.isDeveloper);
-                user = selectStmt.get(userId);
+                const insertStmt = getPreparedStatement('INSERT OR IGNORE INTO users (userId, tosVersion, language, lastKnownLocale, badges, isDeveloper) VALUES (?, ?, ?, ?, ?, ?)');
+                if (insertStmt) {
+                    insertStmt.run(userId, defaultUser.tosVersion, defaultUser.language, defaultUser.lastKnownLocale, defaultUser.badges, defaultUser.isDeveloper);
+                }
+                user = selectStmt ? selectStmt.get(userId) : null;
             }
 
             if (user) {
@@ -737,18 +759,21 @@ function updateFallbackUser(userId, updates) {
             const keys = Object.keys(updates).filter(k => allowedColumns.includes(k));
 
             // Ensure user exists in SQLite before UPDATE
-            const existing = sqliteDb.prepare('SELECT userId FROM users WHERE userId = ?').get(userId);
+            const checkStmt = getPreparedStatement('SELECT userId FROM users WHERE userId = ?');
+            const existing = checkStmt ? checkStmt.get(userId) : null;
             if (!existing) {
                 const defaultUser = userCache.get(userId) || normalizeUser({ userId });
-                const insertStmt = sqliteDb.prepare('INSERT OR IGNORE INTO users (userId, tosVersion, language, lastKnownLocale, badges, isDeveloper) VALUES (?, ?, ?, ?, ?, ?)');
-                insertStmt.run(
-                    userId,
-                    defaultUser.tosVersion !== undefined ? defaultUser.tosVersion : 0,
-                    defaultUser.language || 'lang_auto',
-                    defaultUser.lastKnownLocale || null,
-                    typeof defaultUser.badges === 'string' ? defaultUser.badges : JSON.stringify(defaultUser.badges || []),
-                    defaultUser.isDeveloper ? 1 : 0
-                );
+                const insertStmt = getPreparedStatement('INSERT OR IGNORE INTO users (userId, tosVersion, language, lastKnownLocale, badges, isDeveloper) VALUES (?, ?, ?, ?, ?, ?)');
+                if (insertStmt) {
+                    insertStmt.run(
+                        userId,
+                        defaultUser.tosVersion !== undefined ? defaultUser.tosVersion : 0,
+                        defaultUser.language || 'lang_auto',
+                        defaultUser.lastKnownLocale || null,
+                        typeof defaultUser.badges === 'string' ? defaultUser.badges : JSON.stringify(defaultUser.badges || []),
+                        defaultUser.isDeveloper ? 1 : 0
+                    );
+                }
             }
 
             if (keys.length > 0) {
@@ -756,8 +781,8 @@ function updateFallbackUser(userId, updates) {
                 const values = keys.map(k => updates[k]);
                 values.push(userId);
 
-                const stmt = sqliteDb.prepare(`UPDATE users SET ${setClauses}, updatedAt = strftime('%s', 'now') WHERE userId = ?`);
-                stmt.run(...values);
+                const stmt = getPreparedStatement(`UPDATE users SET ${setClauses}, updatedAt = strftime('%s', 'now') WHERE userId = ?`);
+                if (stmt) stmt.run(...values);
             }
         } catch (e) {
             console.error('[Database/SQLite] Erro ao atualizar usuário:', e.message);
@@ -858,13 +883,15 @@ function getFallbackGuild(guildId, defaultGuild) {
     }
     if (sqliteDb) {
         try {
-            const selectStmt = sqliteDb.prepare('SELECT * FROM guilds WHERE guildId = ?');
-            let guild = selectStmt.get(guildId);
+            const selectStmt = getPreparedStatement('SELECT * FROM guilds WHERE guildId = ?');
+            let guild = selectStmt ? selectStmt.get(guildId) : null;
 
             if (!guild) {
-                const insertStmt = sqliteDb.prepare('INSERT OR IGNORE INTO guilds (guildId, antiraidEnabled, welcomeChannelId, goodbyeChannelId) VALUES (?, ?, ?, ?)');
-                insertStmt.run(guildId, defaultGuild.antiraidEnabled, defaultGuild.welcomeChannelId, defaultGuild.goodbyeChannelId);
-                guild = selectStmt.get(guildId);
+                const insertStmt = getPreparedStatement('INSERT OR IGNORE INTO guilds (guildId, antiraidEnabled, welcomeChannelId, goodbyeChannelId) VALUES (?, ?, ?, ?)');
+                if (insertStmt) {
+                    insertStmt.run(guildId, defaultGuild.antiraidEnabled, defaultGuild.welcomeChannelId, defaultGuild.goodbyeChannelId);
+                }
+                guild = selectStmt ? selectStmt.get(guildId) : null;
             }
 
             if (guild) {
@@ -973,16 +1000,19 @@ function updateFallbackGuild(guildId, updates) {
             const keys = Object.keys(updates).filter(k => allowedColumns.includes(k));
 
             // Ensure guild exists in SQLite before UPDATE
-            const existing = sqliteDb.prepare('SELECT guildId FROM guilds WHERE guildId = ?').get(guildId);
+            const checkStmt = getPreparedStatement('SELECT guildId FROM guilds WHERE guildId = ?');
+            const existing = checkStmt ? checkStmt.get(guildId) : null;
             if (!existing) {
                 const defaultGuild = guildCache.get(guildId) || normalizeGuild({ guildId });
-                const insertStmt = sqliteDb.prepare('INSERT OR IGNORE INTO guilds (guildId, antiraidEnabled, welcomeChannelId, goodbyeChannelId) VALUES (?, ?, ?, ?)');
-                insertStmt.run(
-                    guildId,
-                    defaultGuild.antiraidEnabled ? 1 : 0,
-                    defaultGuild.welcomeChannelId || null,
-                    defaultGuild.goodbyeChannelId || null
-                );
+                const insertStmt = getPreparedStatement('INSERT OR IGNORE INTO guilds (guildId, antiraidEnabled, welcomeChannelId, goodbyeChannelId) VALUES (?, ?, ?, ?)');
+                if (insertStmt) {
+                    insertStmt.run(
+                        guildId,
+                        defaultGuild.antiraidEnabled ? 1 : 0,
+                        defaultGuild.welcomeChannelId || null,
+                        defaultGuild.goodbyeChannelId || null
+                    );
+                }
             }
 
             if (keys.length > 0) {
@@ -990,8 +1020,8 @@ function updateFallbackGuild(guildId, updates) {
                 const values = keys.map(k => updates[k]);
                 values.push(guildId);
 
-                const stmt = sqliteDb.prepare(`UPDATE guilds SET ${setClauses}, updatedAt = strftime('%s', 'now') WHERE guildId = ?`);
-                stmt.run(...values);
+                const stmt = getPreparedStatement(`UPDATE guilds SET ${setClauses}, updatedAt = strftime('%s', 'now') WHERE guildId = ?`);
+                if (stmt) stmt.run(...values);
             }
         } catch (e) {
             console.error('[Database/SQLite] Erro ao atualizar guilda:', e.message);
@@ -1062,8 +1092,8 @@ function logFallbackAiHistory(record) {
     }
     if (sqliteDb) {
         try {
-            const stmt = sqliteDb.prepare('INSERT OR REPLACE INTO ai_history (messageId, userId, role, content, timestamp) VALUES (?, ?, ?, ?, ?)');
-            stmt.run(record.messageId, record.userId, record.role, record.content, record.timestamp);
+            const stmt = getPreparedStatement('INSERT OR REPLACE INTO ai_history (messageId, userId, role, content, timestamp) VALUES (?, ?, ?, ?, ?)');
+            if (stmt) stmt.run(record.messageId, record.userId, record.role, record.content, record.timestamp);
         } catch (e) {
             console.error('[Database/SQLite] Erro ao registrar ai_history:', e.message);
         }
@@ -1124,20 +1154,22 @@ function createFallbackReminder(reminder) {
     }
     if (sqliteDb) {
         try {
-            const stmt = sqliteDb.prepare(`
+            const stmt = getPreparedStatement(`
                 INSERT OR REPLACE INTO reminders (id, userId, guildId, channelId, message, dueTimestamp, createdAt, completed)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `);
-            stmt.run(
-                reminder.id,
-                reminder.userId,
-                reminder.guildId,
-                reminder.channelId,
-                reminder.message,
-                reminder.dueTimestamp,
-                reminder.createdAt,
-                reminder.completed
-            );
+            if (stmt) {
+                stmt.run(
+                    reminder.id,
+                    reminder.userId,
+                    reminder.guildId,
+                    reminder.channelId,
+                    reminder.message,
+                    reminder.dueTimestamp,
+                    reminder.createdAt,
+                    reminder.completed
+                );
+            }
         } catch (e) {
             console.error('[Database/SQLite] Erro ao registrar reminder:', e.message);
         }
@@ -1174,7 +1206,8 @@ async function getPendingReminders() {
         }
         if (sqliteDb) {
             try {
-                const rows = sqliteDb.prepare('SELECT * FROM reminders WHERE completed = 0').all();
+                const stmt = getPreparedStatement('SELECT * FROM reminders WHERE completed = 0');
+                const rows = stmt ? stmt.all() : [];
                 if (rows && rows.length > 0) {
                     return rows.map(normalizeReminder);
                 }
@@ -1226,7 +1259,8 @@ async function getUserReminders(userId) {
         }
         if (sqliteDb) {
             try {
-                const rows = sqliteDb.prepare('SELECT * FROM reminders WHERE userId = ? AND completed = 0').all(userId);
+                const stmt = getPreparedStatement('SELECT * FROM reminders WHERE userId = ? AND completed = 0');
+                const rows = stmt ? stmt.all(userId) : [];
                 if (rows && rows.length > 0) {
                     return rows.map(normalizeReminder);
                 }
@@ -1250,7 +1284,8 @@ function completeFallbackReminder(id) {
     }
     if (sqliteDb) {
         try {
-            sqliteDb.prepare('UPDATE reminders SET completed = 1 WHERE id = ?').run(id);
+            const stmt = getPreparedStatement('UPDATE reminders SET completed = 1 WHERE id = ?');
+            if (stmt) stmt.run(id);
         } catch (e) {
             console.error('[Database/SQLite] Erro ao completar reminder:', e.message);
         }
@@ -1295,7 +1330,8 @@ function deleteFallbackReminder(id) {
     }
     if (sqliteDb) {
         try {
-            sqliteDb.prepare('DELETE FROM reminders WHERE id = ?').run(id);
+            const stmt = getPreparedStatement('DELETE FROM reminders WHERE id = ?');
+            if (stmt) stmt.run(id);
         } catch (e) {
             console.error('[Database/SQLite] Erro ao deletar reminder do SQLite:', e.message);
         }
@@ -1336,6 +1372,7 @@ async function deleteReminder(id) {
 
 function closeDatabase() {
     sqliteInitAttempted = false;
+    preparedStatements.clear();
     if (sqliteDb && typeof sqliteDb.close === 'function') {
         try {
             sqliteDb.close();
