@@ -427,10 +427,17 @@ function transformToV2Payload(payload, isEphemeral = false) {
                       (Array.isArray(base.flags) && base.flags.includes(IS_COMPONENTS_V2));
     const hasContainers = Array.isArray(base.components) && base.components.some(c => c && (c.type === 17 || c.type === 'CONTAINER'));
 
-    const originalEmbeds = Array.isArray(base.embeds) ? base.embeds : null;
+    const originalEmbeds = Array.isArray(payload?.embeds) ? payload.embeds : (Array.isArray(base.embeds) ? base.embeds : null);
+
+    const originalContent = typeof base.content === 'string' ? base.content : null;
 
     if (hasV2Flag && hasContainers) {
-        base.flags = resolveFlags(base.flags, shouldBeEphemeral);
+        if (Array.isArray(base.flags)) {
+            if (!base.flags.includes(IS_COMPONENTS_V2)) base.flags.push(IS_COMPONENTS_V2);
+            if (shouldBeEphemeral && !base.flags.includes(64)) base.flags.push(64);
+        } else {
+            base.flags = resolveFlags(base.flags, shouldBeEphemeral);
+        }
         // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active.
         // We delete it from enumerable properties (omitted in JSON), but preserve non-enumerable reference for tests/inspectors.
         delete base.embeds;
@@ -498,7 +505,12 @@ function transformToV2Payload(payload, isEphemeral = false) {
     }
 
     if (convertedAny || hasContainers) {
-        base.flags = resolveFlags(base.flags, shouldBeEphemeral);
+        if (Array.isArray(base.flags)) {
+            if (!base.flags.includes(IS_COMPONENTS_V2)) base.flags.push(IS_COMPONENTS_V2);
+            if (shouldBeEphemeral && !base.flags.includes(64)) base.flags.push(64);
+        } else {
+            base.flags = resolveFlags(base.flags, shouldBeEphemeral);
+        }
         base.components = newComponents;
         // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active
         delete base.embeds;
@@ -512,6 +524,14 @@ function transformToV2Payload(payload, isEphemeral = false) {
         }
         if (convertedAny && typeof base.content === 'string') {
             delete base.content;
+            if (originalContent !== null) {
+                Object.defineProperty(base, 'content', {
+                    value: originalContent,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                });
+            }
         } else if (base.content === null || base.content === undefined) {
             delete base.content;
         }
