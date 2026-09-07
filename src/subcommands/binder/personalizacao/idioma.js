@@ -2,12 +2,13 @@
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const createEmbed = require('../../../utils/createEmbed.js');
 const getLanguage = require('../../../utils/getLanguage.js');
+const emojis = require('../../../config/emojis.js');
 
 // central de textos para esse handler
 const texts = {
     title: {
-        'pt_BR': '<:mundo:1394088927794827350> Configuração de Idioma',
-        'en_US': '<:mundo:1394088927794827350> Language Configuration',
+        'pt_BR': `${emojis.mundo} Configuração de Idioma`,
+        'en_US': `${emojis.mundo} Language Configuration`,
     },
     descriptions: {
         'pt_BR': [
