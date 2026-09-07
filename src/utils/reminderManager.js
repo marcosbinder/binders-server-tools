@@ -89,8 +89,12 @@ async function cancelReminder(id) {
 async function dispatchReminder(client, reminder) {
     if (!client || !reminder) return;
 
-    // Clear active timeout reference upon dispatch start for timer garbage collection
-    activeTimeouts.delete(reminder.id);
+    // Clear active timeout reference and handle upon dispatch start for timer garbage collection
+    if (activeTimeouts.has(reminder.id)) {
+        const timer = activeTimeouts.get(reminder.id);
+        clearTimeout(timer);
+        activeTimeouts.delete(reminder.id);
+    }
     await completeReminder(reminder.id).catch(() => null);
 
     let isPtBr = true;

@@ -124,9 +124,14 @@ module.exports = {
                 ])
         );
 
+        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../utils/componentsV2.js');
+        const v2Container = embedToV2Container(newEmbed);
+        const linkRow = interaction.message?.components?.[2] || interaction.message?.components?.[1];
+
         const payload = {
+            flags: IS_COMPONENTS_V2,
             embeds: [newEmbed],
-            components: [navMenu, interaction.message.components[1]]
+            components: linkRow ? [v2Container, navMenu, linkRow] : [v2Container, navMenu]
         };
         
         if (selectedPage !== 'page_home') {

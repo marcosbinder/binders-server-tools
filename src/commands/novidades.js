@@ -9,6 +9,7 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const { urls } = require('../config/index.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -47,7 +48,7 @@ module.exports = {
         const embed = await createEmbed(interaction, {
             title: isPtBr ? `${getEmoji('anuncio')} Novidades & Atualizações` : `${getEmoji('anuncio')} News & Updates`,
             fields,
-            color: 0x5865F2,
+            color: colors.primary || 0xAEA7BD,
         });
 
         const row = new ActionRowBuilder().addComponents(

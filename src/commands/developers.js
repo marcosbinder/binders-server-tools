@@ -42,10 +42,10 @@ function sanitizeOutput(text) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('developers')
-        .setDescription('Comandos restritos para a equipe de desenvolvedores do Binder.')
+        .setDescription('Desenvolvedor ❯ Comandos restritos para a equipe de desenvolvedores do Binder.')
         .setDescriptionLocalizations({
-            'en-US': 'Restricted commands for Binder developer team.',
-            'pt-BR': 'Comandos restritos para a equipe de desenvolvedores do Binder.',
+            'en-US': 'Developer ❯ Restricted commands for Binder developer team.',
+            'pt-BR': 'Desenvolvedor ❯ Comandos restritos para a equipe de desenvolvedores do Binder.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

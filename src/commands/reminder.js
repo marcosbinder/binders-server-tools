@@ -72,10 +72,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('reminder')
         .setNameLocalizations({ 'en-US': 'reminder', 'pt-BR': 'lembrete' })
-        .setDescription('Cria, lista ou gerencia lembretes personalizados.')
+        .setDescription('Utilidades ❯ Cria, lista ou gerencia lembretes personalizados.')
         .setDescriptionLocalizations({
-            'en-US': 'Create, list, or manage personal persistent reminders.',
-            'pt-BR': 'Cria, lista ou gerencia lembretes personalizados.',
+            'en-US': 'Utilities ❯ Create, list, or manage personal persistent reminders.',
+            'pt-BR': 'Utilidades ❯ Cria, lista ou gerencia lembretes personalizados.',
         })
         .addSubcommand(sub =>
             sub
@@ -164,10 +164,10 @@ module.exports = {
                     ? `Eu vou te lembrar sobre isso em **<t:${unixDue}:F>** (<t:${unixDue}:R>).`
                     : `I will remind you about this on **<t:${unixDue}:F>** (<t:${unixDue}:R>).`,
                 fields: [
-                    { name: isPtBr ? '📝 Mensagem' : '📝 Message', value: message, inline: false },
-                    { name: '🆔 ID', value: '`' + reminderId + '`', inline: true },
+                    { name: isPtBr ? `${getEmoji('lapis')} Mensagem` : `${getEmoji('lapis')} Message`, value: message, inline: false },
+                    { name: `${getEmoji('ticket')} ID`, value: '`' + reminderId + '`', inline: true },
                 ],
-                color: colors.warning || 0xFEE75C,
+                color: colors.primary || 0xAEA7BD,
             });
 
             return interaction.reply({ embeds: [embed] });

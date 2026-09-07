@@ -197,14 +197,31 @@ function renderContainerFromBlocks(blocks, guild = null) {
     } else if (b.type === 'imagem') {
       flushText();
       containerComponents.push({
-        type: 10,
-        content: truncateText('[🖼️ Mídia Anexada: ' + b.url + '](' + b.url + ')', 4000)
+        type: 12,
+        items: [
+          {
+            media: {
+              url: b.url || ''
+            }
+          }
+        ]
       });
     } else if (b.type === 'thumb') {
       flushText();
       containerComponents.push({
-        type: 10,
-        content: truncateText('-# 🔳 Miniatura: ' + b.url, 4000)
+        type: 9,
+        components: [
+          {
+            type: 10,
+            content: '-# Miniatura'
+          }
+        ],
+        accessory: {
+          type: 11,
+          media: {
+            url: b.url || ''
+          }
+        }
       });
     } else if (b.type === 'botao') {
       flushText();

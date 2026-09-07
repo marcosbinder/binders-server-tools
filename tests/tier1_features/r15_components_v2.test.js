@@ -1,0 +1,242 @@
+// tests/tier1_features/r15_components_v2.test.js
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+const {
+    IS_COMPONENTS_V2,
+    ComponentType,
+    createTextDisplay,
+    createSeparator,
+    createSection,
+    createMediaGallery,
+    createContainer,
+    createV2Card,
+    createV2Payload,
+} = require('../../src/utils/componentsV2.js');
+
+const {
+    renderContainerFromBlocks,
+    buildStudioPayload,
+    getOrCreateStudioSession,
+} = require('../../src/components/builder/containerBuilder.js');
+
+const safeReply = require('../../src/utils/safeReply.js');
+const idiomaSubcommand = require('../../src/subcommands/binder/personalizacao/idioma.js');
+const { createMockInteraction, createMockClient } = require('../helpers/mockDiscord.js');
+const colors = require('../../src/config/colors.js');
+
+test('Requirement R15: Discord Components V2 Architecture', async (t) => {
+
+    await t.test('R15.1: Components V2 constants and official ComponentType mapping', () => {
+        assert.equal(IS_COMPONENTS_V2, 32768, 'IS_COMPONENTS_V2 must equal 1 << 15 (32768)');
+        assert.equal(ComponentType.ActionRow, 1);
+        assert.equal(ComponentType.Button, 2);
+        assert.equal(ComponentType.StringSelect, 3);
+        assert.equal(ComponentType.TextInput, 4);
+        assert.equal(ComponentType.UserSelect, 5);
+        assert.equal(ComponentType.RoleSelect, 6);
+        assert.equal(ComponentType.MentionableSelect, 7);
+        assert.equal(ComponentType.ChannelSelect, 8);
+        assert.equal(ComponentType.Section, 9);
+        assert.equal(ComponentType.TextDisplay, 10);
+        assert.equal(ComponentType.Thumbnail, 11);
+        assert.equal(ComponentType.MediaGallery, 12);
+        assert.equal(ComponentType.File, 13);
+        assert.equal(ComponentType.Separator, 14);
+        assert.equal(ComponentType.Container, 17);
+        assert.equal(ComponentType.Label, 18);
+    });
+
+    await t.test('R15.2: Atomic component builder helpers (TextDisplay, Separator, Section, MediaGallery, Container)', () => {
+        // TextDisplay
+        const textComp = createTextDisplay('Hello Discord V2');
+        assert.equal(textComp.type, 10);
+        assert.equal(textComp.content, 'Hello Discord V2');
+
+        const longText = 'A'.repeat(5000);
+        const truncatedText = createTextDisplay(longText, 4000);
+        assert.equal(truncatedText.content.length, 4000);
+        assert.ok(truncatedText.content.endsWith('...'));
+
+        // Separator
+        const sep1 = createSeparator(true, 1);
+        assert.equal(sep1.type, 14);
+        assert.equal(sep1.divider, true);
+        assert.equal(sep1.spacing, 1);
+
+        const sep2 = createSeparator(false, 2);
+        assert.equal(sep2.type, 14);
+        assert.equal(sep2.divider, false);
+        assert.equal(sep2.spacing, 2);
+
+        // Section with Thumbnail accessory
+        const secWithThumb = createSection('Titulo da secao', 'https://example.com/thumb.png');
+        assert.equal(secWithThumb.type, 9);
+        assert.equal(secWithThumb.components.length, 1);
+        assert.equal(secWithThumb.components[0].type, 10);
+        assert.equal(secWithThumb.components[0].content, 'Titulo da secao');
+        assert.equal(secWithThumb.accessory.type, 11);
+        assert.equal(secWithThumb.accessory.media.url, 'https://example.com/thumb.png');
+
+        // Section clamping to max 3 components
+        const secClamped = createSection(['1', '2', '3', '4', '5']);
+        assert.equal(secClamped.components.length, 3);
+
+        // MediaGallery with 1 to 10 items
+        const gallery = createMediaGallery([
+            'https://example.com/img1.png',
+            { url: 'https://example.com/img2.png', description: 'Imagem 2' }
+        ]);
+        assert.equal(gallery.type, 12);
+        assert.equal(gallery.items.length, 2);
+        assert.equal(gallery.items[0].media.url, 'https://example.com/img1.png');
+        assert.equal(gallery.items[1].media.url, 'https://example.com/img2.png');
+        assert.equal(gallery.items[1].description, 'Imagem 2');
+
+        // Container
+        const container = createContainer({
+            accentColor: 0xAEA7BD,
+            spoiler: true,
+            components: [textComp, sep1]
+        });
+        assert.equal(container.type, 17);
+        assert.equal(container.accent_color, 0xAEA7BD);
+        assert.equal(container.spoiler, true);
+        assert.equal(container.components.length, 2);
+    });
+
+    await t.test('R15.3: High-level createV2Card and createV2Payload constructs complete V2 structures', () => {
+        const btn = new ButtonBuilder()
+            .setCustomId('test_btn')
+            .setLabel('Ação')
+            .setStyle(ButtonStyle.Primary);
+        const row = new ActionRowBuilder().addComponents(btn);
+
+        const card = createV2Card({
+            title: 'Painel Informativo V2',
+            description: 'Corpo da mensagem estilizada com Components V2.',
+            accentColor: colors.primary || 0xAEA7BD,
+            thumbnail: 'https://cdn.discordapp.com/avatars/bot.png',
+            author: { name: 'Binder System' },
+            fields: [
+                { name: 'Campo 1', value: 'Valor 1' },
+                { name: 'Campo 2', value: 'Valor 2' }
+            ],
+            footer: { text: 'Rodapé oficial • Binder' },
+            actionRows: [row],
+            ephemeral: true,
+        });
+
+        assert.equal(card.flags, 32768 | 64, 'Card flags must include IS_COMPONENTS_V2 and Ephemeral');
+        assert.equal(card.components.length, 2, 'Must have root container and action row');
+        assert.equal(card.components[0].type, 17, 'First root element must be Container (Type 17)');
+        assert.equal(card.components[1].type, 1, 'Second root element must be ActionRow (Type 1)');
+
+        const inner = card.components[0].components;
+        // Author text
+        assert.ok(inner.some(c => c.type === 10 && c.content.includes('Binder System')));
+        // Section with thumbnail
+        const sec = inner.find(c => c.type === 9);
+        assert.ok(sec, 'Must contain a Section (Type 9)');
+        assert.equal(sec.accessory.type, 11);
+        assert.equal(sec.accessory.media.url, 'https://cdn.discordapp.com/avatars/bot.png');
+        // Separators
+        assert.ok(inner.some(c => c.type === 14));
+        // Footer text
+        assert.ok(inner.some(c => c.type === 10 && c.content.includes('Rodapé oficial')));
+    });
+
+    await t.test('R15.4: Container Studio Builder emits native Type 12 MediaGallery and Type 9 Section with Thumbnail', () => {
+        const blocks = [
+            { type: 'titulo', val: 'Demonstração Visual' },
+            { type: 'separador' },
+            { type: 'imagem', url: 'https://example.com/banner.png' },
+            { type: 'thumb', url: 'https://example.com/avatar.png' },
+        ];
+
+        const rendered = renderContainerFromBlocks(blocks);
+        assert.equal(rendered.type, 17);
+
+        // Verify native Type 12 MediaGallery for imagem
+        const mediaGallery = rendered.components.find(c => c.type === 12);
+        assert.ok(mediaGallery, 'renderContainerFromBlocks must render Type 12 MediaGallery for imagem blocks');
+        assert.equal(mediaGallery.items[0].media.url, 'https://example.com/banner.png');
+
+        // Verify native Type 9 Section with Type 11 Thumbnail accessory for thumb
+        const sectionThumb = rendered.components.find(c => c.type === 9);
+        assert.ok(sectionThumb, 'renderContainerFromBlocks must render Type 9 Section for thumb blocks');
+        assert.equal(sectionThumb.accessory.type, 11);
+        assert.equal(sectionThumb.accessory.media.url, 'https://example.com/avatar.png');
+
+        // Verify buildStudioPayload preserves V2 flag (32768)
+        const session = getOrCreateStudioSession('test_studio_v2_user');
+        session.blocks = blocks;
+        const payload = buildStudioPayload(session, null);
+        assert.equal((payload.flags & 32768), 32768, 'Studio payload flags must include IS_COMPONENTS_V2 (32768)');
+    });
+
+    await t.test('R15.5: /binder idioma executes and emits bilingual Components V2 Container with select menu', async () => {
+        const client = createMockClient();
+        const interaction = createMockInteraction({
+            userId: '112233445566778899',
+            commandName: 'binder',
+            subcommand: 'idioma',
+            locale: 'pt-BR',
+        });
+
+        await idiomaSubcommand.execute(interaction, client);
+
+        const res = interaction._getLastResponse();
+        assert.ok(res, 'Interaction must have received a response');
+        assert.equal((res.flags & 32768), 32768, 'Response flags must include IS_COMPONENTS_V2 (32768)');
+
+        assert.equal(res.components.length, 3, 'Must contain 2 Containers (Type 17) and 1 ActionRow (Type 1)');
+        
+        // 1. First Container: Portuguese (PT-BR)
+        const ptContainer = res.components[0];
+        assert.equal(ptContainer.type, 17, 'First component must be Container (Type 17)');
+        assert.equal(ptContainer.accent_color, colors.primary || 0xAEA7BD);
+        const ptContent = ptContainer.components.map(c => c.content || '').join('\n');
+        assert.ok(ptContent.includes('Português (Brasil)'), 'First container must contain Portuguese section');
+        assert.ok(ptContainer.components.some(c => c.type === 14), 'Must contain Separators (Type 14)');
+
+        // 2. Second Container: English (EN-US)
+        const enContainer = res.components[1];
+        assert.equal(enContainer.type, 17, 'Second component must be Container (Type 17)');
+        assert.equal(enContainer.accent_color, colors.secondary || 0x898DA5);
+        const enContent = enContainer.components.map(c => c.content || '').join('\n');
+        assert.ok(enContent.includes('English (US / UK)'), 'Second container must contain English section');
+        assert.ok(enContainer.components.some(c => c.type === 14), 'Must contain Separators (Type 14)');
+
+        // 3. ActionRow with Select Menu
+        const actionRow = res.components[2];
+        assert.equal(actionRow.type, 1);
+        const selectMenu = actionRow.components[0];
+        assert.ok(selectMenu.custom_id.startsWith('lang_select_'));
+        assert.equal(selectMenu.options.length, 3);
+    });
+
+    await t.test('R15.6: safeReply bitwise numeric flags support for Components V2', async () => {
+        const interaction = createMockInteraction();
+
+        // Fresh interaction with numeric V2 flags and ephemeral: true
+        await safeReply(interaction, {
+            flags: IS_COMPONENTS_V2,
+            components: [{ type: 17, components: [] }]
+        }, { ephemeral: true });
+
+        const res = interaction._getLastResponse();
+        assert.equal(res.flags, 32768 | MessageFlags.Ephemeral, 'Flags must be bitwise OR of 32768 and Ephemeral (64)');
+
+        // Array format preservation
+        const interaction2 = createMockInteraction();
+        await safeReply(interaction2, {
+            content: 'Mensagem teste',
+        }, { ephemeral: true });
+
+        const res2 = interaction2._getLastResponse();
+        assert.ok(Array.isArray(res2.flags));
+        assert.ok(res2.flags.includes(MessageFlags.Ephemeral));
+    });
+});

@@ -8,6 +8,8 @@ const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
+const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -74,8 +76,14 @@ module.exports = {
         const canProceed = await tosCheck(interaction);
         if (!canProceed) return;
 
+        const lang = getLanguage(interaction);
+        const isPtBr = lang === 'pt_BR';
+
         if (!interaction.guild) {
-            return interaction.reply({ content: 'Esse comando só pode ser utilizado dentro de um servidor.', flags: [MessageFlags.Ephemeral] });
+            return safeReply(interaction, {
+                content: `${getEmoji('errado')} ${isPtBr ? 'Esse comando só pode ser utilizado dentro de um servidor.' : 'This command can only be used within a server.'}`,
+                ephemeral: true
+            });
         }
 
         const pergunta = interaction.options.getString('pergunta') || interaction.options.getString('question');
@@ -104,9 +112,9 @@ module.exports = {
             });
         } catch (err) {
             const embed = await createEmbed(interaction, {
-                title: `📊 Enquete: ${pergunta}`,
-                fields: answers.map((a, i) => ({ name: `🔹 Opção ${i + 1}`, value: a.text, inline: false })),
-                color: 0x5865F2,
+                title: `${getEmoji('informacao')} ${isPtBr ? 'Enquete' : 'Poll'}: ${pergunta}`,
+                fields: answers.map((a, i) => ({ name: `${getEmoji('estrela')} ${isPtBr ? 'Opção' : 'Option'} ${i + 1}`, value: a.text, inline: false })),
+                color: colors.primary || 0xAEA7BD,
             });
             return safeReply(interaction, { embeds: [embed] });
         }

@@ -12,10 +12,10 @@ const { getEmoji } = require('../config/emojis.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('roblox')
-        .setDescription('Consulta informações de jogadores ou jogos do Roblox.')
+        .setDescription('Roblox ❯ Consulta informações de jogadores ou jogos do Roblox.')
         .setDescriptionLocalizations({
-            'en-US': 'Fetches information for Roblox users or games.',
-            'pt-BR': 'Consulta informações de jogadores ou jogos do Roblox.',
+            'en-US': 'Roblox ❯ Fetches information for Roblox users or games.',
+            'pt-BR': 'Roblox ❯ Consulta informações de jogadores ou jogos do Roblox.',
         })
         .addSubcommand(sub =>
             sub

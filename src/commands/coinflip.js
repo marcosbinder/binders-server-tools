@@ -8,6 +8,8 @@ const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const safeReply = require('../utils/safeReply.js');
+const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,22 +31,23 @@ module.exports = {
         const isPtBr = lang === 'pt_BR';
 
         const isHeads = Math.random() < 0.5;
+        const resultEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
         const resultText = isPtBr
-            ? (isHeads ? '🪙 Deu **Cara**!' : '🪙 Deu **Coroa**!')
-            : (isHeads ? '🪙 It\'s **Heads**!' : '🪙 It\'s **Tails**!');
+            ? (isHeads ? `${resultEmoji} Deu **Cara**!` : `${resultEmoji} Deu **Coroa**!`)
+            : (isHeads ? `${resultEmoji} It's **Heads**!` : `${resultEmoji} It's **Tails**!`);
 
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? '🪙 Cara ou Coroa' : '🪙 Coin Flip',
+            title: isPtBr ? `${getEmoji('estrela')} Cara ou Coroa` : `${getEmoji('estrela')} Coin Flip`,
             description: resultText,
-            color: isHeads ? 0xFEE75C : 0x5865F2,
+            color: colors.primary || 0xAEA7BD,
             fields: [
                 {
-                    name: isPtBr ? 'Resultado' : 'Result',
+                    name: isPtBr ? `${getEmoji('trofeu')} Resultado` : `${getEmoji('trofeu')} Result`,
                     value: isHeads ? (isPtBr ? 'Cara' : 'Heads') : (isPtBr ? 'Coroa' : 'Tails'),
                     inline: true,
                 },
                 {
-                    name: isPtBr ? 'Lançado por' : 'Flipped by',
+                    name: isPtBr ? `${getEmoji('pessoa')} Lançado por` : `${getEmoji('pessoa')} Flipped by`,
                     value: `${interaction.user.username}`,
                     inline: true,
                 },

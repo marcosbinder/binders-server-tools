@@ -15,10 +15,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('moderacao')
         .setNameLocalizations({ 'en-US': 'moderation', 'pt-BR': 'moderacao' })
-        .setDescription('Comandos de moderação e proteção do servidor.')
+        .setDescription('Moderação ❯ Comandos de moderação e proteção do servidor.')
         .setDescriptionLocalizations({
-            'en-US': 'Server moderation and protection tools.',
-            'pt-BR': 'Comandos de moderação e proteção do servidor.',
+            'en-US': 'Moderation ❯ Server moderation and protection tools.',
+            'pt-BR': 'Moderação ❯ Comandos de moderação e proteção do servidor.',
         })
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .setDMPermission(false)

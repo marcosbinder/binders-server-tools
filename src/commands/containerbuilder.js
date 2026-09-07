@@ -57,9 +57,6 @@ module.exports = {
         const session = getOrCreateStudioSession(interaction.user.id);
         const payload = buildStudioPayload(session, interaction.guild);
 
-        if (interaction.deferred || interaction.replied) {
-            return await interaction.editReply(payload).catch(() => null);
-        }
-        return await interaction.reply({ ...payload, flags: [MessageFlags.Ephemeral] }).catch(() => null);
+        return safeReply(interaction, payload);
     },
 };

@@ -14,6 +14,7 @@ const getLanguage = require('../utils/getLanguage.js');
 const Logger = require('../utils/logger.js');
 const { queueInteractionLog, setClient } = require('../utils/interactionWebhookLogger.js');
 const { getEmoji } = require('../config/emojis.js');
+const { wrapInteractionForV2 } = require('../utils/componentsV2.js');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -22,6 +23,8 @@ module.exports = {
         if (client) setClient(client);
         // Ignore automated bot interactions
         if (interaction.user?.bot) return;
+
+        wrapInteractionForV2(interaction);
 
         const startTime = Date.now();
 

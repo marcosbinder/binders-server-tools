@@ -14,7 +14,7 @@ module.exports = {
         if (!isOwner) return;
 
         const payload = await buildHelpPayload(interaction, 'home');
-        payload.flags = [MessageFlags.Ephemeral];
+        payload.flags = [MessageFlags.Ephemeral, 32768];
         return interaction.reply(payload);
     },
 };

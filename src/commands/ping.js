@@ -58,6 +58,14 @@ module.exports = {
             color: pingColor,
         });
 
-        return interaction.editReply({ content: null, embeds: [embed] });
+        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../utils/componentsV2.js');
+        const v2Container = embedToV2Container(embed);
+
+        return interaction.editReply({
+            flags: IS_COMPONENTS_V2,
+            content: null,
+            embeds: [embed],
+            components: [v2Container]
+        });
     },
 };

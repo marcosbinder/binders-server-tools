@@ -5,6 +5,7 @@ const { getUser } = require('../../database/db.js');
 const { currentTosVersion } = require('../config/config.js');
 const { getEmoji } = require('../config/emojis.js');
 const urls = require('../config/urls.js');
+const { transformToV2Payload } = require('../utils/componentsV2.js');
 
 const getLocalizedTexts = (lang, guildName, channelName, clientUsername) => {
     const isPtBr = lang === 'pt_BR';
@@ -30,7 +31,7 @@ const getLocalizedTexts = (lang, guildName, channelName, clientUsername) => {
         tos_update_desc: isPtBr ? `Olá! Nossos termos foram atualizados. Por favor, leia e aceite a nova versão para continuar.` : `Hello! Our terms have been updated. Please read and accept the new version to continue.`,
         dm_cant_speak: isPtBr ? `Oi! Vi que você me mencionou lá no servidor "**${guildName}**", mas não consigo responder no canal #${channelName}. Se precisar, me chama em outro canal ou cola no meu servidor de suporte!` : `Hello! I saw you mentioned me in the "**${guildName}**" server, but I can't reply in the #${channelName} channel. Try another channel or visit my support server!`,
         dm_generic: isPtBr ? 'Olá! Para ver meus comandos e funções, por favor me use em um servidor. É só me adicionar e digitar `/`!' : 'Hello! To see my commands and functions, please use me in a server. Just add me and type `/`!',
-        no_embed_tip: isPtBr ? `\n\n${getEmoji('linha')} Me dê a permissão de \`Inserir Links\` para deixar tudo mais bonitinho!` : `\n\n${getEmoji('linha')} Give me the \`Embed Links\` permission to make everything look nicer!`,
+        no_embed_tip: isPtBr ? `\n\n${getEmoji('lampada')} Me dê a permissão de \`Inserir Links\` para deixar tudo mais bonitinho!` : `\n\n${getEmoji('lampada')} Give me the \`Embed Links\` permission to make everything look nicer!`,
         button_commands: isPtBr ? 'Ver comandos' : 'View Commands',
         button_website: isPtBr ? 'Site' : 'Website',
         button_support: isPtBr ? 'Suporte' : 'Support',
@@ -117,6 +118,10 @@ module.exports = {
             }
         }
         
+        if (canSendEmbeds) {
+            responsePayload = transformToV2Payload(responsePayload);
+        }
+
         try {
             if (canReadHistory) {
                 await message.reply(responsePayload).catch(() => message.channel.send(responsePayload));

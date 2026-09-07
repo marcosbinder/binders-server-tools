@@ -186,6 +186,37 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
             { label: isPtBr ? 'Suporte & Feedback' : 'Support & Feedback', value: 'seguranca', emoji: '💬', default: selectedCategory === 'seguranca' },
         ]);
 
+    const colors = require('../config/colors.js');
+    const {
+        createContainer,
+        createTextDisplay,
+        createSeparator,
+        IS_COMPONENTS_V2,
+    } = require('./componentsV2.js');
+
+    const containerComponents = [
+        createTextDisplay(`## ${title}`),
+    ];
+    if (description) {
+        containerComponents.push(createTextDisplay(description));
+    }
+    if (fields.length > 0) {
+        containerComponents.push(createSeparator(true, 1));
+        const fieldLines = fields.map(f => `**${f.name}**\n${f.value}`);
+        containerComponents.push(createTextDisplay(fieldLines.join('\n\n')));
+    }
+    containerComponents.push(createSeparator(true, 1));
+    containerComponents.push(
+        createTextDisplay(isPtBr 
+            ? '-# 📖 Binder\'s Server Tools • Central de Ajuda Oficial' 
+            : '-# 📖 Binder\'s Server Tools • Official Help Center')
+    );
+
+    const helpContainer = createContainer({
+        accentColor: colors.primary || 0xAEA7BD,
+        components: containerComponents,
+    });
+
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
     return {

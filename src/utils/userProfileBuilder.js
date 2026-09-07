@@ -7,6 +7,8 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUser } = require('../../database/db.js');
 const createEmbed = require('./createEmbed.js');
 const getLanguage = require('./getLanguage.js');
+const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 const BADGE_MAP = {
     HypeSquadOnlineHouse1: { pt: '🏠 HypeSquad Bravery', en: '🏠 HypeSquad Bravery' },
@@ -46,7 +48,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
 
     const badges = [];
     if (isDeveloper) {
-        badges.push(isPtBr ? '🛠️ Desenvolvedor' : '🛠️ Developer');
+        badges.push(isPtBr ? `${getEmoji('selodev1')} Desenvolvedor` : `${getEmoji('selodev1')} Developer`);
     }
 
     if (dbUser?.badges && dbUser.badges !== '[]') {
@@ -75,12 +77,12 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
     const createdTimestamp = targetUser.createdTimestamp ? Math.floor(targetUser.createdTimestamp / 1000) : null;
     const fields = [
         {
-            name: isPtBr ? '👤 Identificação' : '👤 Identification',
+            name: isPtBr ? `${getEmoji('pessoa')} Identificação` : `${getEmoji('pessoa')} Identification`,
             value: `**Tag:** ${targetUser.username}\n**ID:** \`${targetUser.id}\``,
             inline: true,
         },
         {
-            name: isPtBr ? '🏷️ Badges' : '🏷️ Badges',
+            name: isPtBr ? `${getEmoji('selo')} Badges` : `${getEmoji('selo')} Badges`,
             value: badges.length > 0 ? badges.join(', ') : (isPtBr ? 'Nenhuma' : 'None'),
             inline: true,
         },
@@ -90,13 +92,13 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
         const highestRoleName = targetMember.roles?.highest?.name || '@everyone';
         const totalRoles = targetMember.roles?.cache?.size ?? 0;
         fields.push({
-            name: isPtBr ? '🛡️ Hierarquia & Cargos' : '🛡️ Hierarchy & Roles',
+            name: isPtBr ? `${getEmoji('selostaff')} Hierarquia & Cargos` : `${getEmoji('selostaff')} Hierarchy & Roles`,
             value: `**${isPtBr ? 'Maior Cargo' : 'Highest Role'}:** ${highestRoleName}\n**${isPtBr ? 'Total' : 'Total'}:** ${totalRoles}`,
             inline: true,
         });
 
         fields.push({
-            name: '💎 Booster',
+            name: `${getEmoji('diamante')} Booster`,
             value: targetMember.premiumSince
                 ? `${isPtBr ? 'Desde' : 'Since'} <t:${Math.floor(new Date(targetMember.premiumSince).getTime() / 1000)}:R>`
                 : (isPtBr ? 'Não' : 'No'),
@@ -106,7 +108,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
         if (targetMember.joinedAt) {
             const joinedTimestamp = Math.floor(new Date(targetMember.joinedAt).getTime() / 1000);
             fields.push({
-                name: isPtBr ? '📅 Entrada no Servidor' : '📅 Server Join Date',
+                name: isPtBr ? `${getEmoji('calendario')} Entrada no Servidor` : `${getEmoji('calendario')} Server Join Date`,
                 value: `<t:${joinedTimestamp}:F>`,
                 inline: false,
             });
@@ -115,7 +117,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
 
     if (createdTimestamp) {
         fields.push({
-            name: isPtBr ? '📅 Criação da Conta' : '📅 Account Created',
+            name: isPtBr ? `${getEmoji('calendario')} Criação da Conta` : `${getEmoji('calendario')} Account Created`,
             value: `<t:${createdTimestamp}:F>`,
             inline: false,
         });
@@ -125,7 +127,7 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
     const avatarUrl = typeof targetUser.displayAvatarURL === 'function' ? targetUser.displayAvatarURL({ size: 1024 }) : null;
     const embedColor = (targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000')
         ? targetMember.displayHexColor
-        : (fetchedUser.hexAccentColor || '#5865F2');
+        : (fetchedUser.hexAccentColor || colors.primary || 0xAEA7BD);
 
     const embed = await createEmbed(interaction, {
         title: isPtBr ? `Informações de ${targetUser.username}` : `Information for ${targetUser.username}`,

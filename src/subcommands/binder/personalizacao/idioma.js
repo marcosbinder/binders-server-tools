@@ -1,29 +1,37 @@
 // src/subcommands/binder/personalizacao/idioma.js
 const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const createEmbed = require('../../../utils/createEmbed.js');
+const {
+    createContainer,
+    createTextDisplay,
+    createSeparator,
+    createV2Payload
+} = require('../../../utils/componentsV2.js');
+const safeReply = require('../../../utils/safeReply.js');
 const emojis = require('../../../config/emojis.js');
 const colors = require('../../../config/colors.js');
 
 module.exports = {
     async execute(interaction, client) {
-        await interaction.deferReply();
+        const ptContainer = createContainer({
+            accentColor: colors.primary || 0xAEA7BD,
+            components: [
+                createTextDisplay(`## ${emojis.mundo || '🌐'} Configuração de Idioma`),
+                createSeparator(true, 1),
+                createTextDisplay('### 🇧🇷 Português (Brasil)\n> Esta configuração é **pessoal** e afeta apenas como eu respondo a **você**.\n> Escolha uma das opções no menu seletor abaixo para definir seu idioma padrão.'),
+                createSeparator(true, 1),
+                createTextDisplay('-# 🌐 Suas preferências são salvas diretamente no seu perfil global do Binder.')
+            ]
+        });
 
-        const description = [
-            `### 🇧🇷 Configuração de Idioma`,
-            `> Esta configuração é **pessoal** e afeta apenas como eu respondo a **você**.`,
-            `> Escolha uma das opções no menu abaixo para definir sua preferência de idioma em todas as minhas respostas.`,
-            ``,
-            `### 🇬🇧 Language Configuration`,
-            `> This setting is **personal** and only affects how I reply to **you**.`,
-            `> Choose one of the options in the select menu below to set your preferred language across all my replies.`,
-            ``,
-            `-# 🌐 Suas preferências são salvas diretamente no seu perfil global do Binder.`
-        ].join('\n');
-
-        const langEmbed = await createEmbed(interaction, {
-            title: `${emojis.mundo || '🌐'} Idioma / Language`,
-            description,
-            color: colors.primary,
+        const enContainer = createContainer({
+            accentColor: colors.secondary || 0x898DA5,
+            components: [
+                createTextDisplay(`## ${emojis.mundo || '🌐'} Language Configuration`),
+                createSeparator(true, 1),
+                createTextDisplay('### 🇬🇧 English (US / UK)\n> This setting is **personal** and only affects how I reply to **you**.\n> Choose one of the options in the select menu below to set your preferred language.'),
+                createSeparator(true, 1),
+                createTextDisplay('-# 🌐 Your preferences are saved directly to your global Binder profile.')
+            ]
         });
 
         const langMenu = new ActionRowBuilder().addComponents(
@@ -52,9 +60,11 @@ module.exports = {
                 ])
         );
 
-        await interaction.editReply({
-            embeds: [langEmbed],
-            components: [langMenu],
+        const payload = createV2Payload({
+            containers: [ptContainer, enContainer],
+            actionRows: [langMenu]
         });
+
+        return safeReply(interaction, payload);
     },
 };

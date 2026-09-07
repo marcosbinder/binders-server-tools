@@ -9,6 +9,7 @@ const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const { urls } = require('../config/index.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
 
 module.exports = {
@@ -43,10 +44,10 @@ module.exports = {
             description: isPtBr
                 ? `Adicione o **Binder's Server Tools** ao seu servidor ou instale diretamente no seu perfil para usar em qualquer lugar!\n\nSe precisar de ajuda ou tiver sugestões, junte-se ao nosso servidor oficial de suporte.`
                 : `Add **Binder's Server Tools** to your server or install directly to your profile to use anywhere!\n\nIf you need help or have suggestions, join our official support server.`,
-            color: 0x5865F2,
+            color: colors.primary || 0xAEA7BD,
             fields: [
                 {
-                    name: isPtBr ? '🔗 Links Oficiais' : '🔗 Official Links',
+                    name: isPtBr ? `${getEmoji('link')} Links Oficiais` : `${getEmoji('link')} Official Links`,
                     value: isPtBr
                         ? `• [Adicionar ao Servidor](${inviteUrl})\n• [Servidor de Suporte](${supportUrl})\n• [Termos & Privacidade](${urls.tos})`
                         : `• [Add to Server](${inviteUrl})\n• [Support Server](${supportUrl})\n• [Terms & Privacy](${urls.tos})`,

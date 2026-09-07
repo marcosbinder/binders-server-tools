@@ -19,10 +19,10 @@ module.exports = {
             'en-US': 'user',
             'pt-BR': 'user',
         })
-        .setDescription('Comandos de informações e mídia de usuários.')
+        .setDescription('Usuário ❯ Comandos de informações e mídia de usuários.')
         .setDescriptionLocalizations({
-            'en-US': 'User profile information and media commands.',
-            'pt-BR': 'Comandos de informações e mídia de usuários.',
+            'en-US': 'User ❯ User profile information and media commands.',
+            'pt-BR': 'Usuário ❯ Comandos de informações e mídia de usuários.',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])

@@ -124,9 +124,13 @@ module.exports = {
                 .setURL(urls.github)
         );
 
+        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../utils/componentsV2.js');
+        const v2Container = embedToV2Container(embed);
+
         const replyPayload = {
+            flags: IS_COMPONENTS_V2,
             embeds: [embed],
-            components: [navMenu, actionRow],
+            components: [v2Container, navMenu, actionRow],
         };
         if (files.length > 0) {
             replyPayload.files = files;

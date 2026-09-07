@@ -20,10 +20,10 @@ module.exports = {
             'en-US': 'server',
             'pt-BR': 'server',
         })
-        .setDescription('Comandos de informações e mídia do servidor atual.')
+        .setDescription('Servidor ❯ Comandos de informações e mídia do servidor atual.')
         .setDescriptionLocalizations({
-            'en-US': 'Server information and media commands for the current server.',
-            'pt-BR': 'Comandos de informações e mídia do servidor atual.',
+            'en-US': 'Server ❯ Server information and media commands for the current server.',
+            'pt-BR': 'Servidor ❯ Comandos de informações e mídia do servidor atual.',
         })
         .setIntegrationTypes([0])
         .setContexts([0])

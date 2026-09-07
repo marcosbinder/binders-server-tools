@@ -20,8 +20,16 @@ async function safeReply(interaction, payload, options = {}) {
     const isEphemeral = Boolean(options?.ephemeral);
     let finalPayload = typeof payload === 'string' ? { content: payload } : { ...payload };
 
-    if (isEphemeral && !finalPayload.flags) {
-        finalPayload.flags = [MessageFlags.Ephemeral];
+    if (isEphemeral) {
+        if (typeof finalPayload.flags === 'number') {
+            finalPayload.flags |= MessageFlags.Ephemeral;
+        } else if (Array.isArray(finalPayload.flags)) {
+            if (!finalPayload.flags.includes(MessageFlags.Ephemeral)) {
+                finalPayload.flags.push(MessageFlags.Ephemeral);
+            }
+        } else {
+            finalPayload.flags = [MessageFlags.Ephemeral];
+        }
     }
 
     try {

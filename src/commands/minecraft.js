@@ -12,10 +12,10 @@ const { getEmoji } = require('../config/emojis.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('minecraft')
-        .setDescription('Consulta informações de jogadores ou servidores de Minecraft.')
+        .setDescription('Minecraft ❯ Consulta informações de jogadores ou servidores de Minecraft.')
         .setDescriptionLocalizations({
-            'en-US': 'Looks up Minecraft player skins, UUIDs, or server status.',
-            'pt-BR': 'Consulta informações de jogadores ou servidores de Minecraft.',
+            'en-US': 'Minecraft ❯ Looks up Minecraft player skins, UUIDs, or server status.',
+            'pt-BR': 'Minecraft ❯ Consulta informações de jogadores ou servidores de Minecraft.',
         })
         .addSubcommand(sub =>
             sub

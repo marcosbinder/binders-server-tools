@@ -10,10 +10,10 @@ const subcommandsInDevelopment = [];
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('binder')
-        .setDescription('Comandos centrais do Binder\'s Server Tools')
+        .setDescription('Bot ❯ Comandos centrais do Binder\'s Server Tools')
         .setDescriptionLocalizations({
-            'en-US': 'Core commands for Binder\'s Server Tools',
-            'pt-BR': 'Comandos centrais do Binder\'s Server Tools',
+            'en-US': 'Bot ❯ Core commands for Binder\'s Server Tools',
+            'pt-BR': 'Bot ❯ Comandos centrais do Binder\'s Server Tools',
         })
         .setIntegrationTypes([0, 1])
         .setContexts([0, 1, 2])
