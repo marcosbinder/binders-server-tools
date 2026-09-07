@@ -66,10 +66,8 @@ const categoriesData = {
         },
         fields: {
             pt_BR: [
-                { name: '/userinfo [usuario]', value: 'Perfil completo, badges, cargos, booster e banner.' },
-                { name: '/serverinfo', value: 'Informações detalhadas do servidor, canais, cargos e estatísticas.' },
-                { name: '/useravatar [usuario]', value: 'Visualização e download de avatares com links em alta resolução.' },
-                { name: '/serveravatar', value: 'Exibe o ícone, banner e imagem splash do servidor atual.' },
+                { name: '/user <info|avatar>', value: 'Perfil completo, badges, cargos, booster, banner e avatares.' },
+                { name: '/server <info|avatar>', value: 'Informações detalhadas do servidor, canais, cargos, estatísticas e mídia.' },
                 { name: '/coinflip', value: 'Gira uma moeda para tirar Cara ou Coroa.' },
                 { name: '/reminder <criar|listar|cancelar>', value: 'Agendamento de lembretes persistentes.' },
                 { name: '/musica <busca>', value: 'Consulta metadados e prévia de áudio.' },
@@ -81,10 +79,8 @@ const categoriesData = {
                 { name: 'Message Info (Botão Direito)', value: 'Detalhes, autor e anexos da mensagem.' },
             ],
             en_US: [
-                { name: '/userinfo [user]', value: 'Full user profile, badges, roles, booster and banner.' },
-                { name: '/serverinfo', value: 'Detailed server statistics, channels, roles, and media.' },
-                { name: '/useravatar [user]', value: 'Display and download user global and server avatars.' },
-                { name: '/serveravatar', value: 'Display current server icon, banner, and splash media.' },
+                { name: '/user <info|avatar>', value: 'Full user profile, badges, roles, booster, banner, and avatars.' },
+                { name: '/server <info|avatar>', value: 'Detailed server statistics, channels, roles, and media.' },
                 { name: '/coinflip', value: 'Flips a coin to get Heads or Tails.' },
                 { name: '/reminder <create|list|cancel>', value: 'Persistent scheduled reminders.' },
                 { name: '/musica <query>', value: 'Song metadata and 30s audio preview.' },
