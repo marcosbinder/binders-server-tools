@@ -361,16 +361,56 @@ function embedToV2Container(embed) {
         accentColor = typeof data.color === 'string' ? parseInt(data.color.replace('#', ''), 16) : data.color;
     }
 
+    // Clamp to Discord maximum 25 components per container
+    const safeComponents = containerComponents.length > 25
+        ? containerComponents.slice(0, 25)
+        : (containerComponents.length > 0 ? containerComponents : [createTextDisplay('ℹ️')]);
+
     return createContainer({
         accentColor,
-        components: containerComponents.length > 0 ? containerComponents : [createTextDisplay('ℹ️')]
+        components: safeComponents
     });
+}
+
+/**
+ * Resolves bitwise message flags ensuring IS_COMPONENTS_V2 (32768) and optional Ephemeral (64).
+ * Handles numeric flags, string/number arrays, and BitField objects.
+ *
+ * @param {number|Array<number|string>|object} [flags]
+ * @param {boolean} [isEphemeral=false]
+ * @returns {number}
+ */
+function resolveFlags(flags, isEphemeral = false) {
+    let flagNum = IS_COMPONENTS_V2;
+
+    if (isEphemeral) {
+        flagNum |= 64; // MessageFlags.Ephemeral
+    }
+
+    if (typeof flags === 'number') {
+        flagNum |= flags;
+    } else if (Array.isArray(flags)) {
+        for (const f of flags) {
+            if (typeof f === 'number') {
+                flagNum |= f;
+            } else if (f === 'Ephemeral' || f === 'EPHEMERAL') {
+                flagNum |= 64;
+            }
+        }
+    } else if (flags && typeof flags.bitfield === 'bigint') {
+        flagNum |= Number(flags.bitfield);
+    } else if (flags && typeof flags.bitfield === 'number') {
+        flagNum |= flags.bitfield;
+    }
+
+    return flagNum;
 }
 
 /**
  * Transforms any standard command response payload to Components V2.
  * Converts embeds and raw markdown content into structured Containers (Type 17),
- * adds IS_COMPONENTS_V2 flag (32768), and preserves action rows and ephemeral states.
+ * adds IS_COMPONENTS_V2 flag (32768), strips legacy 'embeds' field (DiscordAPIError 50035 prevention),
+ * and preserves action rows and ephemeral states.
  *
  * @param {string|object} payload
  * @param {boolean} [isEphemeral=false]
@@ -380,13 +420,19 @@ function transformToV2Payload(payload, isEphemeral = false) {
     if (!payload) return payload;
     let base = typeof payload === 'string' ? { content: payload } : { ...payload };
 
+    const shouldBeEphemeral = isEphemeral || Boolean(base.ephemeral);
+
     // If it already has IS_COMPONENTS_V2 flag set AND container components, do not convert again
-    const hasV2Flag = typeof base.flags === 'number' && (base.flags & IS_COMPONENTS_V2) !== 0;
+    const hasV2Flag = (typeof base.flags === 'number' && (base.flags & IS_COMPONENTS_V2) !== 0) ||
+                      (Array.isArray(base.flags) && base.flags.includes(IS_COMPONENTS_V2));
     const hasContainers = Array.isArray(base.components) && base.components.some(c => c && (c.type === 17 || c.type === 'CONTAINER'));
 
     if (hasV2Flag && hasContainers) {
-        if (isEphemeral && typeof base.flags === 'number') {
-            base.flags |= 64;
+        base.flags = resolveFlags(base.flags, shouldBeEphemeral);
+        // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active
+        delete base.embeds;
+        if (base.content === null || base.content === undefined) {
+            delete base.content;
         }
         return base;
     }
@@ -441,16 +487,18 @@ function transformToV2Payload(payload, isEphemeral = false) {
     }
 
     if (convertedAny || hasContainers) {
-        if (Array.isArray(base.flags)) {
-            if (!base.flags.includes(IS_COMPONENTS_V2)) base.flags.push(IS_COMPONENTS_V2);
-            if (isEphemeral && !base.flags.includes(64)) base.flags.push(64);
-        } else if (typeof base.flags === 'number') {
-            base.flags |= IS_COMPONENTS_V2;
-            if (isEphemeral) base.flags |= 64;
-        } else {
-            base.flags = IS_COMPONENTS_V2 | (isEphemeral ? 64 : 0);
-        }
+        base.flags = resolveFlags(base.flags, shouldBeEphemeral);
         base.components = newComponents;
+        // CRITICAL: Discord API forbids 'embeds' field when IS_COMPONENTS_V2 flag is active
+        delete base.embeds;
+        if (convertedAny && typeof base.content === 'string') {
+            delete base.content;
+        } else if (base.content === null || base.content === undefined) {
+            delete base.content;
+        }
+    } else if (hasV2Flag) {
+        // Even if no components were converted, if IS_COMPONENTS_V2 is set, strip embeds
+        delete base.embeds;
     }
 
     return base;
@@ -515,4 +563,5 @@ module.exports = {
     embedToV2Container,
     transformToV2Payload,
     wrapInteractionForV2,
+    resolveFlags,
 };

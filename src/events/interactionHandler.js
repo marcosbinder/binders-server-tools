@@ -24,6 +24,9 @@ module.exports = {
         // Ignore automated bot interactions
         if (interaction.user?.bot) return;
 
+        // Autocomplete interactions do not support Message Components V2 replies (they use respond())
+        if (typeof interaction.isAutocomplete === 'function' && interaction.isAutocomplete()) return;
+
         wrapInteractionForV2(interaction);
 
         const startTime = Date.now();

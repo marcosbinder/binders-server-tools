@@ -220,8 +220,8 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
     return {
-        embeds: [embed],
-        components: [row],
+        flags: IS_COMPONENTS_V2,
+        components: [helpContainer, row],
     };
 }
 

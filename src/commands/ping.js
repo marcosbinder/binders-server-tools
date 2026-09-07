@@ -65,8 +65,6 @@ module.exports = {
 
         return interaction.editReply({
             flags: IS_COMPONENTS_V2,
-            content: null,
-            embeds: [embed],
             components: [v2Container]
         });
     },

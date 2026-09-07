@@ -143,11 +143,21 @@ const { closeDatabase } = require('./src/database/db.js');
 
 setLifecycleClient(client);
 
-const shutdownHandler = (signal) => {
+let isShuttingDown = false;
+const shutdownHandler = async (signal) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log(`[SHUTDOWN] Recebido sinal ${signal}. Encerrando...`);
-    sendLifecycleLog('🔴 Bot Desligando...', 'Red', client);
+    try {
+        await sendLifecycleLog('🔴 Bot Desligando...', 'Red', client);
+    } catch (_) {}
+    try {
+        if (client && typeof client.destroy === 'function') {
+            await client.destroy();
+        }
+    } catch (_) {}
     closeDatabase();
-    setTimeout(() => process.exit(0), 1000);
+    process.exit(0);
 };
 
 process.on('SIGINT', () => shutdownHandler('SIGINT'));

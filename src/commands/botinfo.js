@@ -129,7 +129,6 @@ module.exports = {
 
         const replyPayload = {
             flags: IS_COMPONENTS_V2,
-            embeds: [embed],
             components: [v2Container, navMenu, actionRow],
         };
         if (files.length > 0) {

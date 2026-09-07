@@ -70,9 +70,12 @@ module.exports = {
             new ButtonBuilder().setLabel('GitHub').setEmoji(emojis.github).setStyle(ButtonStyle.Link).setURL(urls.github)
         );
 
+        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../../utils/componentsV2.js');
+        const v2Container = embedToV2Container(homeEmbed);
+
         await interaction.reply({ 
-            embeds: [homeEmbed],
-            components: [navMenu, actionRow],
+            flags: IS_COMPONENTS_V2,
+            components: [v2Container, navMenu, actionRow],
             files: ['./assets/banner.png']
         });
     },

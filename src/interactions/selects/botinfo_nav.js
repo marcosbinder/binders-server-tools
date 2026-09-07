@@ -130,7 +130,6 @@ module.exports = {
 
         const payload = {
             flags: IS_COMPONENTS_V2,
-            embeds: [newEmbed],
             components: linkRow ? [v2Container, navMenu, linkRow] : [v2Container, navMenu]
         };
         

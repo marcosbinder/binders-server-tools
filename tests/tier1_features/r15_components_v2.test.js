@@ -13,6 +13,9 @@ const {
     createContainer,
     createV2Card,
     createV2Payload,
+    transformToV2Payload,
+    wrapInteractionForV2,
+    resolveFlags,
 } = require('../../src/utils/componentsV2.js');
 
 const {
@@ -238,5 +241,52 @@ test('Requirement R15: Discord Components V2 Architecture', async (t) => {
         const res2 = interaction2._getLastResponse();
         assert.ok(Array.isArray(res2.flags));
         assert.ok(res2.flags.includes(MessageFlags.Ephemeral));
+    });
+
+    await t.test('R15.7: transformToV2Payload sanitizes legacy embeds and content fields to prevent DiscordAPIError 50035', () => {
+        // 1. Converting legacy embed payload removes 'embeds' property completely
+        const payloadWithEmbed = {
+            embeds: [{
+                title: 'Título de Teste',
+                description: 'Descrição de Teste',
+                color: 0x57F287,
+            }]
+        };
+        const transformed = transformToV2Payload(payloadWithEmbed, false);
+        assert.equal(transformed.embeds, undefined, 'Must delete legacy embeds property');
+        assert.equal((transformed.flags & IS_COMPONENTS_V2), IS_COMPONENTS_V2, 'Must add IS_COMPONENTS_V2 flag');
+        assert.ok(Array.isArray(transformed.components), 'Must produce components array');
+        assert.equal(transformed.components[0].type, 17, 'Component must be Container Type 17');
+
+        // 2. Manual payload containing both IS_COMPONENTS_V2 and embeds gets stripped
+        const manualPayload = {
+            flags: IS_COMPONENTS_V2,
+            embeds: [{ title: 'Legacy Embed' }],
+            components: [{ type: 17, components: [createTextDisplay('V2')] }]
+        };
+        const sanitizedManual = transformToV2Payload(manualPayload);
+        assert.equal(sanitizedManual.embeds, undefined, 'Must delete embeds property even when containers exist');
+        assert.equal(sanitizedManual.flags, IS_COMPONENTS_V2);
+
+        // 3. Plain text payload converts to container and removes root content string
+        const textPayload = { content: 'Mensagem pura' };
+        const transformedText = transformToV2Payload(textPayload, true);
+        assert.equal(transformedText.content, undefined, 'Must remove root content field when converted');
+        assert.equal((transformedText.flags & 64), 64, 'Must retain ephemeral bit 64');
+        assert.equal((transformedText.flags & IS_COMPONENTS_V2), IS_COMPONENTS_V2, 'Must have IS_COMPONENTS_V2');
+        assert.equal(transformedText.components[0].type, 17);
+
+        // 4. resolveFlags handles numbers, arrays and bitfields seamlessly
+        assert.equal(resolveFlags(0), 32768);
+        assert.equal(resolveFlags([MessageFlags.Ephemeral]), 32768 | 64);
+        assert.equal(resolveFlags(['Ephemeral'], false), 32768 | 64);
+        assert.equal(resolveFlags(64, false), 32768 | 64);
+    });
+
+    await t.test('R15.8: Database closeDatabase executes cleanly without assertions', () => {
+        const { closeDatabase } = require('../../src/database/db.js');
+        assert.doesNotThrow(() => {
+            closeDatabase();
+        }, 'closeDatabase must execute without throwing errors');
     });
 });
