@@ -2,36 +2,49 @@ const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage.js');
 const createEmbed = require('./createEmbed.js');
 const { logErrorToWebhook } = require('./logHandler.js');
+const { getEmoji } = require('../config/emojis.js');
+const urls = require('../config/urls.js');
 
-// central de textos para msgs de erro
 const texts = {
     title: {
-        'pt_BR': '<:x_:1394185776807546963> Opa, algo deu errado!',
-        'en_US': '<:x_:1394185776807546963> Oops, something went wrong!',
+        'pt_BR': `${getEmoji('errado')} Opa, algo deu errado!`,
+        'en_US': `${getEmoji('errado')} Oops, something went wrong!`,
     },
     description: {
-        'pt_BR': 'Não consegui processar sua solicitação. Pode ser um comando que não existe ou um erro interno.\n\nSe o problema continuar, por favor, entre no nosso [servidor de suporte](https://discord.gg/Y2jJadbUmY) e nos avise!',
-        'en_US': 'I couldn\'t process your request. It might be a command that doesn\'t exist or an internal error.\n\nIf the problem persists, please join our [support server](https://discord.gg/Y2jJadbUmY) and let us know!',
+        'pt_BR': `Não consegui processar sua solicitação. Pode ser um comando que não existe ou um erro interno.\n\nSe o problema continuar, por favor, entre no nosso [servidor de suporte](${urls.discordSupport || 'https://dsc.gg/bindersdc'}) e nos avise!`,
+        'en_US': `I couldn't process your request. It might be a command that doesn't exist or an internal error.\n\nIf the problem persists, please join our [support server](${urls.discordSupport || 'https://dsc.gg/bindersdc'}) and let us know!`,
     }
 };
 
 module.exports = {
-    // nossa resposta padrão pra qualquer erro de interação
     async execute(interaction, error) {
-        // manda o relatório detalhado pro nosso canal de logs
-        await logErrorToWebhook(interaction, error);
+        await logErrorToWebhook(interaction, error).catch(() => null);
 
-        // e manda uma resposta amigável e simples pro usuário
         const lang = getLanguage(interaction);
         const errorEmbed = await createEmbed(interaction, {
-            title: texts.title[lang],
-            description: texts.description[lang],
+            title: texts.title[lang] || texts.title.pt_BR,
+            description: texts.description[lang] || texts.description.pt_BR,
         });
 
-        // checa se a interação já foi respondida pra não dar crash
-        if (interaction.deferred || interaction.replied) {
-            return interaction.followUp({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
+        try {
+            if (interaction.deferred && !interaction.replied) {
+                return await interaction.editReply({ embeds: [errorEmbed] }).catch(async () => {
+                    const fallbackText = `${texts.title[lang] || texts.title.pt_BR}\n${texts.description[lang] || texts.description.pt_BR}`;
+                    return await interaction.editReply({ content: fallbackText }).catch(() => null);
+                });
+            }
+            if (interaction.replied) {
+                return await interaction.followUp({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] }).catch(async () => {
+                    const fallbackText = `${texts.title[lang] || texts.title.pt_BR}\n${texts.description[lang] || texts.description.pt_BR}`;
+                    return await interaction.followUp({ content: fallbackText, flags: [MessageFlags.Ephemeral] }).catch(() => null);
+                });
+            }
+            return await interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] }).catch(async () => {
+                const fallbackText = `${texts.title[lang] || texts.title.pt_BR}\n${texts.description[lang] || texts.description.pt_BR}`;
+                return await interaction.reply({ content: fallbackText, flags: [MessageFlags.Ephemeral] }).catch(() => null);
+            });
+        } catch (dispatchErr) {
+            console.error('[InteractionErrorHandler] Falha ao entregar resposta de erro:', dispatchErr?.message || dispatchErr);
         }
-        return interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
     },
 };

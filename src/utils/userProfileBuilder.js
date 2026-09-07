@@ -1,0 +1,171 @@
+/**
+ * @file userProfileBuilder.js
+ * @description Centralized builder for user profile embeds, badges, and components (used by /userinfo and context menu)
+ */
+
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { getUser } = require('../../database/db.js');
+const createEmbed = require('./createEmbed.js');
+const getLanguage = require('./getLanguage.js');
+
+const BADGE_MAP = {
+    HypeSquadOnlineHouse1: { pt: '🏠 HypeSquad Bravery', en: '🏠 HypeSquad Bravery' },
+    HypeSquadOnlineHouse2: { pt: '🏠 HypeSquad Brilliance', en: '🏠 HypeSquad Brilliance' },
+    HypeSquadOnlineHouse3: { pt: '🏠 HypeSquad Balance', en: '🏠 HypeSquad Balance' },
+    ActiveDeveloper: { pt: '👨‍💻 Desenvolvedor Ativo', en: '👨‍💻 Active Developer' },
+    PremiumEarlySupporter: { pt: '👑 Apoiador Inicial', en: '👑 Early Supporter' },
+    VerifiedDeveloper: { pt: '💻 Dev de Bot Verificado', en: '💻 Early Verified Bot Dev' },
+    CertifiedModerator: { pt: '🛡️ Moderador Certificado', en: '🛡️ Certified Moderator' },
+    BugHunterLevel1: { pt: '🐛 Caçador de Bugs I', en: '🐛 Bug Hunter Level 1' },
+    BugHunterLevel2: { pt: '🐛 Caçador de Bugs II', en: '🐛 Bug Hunter Level 2' },
+    Staff: { pt: '💼 Equipe Discord (Staff)', en: '💼 Discord Staff' },
+    Partner: { pt: '🤝 Dono de Servidor Parceiro', en: '🤝 Partnered Server Owner' },
+};
+
+async function buildUserProfilePayload(interaction, client, targetUser, targetMember) {
+    const isGuild = Boolean(interaction.guild);
+    const lang = getLanguage(interaction);
+    const isPtBr = lang === 'pt_BR';
+
+    let fetchedUser = targetUser;
+    if (client?.users?.fetch) {
+        try {
+            fetchedUser = await Promise.race([
+                client.users.fetch(targetUser.id, { force: true }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('User fetch timeout')), 2500))
+            ]).catch(() => targetUser);
+        } catch {
+            fetchedUser = targetUser;
+        }
+    }
+
+    const dbUser = getUser(targetUser.id);
+    const ownerId = process.env.OWNER_ID || '659214571634032667';
+    const isOwner = targetUser.id === ownerId || targetUser.id === '659214571634032667';
+    const isDeveloper = isOwner || (dbUser && (dbUser.isDeveloper === 1 || dbUser.is_developer === 1));
+
+    const badges = [];
+    if (isDeveloper) {
+        badges.push(isPtBr ? '🛠️ Desenvolvedor' : '🛠️ Developer');
+    }
+
+    if (dbUser?.badges && dbUser.badges !== '[]') {
+        try {
+            const parsed = JSON.parse(dbUser.badges);
+            if (Array.isArray(parsed)) {
+                badges.push(...parsed);
+            } else {
+                badges.push(dbUser.badges);
+            }
+        } catch {
+            badges.push(dbUser.badges);
+        }
+    }
+
+    if (targetUser.flags?.toArray) {
+        for (const flag of targetUser.flags.toArray()) {
+            if (BADGE_MAP[flag]) {
+                badges.push(isPtBr ? BADGE_MAP[flag].pt : BADGE_MAP[flag].en);
+            } else {
+                badges.push(flag);
+            }
+        }
+    }
+
+    const createdTimestamp = targetUser.createdTimestamp ? Math.floor(targetUser.createdTimestamp / 1000) : null;
+    const fields = [
+        {
+            name: isPtBr ? '👤 Identificação' : '👤 Identification',
+            value: `**Tag:** ${targetUser.username}\n**ID:** \`${targetUser.id}\``,
+            inline: true,
+        },
+        {
+            name: isPtBr ? '🏷️ Badges' : '🏷️ Badges',
+            value: badges.length > 0 ? badges.join(', ') : (isPtBr ? 'Nenhuma' : 'None'),
+            inline: true,
+        },
+    ];
+
+    if (isGuild && targetMember) {
+        const highestRoleName = targetMember.roles?.highest?.name || '@everyone';
+        const totalRoles = targetMember.roles?.cache?.size ?? 0;
+        fields.push({
+            name: isPtBr ? '🛡️ Hierarquia & Cargos' : '🛡️ Hierarchy & Roles',
+            value: `**${isPtBr ? 'Maior Cargo' : 'Highest Role'}:** ${highestRoleName}\n**${isPtBr ? 'Total' : 'Total'}:** ${totalRoles}`,
+            inline: true,
+        });
+
+        fields.push({
+            name: '💎 Booster',
+            value: targetMember.premiumSince
+                ? `${isPtBr ? 'Desde' : 'Since'} <t:${Math.floor(new Date(targetMember.premiumSince).getTime() / 1000)}:R>`
+                : (isPtBr ? 'Não' : 'No'),
+            inline: true,
+        });
+
+        if (targetMember.joinedAt) {
+            const joinedTimestamp = Math.floor(new Date(targetMember.joinedAt).getTime() / 1000);
+            fields.push({
+                name: isPtBr ? '📅 Entrada no Servidor' : '📅 Server Join Date',
+                value: `<t:${joinedTimestamp}:F>`,
+                inline: false,
+            });
+        }
+    }
+
+    if (createdTimestamp) {
+        fields.push({
+            name: isPtBr ? '📅 Criação da Conta' : '📅 Account Created',
+            value: `<t:${createdTimestamp}:F>`,
+            inline: false,
+        });
+    }
+
+    const bannerUrl = typeof fetchedUser.bannerURL === 'function' ? fetchedUser.bannerURL({ size: 1024 }) : null;
+    const avatarUrl = typeof targetUser.displayAvatarURL === 'function' ? targetUser.displayAvatarURL({ size: 1024 }) : null;
+    const embedColor = (targetMember?.displayHexColor && targetMember.displayHexColor !== '#000000')
+        ? targetMember.displayHexColor
+        : (fetchedUser.hexAccentColor || '#5865F2');
+
+    const embed = await createEmbed(interaction, {
+        title: isPtBr ? `Informações de ${targetUser.username}` : `Information for ${targetUser.username}`,
+        fields,
+        thumbnail: avatarUrl,
+        color: embedColor,
+        targetUser,
+    });
+
+    if (bannerUrl && embed.setImage) {
+        embed.setImage(bannerUrl);
+    }
+
+    const buttons = [];
+    if (avatarUrl) {
+        buttons.push(
+            new ButtonBuilder()
+                .setLabel(isPtBr ? 'Ver Avatar' : 'View Avatar')
+                .setStyle(ButtonStyle.Link)
+                .setURL(avatarUrl)
+        );
+    }
+    if (bannerUrl) {
+        buttons.push(
+            new ButtonBuilder()
+                .setLabel(isPtBr ? 'Ver Banner' : 'View Banner')
+                .setStyle(ButtonStyle.Link)
+                .setURL(bannerUrl)
+        );
+    }
+
+    const payload = { embeds: [embed] };
+    if (buttons.length > 0) {
+        payload.components = [new ActionRowBuilder().addComponents(buttons)];
+    }
+
+    return payload;
+}
+
+module.exports = {
+    buildUserProfilePayload,
+    BADGE_MAP,
+};

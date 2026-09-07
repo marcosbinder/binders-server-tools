@@ -10,8 +10,8 @@ async function createEmbed(context, options = {}) {
     const embedConfig = { ...defaultConfig, ...options };
     
     // descobre quem é o user da interação/msg
-    const userSource = context.user || context.author;
-    const clientUser = context.client.user;
+    const userSource = context.user || context.author || { id: '0', tag: 'User', username: 'User', displayAvatarURL: () => null };
+    const clientUser = context.client?.user || { displayName: "Binder's Server Tools", displayAvatarURL: () => null };
     const targetUser = options.targetUser || userSource;
 
     const embed = new EmbedBuilder()
@@ -21,26 +21,26 @@ async function createEmbed(context, options = {}) {
     // logica de contexto pra montar o embed certo em server, dm ou app de usuário
     if (context.guild) {
         // se a interação tiver as infos do servidor, monta o embed completo
-        const member = await context.guild.members.fetch(targetUser.id).catch(() => null);
-        const displayName = member ? member.displayName : targetUser.username;
+        const member = await context.guild.members?.fetch?.(targetUser.id).catch(() => null);
+        const displayName = member ? member.displayName : (targetUser.displayName || targetUser.username || 'User');
 
         embed.setAuthor({
-            name: `${displayName} | @${targetUser.tag}`,
-            iconURL: targetUser.displayAvatarURL(),
+            name: `${displayName} | @${targetUser.tag || targetUser.username || 'User'}`,
+            iconURL: typeof targetUser.displayAvatarURL === 'function' ? targetUser.displayAvatarURL() : null,
         });
         embed.setFooter({
-            text: `${context.guild.name} - ${clientUser.displayName}`,
-            iconURL: context.guild.iconURL({ dynamic: true }),
+            text: `${context.guild.name || 'Server'} - ${clientUser.displayName}`,
+            iconURL: typeof context.guild.iconURL === 'function' ? context.guild.iconURL({ dynamic: true }) : null,
         });
     } else {
         // se não tiver (é dm ou comando de app), monta um embed mais simples
         embed.setAuthor({
-            name: targetUser.tag,
-            iconURL: targetUser.displayAvatarURL(),
+            name: targetUser.tag || targetUser.username || 'User',
+            iconURL: typeof targetUser.displayAvatarURL === 'function' ? targetUser.displayAvatarURL() : null,
         });
         embed.setFooter({
             text: clientUser.displayName,
-            iconURL: clientUser.displayAvatarURL(),
+            iconURL: typeof clientUser.displayAvatarURL === 'function' ? clientUser.displayAvatarURL() : null,
         });
     }
     

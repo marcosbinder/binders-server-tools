@@ -1,8 +1,9 @@
-const { getUser } = require('../../database/db.js');
+const { getUser, getUserSync } = require('../../database/db.js');
 
 function getLanguage(context) {
-    const userId = context.user ? context.user.id : context.author.id;
-    const userData = getUser(userId);
+    const userId = context.user ? context.user.id : context.author?.id;
+    const fetchFn = (typeof getUserSync === 'function') ? getUserSync : getUser;
+    const userData = (typeof fetchFn === 'function' && userId) ? fetchFn(userId) : { language: 'lang_auto' };
 
     // checa a preferência salva no db
     switch (userData.language) {

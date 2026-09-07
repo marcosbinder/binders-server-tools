@@ -1,4 +1,11 @@
+/**
+ * @file config.js
+ * @description Backward-compatible wrapper forwarding to central config index.js
+ */
+
+const config = require('./index.js');
 
 module.exports = {
-    currentTosVersion: 2, 
+    ...config,
+    currentTosVersion: 2,
 };

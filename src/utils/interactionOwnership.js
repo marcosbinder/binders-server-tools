@@ -1,21 +1,22 @@
 const { MessageFlags } = require('discord.js');
 const getLanguage = require('./getLanguage');
+const emojis = require('../config/emojis.js');
 
 // msgs pro curioso que clica onde n deve
 const errorMessages = {
     pt_BR: [
-        '<:x_:1394185776807546963> Seu inxerido! Esse botão não é pra você!',
-        '<:x_:1394185776807546963> Epa, epa! Interação privada, meu caro.',
-        '<:x_:1394185776807546963> Se entrometendo... Esse botão não te pertence.',
-        '<:x_:1394185776807546963> Tira a mão! Isso aqui é de outro usuário.',
-        '<:x_:1394185776807546963> Cada um no seu quadrado, esse botão não é seu.'
+        `${emojis.x_} Seu inxerido! Esse botão não é pra você!`,
+        `${emojis.x_} Epa, epa! Interação privada, meu caro.`,
+        `${emojis.x_} Se entrometendo... Esse botão não te pertence.`,
+        `${emojis.x_} Tira a mão! Isso aqui é de outro usuário.`,
+        `${emojis.x_} Cada um no seu quadrado, esse botão não é seu.`
     ],
     en_US: [
-        '<:x_:1394185776807546963> Hey, meddler! This button isn\'t for you!',
-        '<:x_:1394185776807546963> Whoa there! This is a private interaction.',
-        '<:x_:1394185776807546963> Meddling... This button doesn\'t belong to you.',
-        '<:x_:1394185776807546963> Hands off! This one is for someone else.',
-        '<:x_:1394185776807546963> Not your button, not your business.'
+        `${emojis.x_} Hey, meddler! This button isn't for you!`,
+        `${emojis.x_} Whoa there! This is a private interaction.`,
+        `${emojis.x_} Meddling... This button doesn't belong to you.`,
+        `${emojis.x_} Hands off! This one is for someone else.`,
+        `${emojis.x_} Not your button, not your business.`
     ]
 };
 
