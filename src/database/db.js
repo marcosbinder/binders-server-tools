@@ -160,11 +160,103 @@ function createDailyBackup() {
 let sqliteInitAttempted = false;
 
 /**
+ * Aplica migrações automáticas e cria tabelas individualmente no SQLite
+ * @param {any} db Instância do better-sqlite3
+ */
+function migrateSqliteTables(db) {
+    if (!db) return;
+
+    // 1. Criação individual resiliente de tabelas
+    const tableSchemas = [
+        `CREATE TABLE IF NOT EXISTS users (
+            userId TEXT PRIMARY KEY,
+            tosVersion INTEGER NOT NULL DEFAULT 0,
+            language TEXT NOT NULL DEFAULT 'lang_auto',
+            lastKnownLocale TEXT,
+            badges TEXT DEFAULT '[]',
+            isDeveloper INTEGER NOT NULL DEFAULT 0,
+            createdAt INTEGER DEFAULT 0,
+            updatedAt INTEGER DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS guilds (
+            guildId TEXT PRIMARY KEY,
+            antiraidEnabled INTEGER NOT NULL DEFAULT 0,
+            welcomeChannelId TEXT,
+            goodbyeChannelId TEXT,
+            createdAt INTEGER DEFAULT 0,
+            updatedAt INTEGER DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS ai_history (
+            messageId TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp INTEGER NOT NULL,
+            createdAt INTEGER DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS reminders (
+            id TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            guildId TEXT,
+            channelId TEXT,
+            message TEXT NOT NULL,
+            dueTimestamp INTEGER NOT NULL,
+            createdAt INTEGER DEFAULT 0,
+            completed INTEGER NOT NULL DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS sync_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL,
+            entityId TEXT NOT NULL,
+            payload TEXT NOT NULL,
+            createdAt INTEGER DEFAULT 0
+        )`
+    ];
+
+    for (const sql of tableSchemas) {
+        try {
+            db.exec(sql);
+        } catch (e) {
+            console.error('[Database/SQLite] Erro ao criar tabela:', e.message);
+        }
+    }
+
+    // 2. Migração automática de colunas caso o banco main.db já existisse na hospedagem com esquema antigo
+    try {
+        if (typeof db.pragma === 'function') {
+            const userCols = db.pragma('table_info(users)').map(c => c.name);
+            if (!userCols.includes('createdAt')) db.exec('ALTER TABLE users ADD COLUMN createdAt INTEGER DEFAULT 0');
+            if (!userCols.includes('updatedAt')) db.exec('ALTER TABLE users ADD COLUMN updatedAt INTEGER DEFAULT 0');
+            if (!userCols.includes('badges')) db.exec("ALTER TABLE users ADD COLUMN badges TEXT DEFAULT '[]'");
+            if (!userCols.includes('isDeveloper')) db.exec('ALTER TABLE users ADD COLUMN isDeveloper INTEGER DEFAULT 0');
+            if (!userCols.includes('lastKnownLocale')) db.exec('ALTER TABLE users ADD COLUMN lastKnownLocale TEXT');
+            if (!userCols.includes('language')) db.exec("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'lang_auto'");
+            if (!userCols.includes('tosVersion')) db.exec('ALTER TABLE users ADD COLUMN tosVersion INTEGER DEFAULT 0');
+
+            const guildCols = db.pragma('table_info(guilds)').map(c => c.name);
+            if (!guildCols.includes('createdAt')) db.exec('ALTER TABLE guilds ADD COLUMN createdAt INTEGER DEFAULT 0');
+            if (!guildCols.includes('updatedAt')) db.exec('ALTER TABLE guilds ADD COLUMN updatedAt INTEGER DEFAULT 0');
+            if (!guildCols.includes('antiraidEnabled')) db.exec('ALTER TABLE guilds ADD COLUMN antiraidEnabled INTEGER DEFAULT 0');
+            if (!guildCols.includes('welcomeChannelId')) db.exec('ALTER TABLE guilds ADD COLUMN welcomeChannelId TEXT');
+            if (!guildCols.includes('goodbyeChannelId')) db.exec('ALTER TABLE guilds ADD COLUMN goodbyeChannelId TEXT');
+
+            const reminderCols = db.pragma('table_info(reminders)').map(c => c.name);
+            if (!reminderCols.includes('createdAt')) db.exec('ALTER TABLE reminders ADD COLUMN createdAt INTEGER DEFAULT 0');
+            if (!reminderCols.includes('completed')) db.exec('ALTER TABLE reminders ADD COLUMN completed INTEGER DEFAULT 0');
+            if (!reminderCols.includes('guildId')) db.exec('ALTER TABLE reminders ADD COLUMN guildId TEXT');
+            if (!reminderCols.includes('channelId')) db.exec('ALTER TABLE reminders ADD COLUMN channelId TEXT');
+        }
+    } catch (e) {
+        console.warn('[Database/SQLite] Aviso na verificação de colunas:', e.message);
+    }
+}
+
+/**
  * Inicializa a instância local do SQLite com contingência em memória caso bindings falhem
  */
 function initSqliteFallback() {
     if (sqliteDb) return sqliteDb;
-    if (sqliteInitAttempted) return sqliteDb;
+    if (sqliteInitAttempted && sqliteDb === null) return null;
     sqliteInitAttempted = true;
 
     try {
@@ -181,58 +273,15 @@ function initSqliteFallback() {
         // Agenda backup diário recorrente a cada 24 horas
         setInterval(createDailyBackup, 24 * 60 * 60 * 1000).unref();
 
-        const createTablesStmt = `
-            CREATE TABLE IF NOT EXISTS users (
-                userId TEXT PRIMARY KEY,
-                tosVersion INTEGER NOT NULL DEFAULT 0,
-                language TEXT NOT NULL DEFAULT 'lang_auto',
-                lastKnownLocale TEXT,
-                badges TEXT DEFAULT '[]',
-                isDeveloper INTEGER NOT NULL DEFAULT 0,
-                createdAt INTEGER DEFAULT (strftime('%s', 'now')),
-                updatedAt INTEGER DEFAULT (strftime('%s', 'now'))
-            );
-            CREATE TABLE IF NOT EXISTS guilds (
-                guildId TEXT PRIMARY KEY,
-                antiraidEnabled INTEGER NOT NULL DEFAULT 0,
-                welcomeChannelId TEXT,
-                goodbyeChannelId TEXT,
-                createdAt INTEGER DEFAULT (strftime('%s', 'now')),
-                updatedAt INTEGER DEFAULT (strftime('%s', 'now'))
-            );
-            CREATE TABLE IF NOT EXISTS ai_history (
-                messageId TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                role TEXT NOT NULL,
-                content TEXT NOT NULL,
-                timestamp INTEGER NOT NULL,
-                createdAt INTEGER DEFAULT (strftime('%s', 'now'))
-            );
-            CREATE TABLE IF NOT EXISTS reminders (
-                id TEXT PRIMARY KEY,
-                userId TEXT NOT NULL,
-                guildId TEXT,
-                channelId TEXT,
-                message TEXT NOT NULL,
-                dueTimestamp INTEGER NOT NULL,
-                createdAt INTEGER DEFAULT (strftime('%s', 'now')),
-                completed INTEGER NOT NULL DEFAULT 0
-            );
-            CREATE TABLE IF NOT EXISTS sync_queue (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type TEXT NOT NULL,
-                entityId TEXT NOT NULL,
-                payload TEXT NOT NULL,
-                createdAt INTEGER DEFAULT (strftime('%s', 'now'))
-            );
-        `;
-        sqliteDb.exec(createTablesStmt);
+        migrateSqliteTables(sqliteDb);
+
         if (databaseMode !== 'supabase') {
             databaseMode = 'sqlite';
         }
         console.log('[Database] Fallback SQLite pronto em:', dbPath);
         return sqliteDb;
     } catch (nativeErr) {
+        sqliteDb = null;
         console.warn('[Database] better-sqlite3 indisponível ou incompatível:', nativeErr.message);
         console.warn('[Database] Ativando armazenamento resiliente em memória (Mock Memory Layer).');
         if (databaseMode !== 'supabase') {
