@@ -131,7 +131,22 @@ module.exports = {
         const canProceed = await tosCheck(interaction);
         if (!canProceed) return;
         
-        const subCommandName = interaction.options.getSubcommand();
+        const rawSub = interaction.options.getSubcommand();
+        const subcommandCanonicalMap = {
+            'ajuda': 'ajuda',
+            'help': 'ajuda',
+            'info': 'info',
+            'ping': 'ping',
+            'convidar': 'convidar',
+            'invite': 'convidar',
+            'feedback': 'feedback',
+            'bugreport': 'bugreport',
+            'novidades': 'novidades',
+            'news': 'novidades',
+            'idioma': 'idioma',
+            'language': 'idioma',
+        };
+        const subCommandName = subcommandCanonicalMap[rawSub] || rawSub;
 
         if (subcommandsInDevelopment.includes(subCommandName)) {
             return devSubcommandHandler.execute(interaction);

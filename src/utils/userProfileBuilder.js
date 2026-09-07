@@ -89,29 +89,40 @@ async function buildUserProfilePayload(interaction, client, targetUser, targetMe
     ];
 
     if (isGuild && targetMember) {
-        const highestRoleName = targetMember.roles?.highest?.name || '@everyone';
-        const totalRoles = targetMember.roles?.cache?.size ?? 0;
+        const highestRoleName = targetMember.roles?.highest?.name || (Array.isArray(targetMember.roles) ? '@everyone' : '@everyone');
+        const totalRoles = targetMember.roles?.cache?.size ?? (Array.isArray(targetMember.roles) ? targetMember.roles.length : 0);
         fields.push({
             name: isPtBr ? `${getEmoji('selostaff')} Hierarquia & Cargos` : `${getEmoji('selostaff')} Hierarchy & Roles`,
             value: `**${isPtBr ? 'Maior Cargo' : 'Highest Role'}:** ${highestRoleName}\n**${isPtBr ? 'Total' : 'Total'}:** ${totalRoles}`,
             inline: true,
         });
 
-        fields.push({
-            name: `${getEmoji('booster')} Booster`,
-            value: targetMember.premiumSince
-                ? `${isPtBr ? 'Desde' : 'Since'} <t:${Math.floor(new Date(targetMember.premiumSince).getTime() / 1000)}:R>`
-                : (isPtBr ? 'Não' : 'No'),
-            inline: true,
-        });
+        if (targetMember.premiumSince) {
+            const premTimestamp = Math.floor(new Date(targetMember.premiumSince).getTime() / 1000);
+            fields.push({
+                name: `${getEmoji('booster')} Booster`,
+                value: !isNaN(premTimestamp)
+                    ? `${isPtBr ? 'Desde' : 'Since'} <t:${premTimestamp}:R>`
+                    : (isPtBr ? 'Sim' : 'Yes'),
+                inline: true,
+            });
+        } else {
+            fields.push({
+                name: `${getEmoji('booster')} Booster`,
+                value: isPtBr ? 'Não' : 'No',
+                inline: true,
+            });
+        }
 
         if (targetMember.joinedAt) {
             const joinedTimestamp = Math.floor(new Date(targetMember.joinedAt).getTime() / 1000);
-            fields.push({
-                name: isPtBr ? `${getEmoji('calendario')} Entrada no Servidor` : `${getEmoji('calendario')} Server Join Date`,
-                value: `<t:${joinedTimestamp}:F>`,
-                inline: false,
-            });
+            if (!isNaN(joinedTimestamp)) {
+                fields.push({
+                    name: isPtBr ? `${getEmoji('calendario')} Entrada no Servidor` : `${getEmoji('calendario')} Server Join Date`,
+                    value: `<t:${joinedTimestamp}:F>`,
+                    inline: false,
+                });
+            }
         }
     }
 

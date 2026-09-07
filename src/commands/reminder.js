@@ -123,7 +123,15 @@ module.exports = {
         const canProceed = await tosCheck(interaction);
         if (!canProceed) return;
 
-        const sub = interaction.options.getSubcommand();
+        const rawSub = interaction.options.getSubcommand();
+        const sub = {
+            'criar': 'criar',
+            'create': 'criar',
+            'listar': 'listar',
+            'list': 'listar',
+            'cancelar': 'cancelar',
+            'cancel': 'cancelar',
+        }[rawSub] || rawSub;
         const lang = getLanguage(interaction);
         const isPtBr = lang === 'pt_BR';
 

@@ -54,6 +54,9 @@ async function createEmbed(context, options = {}) {
     if (options.thumbnail) {
         embed.setThumbnail(options.thumbnail);
     }
+    if (options.image) {
+        embed.setImage(options.image);
+    }
     if (options.fields) {
         embed.addFields(options.fields);
     }

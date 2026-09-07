@@ -42,6 +42,9 @@ async function safeReply(interaction, payload, options = {}) {
         return await interaction.reply(finalPayload);
     } catch (err) {
         // Suppress interaction expiry/already replied errors without crashing
+        if (err && err.code !== 10062 && err.code !== 40060) {
+            console.error('[safeReply] Error responding to interaction:', err.rawError || err.message || err);
+        }
         return null;
     }
 }

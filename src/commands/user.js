@@ -94,8 +94,18 @@ module.exports = {
         let targetMember = null;
         if (interaction.guild) {
             targetMember = (typeof interaction.options?.getMember === 'function' ? (interaction.options.getMember('usuario') || interaction.options.getMember('user')) : null);
+            if (!targetMember && targetUser.id === interaction.user?.id && interaction.member) {
+                targetMember = interaction.member;
+            }
             if (!targetMember && interaction.guild.members?.cache) {
                 targetMember = interaction.guild.members.cache.get(targetUser.id) || null;
+            }
+            if (!targetMember && typeof interaction.guild.members?.fetch === 'function') {
+                try {
+                    targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+                } catch {
+                    targetMember = null;
+                }
             }
         }
 
@@ -118,8 +128,9 @@ module.exports = {
 
             const primaryUrl = serverAvatarUrl || globalAvatarUrl;
 
+            const serverName = interaction.guild?.name || (isPtBr ? 'Servidor' : 'Server');
             const description = (serverAvatarUrl && serverAvatarUrl !== globalAvatarUrl)
-                ? (isPtBr ? `Exibindo o avatar no servidor **${interaction.guild.name}**.` : `Displaying avatar in **${interaction.guild.name}**.`)
+                ? (isPtBr ? `Exibindo o avatar no servidor **${serverName}**.` : `Displaying avatar in **${serverName}**.`)
                 : (isPtBr ? 'Exibindo o avatar global do usuário.' : 'Displaying global user avatar.');
 
             const embed = await createEmbed(interaction, {
