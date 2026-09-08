@@ -19,8 +19,8 @@ async function buildCoinflipPayload(interaction, user) {
     const resultEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
     const resultName = isPtBr ? (isHeads ? 'Cara' : 'Coroa') : (isHeads ? 'Heads' : 'Tails');
     const resultText = isPtBr
-        ? `🪙 A moeda girou no ar e caiu com **${resultName}** virada para cima! ${resultEmoji}`
-        : `🪙 The coin flipped in the air and landed on **${resultName}**! ${resultEmoji}`;
+        ? `${getEmoji('brilho')} A moeda girou no ar e caiu com **${resultName}** virada para cima! ${resultEmoji}`
+        : `${getEmoji('brilho')} The coin flipped in the air and landed on **${resultName}**! ${resultEmoji}`;
 
     const embed = await createEmbed(interaction, {
         title: isPtBr ? `${getEmoji('estrela')} Cara ou Coroa` : `${getEmoji('estrela')} Coin Flip`,
@@ -47,7 +47,7 @@ async function buildCoinflipPayload(interaction, user) {
         .setCustomId(`coinflip_reroll_${user.id}`)
         .setLabel(isPtBr ? 'Girar Novamente' : 'Flip Again')
         .setStyle(ButtonStyle.Primary)
-        .setEmoji('🔄');
+        .setEmoji(getEmoji('orbita'));
 
     const actionRow = new ActionRowBuilder().addComponents(rerollButton);
 
