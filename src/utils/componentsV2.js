@@ -304,7 +304,9 @@ function createV2Payload(options = {}) {
  */
 function embedToV2Container(embed) {
     if (!embed) return null;
+    if (embed._v2Container) return embed._v2Container;
     const data = typeof embed.toJSON === 'function' ? embed.toJSON() : (embed.data || embed);
+    if (data?._v2Container) return data._v2Container;
 
     const containerComponents = [];
 

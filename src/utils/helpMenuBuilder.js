@@ -3,7 +3,7 @@
  * @description Centralized builder for interactive Components V2 Help Menu
  */
 
-const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder, parseEmoji } = require('discord.js');
 const getLanguage = require('./getLanguage.js');
 const createEmbed = require('./createEmbed.js');
 const { getEmoji } = require('../config/emojis.js');
@@ -179,12 +179,12 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
         .setCustomId(`help_nav_${userId}`)
         .setPlaceholder(isPtBr ? 'Escolha uma categoria...' : 'Choose a category...')
         .addOptions([
-            { label: isPtBr ? 'Início' : 'Home', value: 'home', emoji: { id: '1397393887068160030', name: 'casa' }, default: selectedCategory === 'home' },
-            { label: isPtBr ? 'Sistema' : 'System', value: 'sistema', emoji: { id: '1397393671791312906', name: 'vscode' }, default: selectedCategory === 'sistema' },
-            { label: isPtBr ? 'Utilidades & Games' : 'Utilities & Gaming', value: 'utilidades', emoji: { id: '1397391857905827981', name: 'ferramenta1' }, default: selectedCategory === 'utilidades' },
-            { label: isPtBr ? 'Moderação' : 'Moderation', value: 'moderacao', emoji: { id: '1394186596160503920', name: 'cadeadofechado' }, default: selectedCategory === 'moderacao' },
-            { label: isPtBr ? 'Construtor V2' : 'Studio Builder', value: 'builder', emoji: { id: '1394142646271738018', name: 'pasta' }, default: selectedCategory === 'builder' },
-            { label: isPtBr ? 'Suporte & Feedback' : 'Support & Feedback', value: 'seguranca', emoji: { id: '1393820810434576434', name: 'suporte' }, default: selectedCategory === 'seguranca' },
+            { label: isPtBr ? 'Início' : 'Home', value: 'home', emoji: parseEmoji(getEmoji('casa')), default: selectedCategory === 'home' },
+            { label: isPtBr ? 'Sistema' : 'System', value: 'sistema', emoji: parseEmoji(getEmoji('vscode')), default: selectedCategory === 'sistema' },
+            { label: isPtBr ? 'Utilidades & Games' : 'Utilities & Gaming', value: 'utilidades', emoji: parseEmoji(getEmoji('ferramenta1')), default: selectedCategory === 'utilidades' },
+            { label: isPtBr ? 'Moderação' : 'Moderation', value: 'moderacao', emoji: parseEmoji(getEmoji('cadeadofechado')), default: selectedCategory === 'moderacao' },
+            { label: isPtBr ? 'Construtor V2' : 'Studio Builder', value: 'builder', emoji: parseEmoji(getEmoji('pasta')), default: selectedCategory === 'builder' },
+            { label: isPtBr ? 'Suporte & Feedback' : 'Support & Feedback', value: 'seguranca', emoji: parseEmoji(getEmoji('suporte')), default: selectedCategory === 'seguranca' },
         ]);
 
     const colors = require('../config/colors.js');
@@ -209,8 +209,8 @@ async function buildHelpPayload(interaction, selectedCategory = 'home') {
     containerComponents.push(createSeparator(true, 1));
     containerComponents.push(
         createTextDisplay(isPtBr 
-            ? '-# 📖 Binder\'s Server Tools • Central de Ajuda Oficial' 
-            : '-# 📖 Binder\'s Server Tools • Official Help Center')
+            ? `-# ${getEmoji('carta')} Binder's Server Tools • Central de Ajuda Oficial` 
+            : `-# ${getEmoji('carta')} Binder's Server Tools • Official Help Center`)
     );
 
     const helpContainer = createContainer({

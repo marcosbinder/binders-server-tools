@@ -21,6 +21,12 @@ function getCommandsList() {
         'convidar',
         'feedback',
         'bugreport',
+        'commands',
+        'ajuda',
+        'help',
+        'news',
+        'idioma',
+        'language',
     ]);
 
     function loadCommandsRecursively(dir) {
@@ -58,7 +64,7 @@ async function deployCommands(options = {}) {
     const clientId = options.clientId || process.env.CLIENT_ID;
     const guildId = options.guildId !== undefined ? options.guildId : (process.env.GUILD_ID || null);
     const isClear = options.clear || false;
-    const isGlobal = options.global !== undefined ? options.global : (!guildId);
+    const isGlobal = options.global !== undefined ? options.global : true;
 
     if (!token) {
         console.warn('[AVISO] DISCORD_TOKEN não definido. Deploy de comandos ignorado.');
@@ -83,6 +89,19 @@ async function deployCommands(options = {}) {
             console.log(`[SUCESSO] ${data.length} comandos registrados com sucesso na guilda!`);
             return { success: true, count: data.length, isGlobal: false };
         } else {
+            if (process.env.GUILD_ID) {
+                try {
+                    console.log(`[DEPLOY] Limpando comandos locais na guilda de testes (${process.env.GUILD_ID}) para evitar duplicatas...`);
+                    await rest.put(
+                        Routes.applicationGuildCommands(clientId, process.env.GUILD_ID),
+                        { body: [] }
+                    );
+                    console.log(`[SUCESSO] Comandos locais da guilda de testes limpos com sucesso.`);
+                } catch (err) {
+                    console.warn(`[AVISO] Falha ao limpar comandos locais da guilda: ${err.message}`);
+                }
+            }
+
             console.log(`[DEPLOY] ${isClear ? 'Limpando' : 'Registrando'} ${commands.length} comandos globalmente...`);
             const data = await rest.put(
                 Routes.applicationCommands(clientId),

@@ -18,6 +18,9 @@ module.exports = {
             'en-US': 'Roblox ❯ Fetches information for Roblox users or games.',
             'pt-BR': 'Roblox ❯ Consulta informações de jogadores ou jogos do Roblox.',
         })
+        .setIntegrationTypes([0, 1])
+        .setContexts([0, 1, 2])
+        .setDMPermission(true)
         .addSubcommand(sub =>
             sub
                 .setName('usuario')
@@ -164,14 +167,14 @@ module.exports = {
                     : (isPtBr ? 'Sem descrição.' : 'No description available.');
 
                 const fields = [
-                    { name: isPtBr ? '🎮 Experiência' : '🎮 Experience', value: `**${gameName}**`, inline: true },
-                    { name: isPtBr ? '🔨 Criador' : '🔨 Creator', value: creatorName, inline: true },
+                    { name: isPtBr ? `${getEmoji('videogame')} Experiência` : `${getEmoji('videogame')} Experience`, value: `**${gameName}**`, inline: true },
+                    { name: isPtBr ? `${getEmoji('ferramenta1')} Criador` : `${getEmoji('ferramenta1')} Creator`, value: creatorName, inline: true },
                     { name: 'Place ID', value: `\`${placeId}\``, inline: true },
                 ];
 
                 if (playing !== null && playing !== undefined) {
                     fields.push({
-                        name: isPtBr ? '👥 Jogando Agora' : '👥 Active Players',
+                        name: isPtBr ? `${getEmoji('pessoas1')} Jogando Agora` : `${getEmoji('pessoas1')} Active Players`,
                         value: `\`${playing.toLocaleString()}\``,
                         inline: true,
                     });
@@ -179,14 +182,14 @@ module.exports = {
 
                 if (visits !== null && visits !== undefined) {
                     fields.push({
-                        name: isPtBr ? '👁️ Visitas Totais' : '👁️ Total Visits',
+                        name: isPtBr ? `${getEmoji('lupa')} Visitas Totais` : `${getEmoji('lupa')} Total Visits`,
                         value: `\`${visits.toLocaleString()}\``,
                         inline: true,
                     });
                 }
 
                 fields.push({
-                    name: isPtBr ? '📝 Descrição' : '📝 Description',
+                    name: isPtBr ? `${getEmoji('lapis')} Descrição` : `${getEmoji('lapis')} Description`,
                     value: descSnippet,
                     inline: false,
                 });
@@ -325,8 +328,8 @@ module.exports = {
             const robloxEmoji = getEmoji('roblox');
 
             const fields = [
-                { name: isPtBr ? '👤 Nome de Exibição' : '👤 Display Name', value: displayName, inline: true },
-                { name: isPtBr ? '🏷️ Username' : '🏷️ Username', value: `@${username}`, inline: true },
+                { name: isPtBr ? `${getEmoji('pessoa')} Nome de Exibição` : `${getEmoji('pessoa')} Display Name`, value: displayName, inline: true },
+                { name: isPtBr ? `${getEmoji('ticket')} Username` : `${getEmoji('ticket')} Username`, value: `@${username}`, inline: true },
                 { name: 'ID', value: '`' + robloxUserId + '`', inline: true },
             ];
 
@@ -341,7 +344,7 @@ module.exports = {
 
             if (description && description.trim().length > 0) {
                 fields.push({
-                    name: isPtBr ? '📝 Bio / Sobre' : '📝 Bio / About',
+                    name: isPtBr ? `${getEmoji('lapis')} Bio / Sobre` : `${getEmoji('lapis')} Bio / About`,
                     value: description.length > 300 ? description.substring(0, 297) + '...' : description,
                     inline: false,
                 });

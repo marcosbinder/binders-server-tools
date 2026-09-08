@@ -22,6 +22,8 @@
 | **BK-12** | Visualizador Dedicado de Banner do Servidor (`/server banner`) | Baixa | Baixa | ⏳ Planejado |
 | **BK-13** | Sistema de Reputação entre Usuários (`/rep`) | Média | Média | ⏳ Planejado |
 | **BK-14** | Informações Detalhadas de Cargos (`/role info`) | Baixa | Média | ⏳ Planejado |
+| **BK-15** | Visão de Perfil Exclusivo do Servidor (`/user info server`) | Média | Alta | ⏳ Planejado |
+| **BK-16** | Central de Emojis e Expressões do Servidor (`/server emojis`) | Baixa | Média | ⏳ Planejado |
 
 ---
 
@@ -120,3 +122,15 @@
 - **Arquitetura**:
   - Subcomando `/server cargo [cargo]` ou comando `/role info [cargo]`.
   - Formatação com blocos de cor e resumo de permissões administrativas.
+
+### 15. BK-15: Visão de Perfil Exclusivo do Servidor (`/user info server`)
+- **Descrição**: Permitir alternar ou visualizar dados específicos do membro dentro do servidor atual (avatar do servidor, apelido local, data de entrada com timestamp dinâmico, tempo como booster, lista completa de cargos com cores e permissões chave no servidor).
+- **Arquitetura**:
+  - Opção no `/user info` ou botão interativo `Ver no Servidor` no payload de perfil.
+  - Formatação adaptativa caso o bot esteja no servidor ou em contexto de User App.
+
+### 16. BK-16: Central de Emojis e Expressões do Servidor (`/server emojis`)
+- **Descrição**: Painel e botão no `/server info` para visualizar e baixar todas as expressões, figurinhas e emojis personalizados do servidor em alta resolução (PNG/GIF/WEBP).
+- **Arquitetura**:
+  - Botão no rodapé de `/server info` abrindo menu ou modal com listagem paginada dos emojis e links diretos para download.
+

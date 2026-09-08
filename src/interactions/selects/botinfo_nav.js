@@ -87,14 +87,34 @@ async function buildPage(page, interaction, client) {
             });
             break;
 
-        case 'page_thanks':
+        case 'page_thanks': {
             const thanksList = inspirations.map(i => `[${i.name}](https://discord.com/users/${i.id})`).join(', ');
+            const thanksText = isPtBr 
+                ? `Agradecimentos especiais para a Vitória pela arte e apoio! Me inspiro em bots e pessoas como ${thanksList}.` 
+                : `Special thanks to Vitória for the art and support! I'm inspired by bots and people like ${thanksList}.`;
+            const obrigadoEmoji = emojis.coracaopixel || emojis.coracao2 || '👾';
+            const obrigadoText = isPtBr 
+                ? `${obrigadoEmoji} Obrigado a cada pessoa que faz parte dessa jornada!` 
+                : `${obrigadoEmoji} Thank you to everyone who is part of this journey!`;
+
             embed = await createEmbed(interaction, {
                 title: `[4/4] ${emojis.coracaopixel} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
-                description: `> ${isPtBr ? `Agradecimentos especiais para a Vitória pela arte e apoio! Me inspiro em bots e pessoas como ${thanksList}.` : `Special thanks to Vitória for the art and support! I'm inspired by bots and people like ${thanksList}.`}\n\n-# ${isPtBr ? 'Obrigado a cada pessoa que faz parte dessa jornada!' : 'Thank you to everyone who is part of this journey!'}`,
+                description: `> ${thanksText}\n\n-# ${obrigadoText}`,
                 color: colors.primary,
             });
+
+            const { createContainer, createTextDisplay, createSeparator } = require('../../utils/componentsV2.js');
+            embed._v2Container = createContainer({
+                accentColor: colors.primary || 0xAEA7BD,
+                components: [
+                    createTextDisplay(`### [4/4] ${emojis.coracaopixel} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`),
+                    createTextDisplay(`> ${thanksText}`),
+                    createSeparator(true, 1),
+                    createTextDisplay(`-# ${obrigadoText}`)
+                ]
+            });
             break;
+        }
             
         case 'page_home':
         default:

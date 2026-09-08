@@ -3,11 +3,12 @@
  * @description Slash command for Minecraft player skin/UUID and server status lookups
  */
 
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
 const { getEmoji } = require('../config/emojis.js');
+const colors = require('../config/colors.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -17,6 +18,9 @@ module.exports = {
             'en-US': 'Minecraft ❯ Looks up Minecraft player skins, UUIDs, or server status.',
             'pt-BR': 'Minecraft ❯ Consulta informações de jogadores ou servidores de Minecraft.',
         })
+        .setIntegrationTypes([0, 1])
+        .setContexts([0, 1, 2])
+        .setDMPermission(true)
         .addSubcommand(sub =>
             sub
                 .setName('jogador')
@@ -30,8 +34,27 @@ module.exports = {
                     opt
                         .setName('nome')
                         .setNameLocalizations({ 'en-US': 'username' })
-                        .setDescription('Nick do jogador no Minecraft Java')
+                        .setDescription('Nick do jogador no Minecraft (Java ou Bedrock)')
+                        .setDescriptionLocalizations({
+                            'en-US': 'Minecraft username or gamertag',
+                            'pt-BR': 'Nick do jogador no Minecraft (Java ou Bedrock)',
+                        })
                         .setRequired(true)
+                )
+                .addStringOption(opt =>
+                    opt
+                        .setName('edicao')
+                        .setNameLocalizations({ 'en-US': 'edition' })
+                        .setDescription('Edição do Minecraft (Java ou Bedrock)')
+                        .setDescriptionLocalizations({
+                            'en-US': 'Minecraft edition (Java or Bedrock)',
+                            'pt-BR': 'Edição do Minecraft (Java ou Bedrock)',
+                        })
+                        .addChoices(
+                            { name: 'Java Edition (Padrão)', value: 'java' },
+                            { name: 'Bedrock Edition (Xbox)', value: 'bedrock' }
+                        )
+                        .setRequired(false)
                 )
         )
         .addSubcommand(sub =>
@@ -72,37 +95,95 @@ module.exports = {
 
         await interaction.deferReply();
 
-        // JOGADOR
+        // ---------------------------------------------------------------------
+        // Subcomando: JOGADOR / PLAYER
+        // ---------------------------------------------------------------------
         if (sub === 'jogador' || sub === 'player') {
-            const nick = interaction.options.getString('nome') || interaction.options.getString('username');
+            const nick = (interaction.options.getString('nome') || interaction.options.getString('username') || '').trim();
+            const edicao = (interaction.options.getString('edicao') || interaction.options.getString('edition') || 'java').toLowerCase();
 
+            // Rota Bedrock via GeyserMC API
+            if (edicao === 'bedrock') {
+                try {
+                    const res = await fetch(`https://api.geysermc.org/v2/xbox/xuid/${encodeURIComponent(nick)}`).catch(() => null);
+                    if (!res || !res.ok) {
+                        return interaction.editReply({
+                            content: isPtBr
+                                ? `${getEmoji('errado')} Jogador Bedrock \`${nick}\` não foi encontrado na Xbox Live / GeyserMC.`
+                                : `${getEmoji('errado')} Bedrock player \`${nick}\` was not found on Xbox Live / GeyserMC.`,
+                        });
+                    }
+
+                    const data = await res.json().catch(() => null);
+                    if (!data?.xuid) {
+                        return interaction.editReply({
+                            content: isPtBr
+                                ? `${getEmoji('errado')} Jogador Bedrock \`${nick}\` não foi encontrado.`
+                                : `${getEmoji('errado')} Bedrock player \`${nick}\` was not found.`,
+                        });
+                    }
+
+                    const xuid = String(data.xuid);
+                    const hexXuid = BigInt(xuid).toString(16).padStart(16, '0');
+                    const floodgateUuid = `00000000-0000-0000-${hexXuid.slice(0, 4)}-${hexXuid.slice(4)}`;
+
+                    const embed = await createEmbed(interaction, {
+                        title: isPtBr ? `${getEmoji('minecraft')} Jogador Bedrock: ${nick}` : `${getEmoji('minecraft')} Bedrock Player: ${nick}`,
+                        fields: [
+                            { name: isPtBr ? `${getEmoji('pessoa')} Gamertag` : `${getEmoji('pessoa')} Gamertag`, value: `\`${nick}\``, inline: true },
+                            { name: isPtBr ? `${getEmoji('pasta')} Edição` : `${getEmoji('pasta')} Edition`, value: 'Bedrock Edition', inline: true },
+                            { name: isPtBr ? `${getEmoji('ticket')} XUID` : `${getEmoji('ticket')} XUID`, value: `\`${xuid}\``, inline: true },
+                            { name: isPtBr ? `${getEmoji('ferramenta1')} Floodgate UUID` : `${getEmoji('ferramenta1')} Floodgate UUID`, value: `\`${floodgateUuid}\``, inline: false },
+                        ],
+                        color: colors.primary || 0xAEA7BD,
+                    });
+
+                    return interaction.editReply({ embeds: [embed] });
+                } catch (err) {
+                    return interaction.editReply({
+                        content: isPtBr ? `${getEmoji('errado')} Erro ao consultar jogador Bedrock.` : `${getEmoji('errado')} Error fetching Bedrock player.`,
+                    });
+                }
+            }
+
+            // Rota Java Edition via Mojang API
             try {
                 const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(nick)}`).catch(() => null);
                 if (!res || !res.ok) {
                     return interaction.editReply({
                         content: isPtBr
                             ? `${getEmoji('errado')} Jogador \`${nick}\` não foi encontrado na Mojang oficial.`
-                            : `${getEmoji('errado')} Minecraft player \`${nick}\` was not found.`,
+                            : `${getEmoji('errado')} Minecraft player \`${nick}\` was not found on Mojang.`,
                     });
                 }
 
-                const data = await res.json();
+                const data = await res.json().catch(() => null);
+                if (!data?.id) {
+                    return interaction.editReply({
+                        content: isPtBr
+                            ? `${getEmoji('errado')} Dados inválidos retornados para o jogador \`${nick}\`.`
+                            : `${getEmoji('errado')} Invalid data returned for player \`${nick}\`.`,
+                    });
+                }
+
                 const uuid = data.id;
                 const name = data.name;
 
                 const bodyRender = `https://crafatar.com/renders/body/${uuid}?overlay=true`;
                 const headAvatar = `https://crafatar.com/avatars/${uuid}?overlay=true`;
                 const skinDownload = `https://crafatar.com/skins/${uuid}`;
+                const namemcUrl = `https://namemc.com/profile/${uuid}`;
 
                 const embed = await createEmbed(interaction, {
-                    title: isPtBr ? `${getEmoji('minecraft')} Jogador: ${name}` : `${getEmoji('minecraft')} Minecraft Player: ${name}`,
+                    title: isPtBr ? `${getEmoji('minecraft')} Jogador Java: ${name}` : `${getEmoji('minecraft')} Java Player: ${name}`,
                     fields: [
-                        { name: 'Nick', value: '`' + name + '`', inline: true },
-                        { name: 'UUID', value: '`' + uuid + '`', inline: true },
+                        { name: isPtBr ? `${getEmoji('pessoa')} Nick` : `${getEmoji('pessoa')} Username`, value: '`' + name + '`', inline: true },
+                        { name: isPtBr ? `${getEmoji('pasta')} Edição` : `${getEmoji('pasta')} Edition`, value: 'Java Edition', inline: true },
+                        { name: isPtBr ? `${getEmoji('ticket')} UUID` : `${getEmoji('ticket')} UUID`, value: '`' + uuid + '`', inline: false },
                     ],
                     thumbnail: headAvatar,
                     image: bodyRender,
-                    color: 0x57F287,
+                    color: colors.primary || 0xAEA7BD,
                 });
 
                 const row = new ActionRowBuilder().addComponents(
@@ -110,7 +191,12 @@ module.exports = {
                         .setLabel(isPtBr ? 'Baixar Skin' : 'Download Skin')
                         .setStyle(ButtonStyle.Link)
                         .setURL(skinDownload)
-                        .setEmoji(getEmoji('salvar'))
+                        .setEmoji(getEmoji('salvar')),
+                    new ButtonBuilder()
+                        .setLabel('NameMC')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(namemcUrl)
+                        .setEmoji(getEmoji('link') || getEmoji('mundo'))
                 );
 
                 return interaction.editReply({ embeds: [embed], components: [row] });
@@ -121,10 +207,12 @@ module.exports = {
             }
         }
 
-        // SERVIDOR
+        // ---------------------------------------------------------------------
+        // Subcomando: SERVIDOR / SERVER
+        // ---------------------------------------------------------------------
         if (sub === 'servidor' || sub === 'server') {
             const ip = interaction.options.getString('ip').trim();
-            const tipo = interaction.options.getString('tipo') || 'java';
+            const tipo = (interaction.options.getString('tipo') || 'java').toLowerCase();
 
             try {
                 const apiUrl = tipo === 'bedrock'
@@ -138,14 +226,14 @@ module.exports = {
                     });
                 }
 
-                const data = await res.json();
-                const isOnline = data.online === true;
+                const data = await res.json().catch(() => null);
+                const isOnline = data?.online === true;
 
                 if (!isOnline) {
                     const embed = await createEmbed(interaction, {
-                        title: isPtBr ? `${getEmoji('minecraft')} Servidor Minecraft: ${ip}` : `${getEmoji('minecraft')} Minecraft Server: ${ip}`,
-                        description: isPtBr ? `${getEmoji('vermelho')} O servidor encontra-se **Offline**.` : `${getEmoji('vermelho')} The server is currently **Offline**.`,
-                        color: 0xED4245,
+                        title: isPtBr ? `${getEmoji('minecraft')} Servidor: ${ip}` : `${getEmoji('minecraft')} Server: ${ip}`,
+                        description: isPtBr ? `${getEmoji('vermelho')} O servidor encontra-se **Offline** no momento.` : `${getEmoji('vermelho')} The server is currently **Offline**.`,
+                        color: colors.error || 0xED4245,
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }
@@ -158,16 +246,18 @@ module.exports = {
 
                 const fields = [
                     { name: isPtBr ? `${getEmoji('wifi')} Status` : `${getEmoji('wifi')} Status`, value: `${getEmoji('verde')} Online`, inline: true },
-                    { name: isPtBr ? `${getEmoji('pessoas1')} Jogadores` : `${getEmoji('pessoas1')} Players`, value: `**${playersOnline}** / **${playersMax}**`, inline: true },
+                    { name: isPtBr ? `${getEmoji('pessoas1')} Jogadores` : `${getEmoji('pessoas1')} Players`, value: `**${playersOnline.toLocaleString()}** / **${playersMax.toLocaleString()}**`, inline: true },
                     { name: isPtBr ? `${getEmoji('pasta')} Versão` : `${getEmoji('pasta')} Version`, value: version, inline: true },
-                    { name: 'MOTD', value: `\`\`\`${motdClean.length > 500 ? motdClean.substring(0, 497) + '...' : motdClean}\`\`\``, inline: false },
+                    { name: isPtBr ? `${getEmoji('informacao')} IP / Conexão` : `${getEmoji('informacao')} Server IP`, value: `\`${ip}\``, inline: true },
+                    { name: isPtBr ? `${getEmoji('ferramenta1')} Edição` : `${getEmoji('ferramenta1')} Edition`, value: tipo === 'bedrock' ? 'Bedrock' : 'Java', inline: true },
+                    { name: isPtBr ? `${getEmoji('lapis')} MOTD` : `${getEmoji('lapis')} MOTD`, value: `\`\`\`${motdClean.length > 500 ? motdClean.substring(0, 497) + '...' : motdClean}\`\`\``, inline: false },
                 ];
 
                 const embed = await createEmbed(interaction, {
-                    title: isPtBr ? `${getEmoji('minecraft')} Servidor Minecraft: ${ip}` : `${getEmoji('minecraft')} Minecraft Server: ${ip}`,
+                    title: isPtBr ? `${getEmoji('minecraft')} Servidor: ${ip}` : `${getEmoji('minecraft')} Server: ${ip}`,
                     fields,
                     thumbnail: icon,
-                    color: 0x57F287,
+                    color: colors.primary || 0xAEA7BD,
                 });
 
                 return interaction.editReply({ embeds: [embed] });

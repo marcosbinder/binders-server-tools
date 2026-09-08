@@ -146,11 +146,11 @@ describe('Adversarial Challenge Suite — Challenger 2', () => {
             const dbAfterLang = mockDb.getUser(newUserId);
             assert.equal(dbAfterLang.language, 'lang_en_us', 'Language preference must be persisted');
 
-            // Response check: Confirmation embed rendered and select menu removed
+            // Response check: Confirmation embed rendered and select menu retained for reselection
             assert.equal(selectInteraction._updates.length, 1);
             const finalConfirmation = selectInteraction._updates[0];
             assert.ok(finalConfirmation.embeds[0].data.title.includes('Settings Saved') || finalConfirmation.embeds[0].data.title.includes('Configuração Salva'));
-            assert.deepEqual(finalConfirmation.components, [], 'Select menu must be removed from view');
+            assert.equal(finalConfirmation.components.length, 1, 'Select menu must remain attached for reselection');
 
             // Step 4: Subsequent command execution allows user immediately
             const retryInteraction = createMockInteraction({

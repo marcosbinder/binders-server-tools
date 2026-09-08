@@ -8,6 +8,7 @@ const tosCheck = require('../utils/tosCheck.js');
 const { buildHelpPayload } = require('../utils/helpMenuBuilder.js');
 
 module.exports = {
+    deploy: false,
     data: new SlashCommandBuilder()
         .setName('ajuda')
         .setNameLocalizations({

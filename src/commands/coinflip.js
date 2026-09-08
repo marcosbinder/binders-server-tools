@@ -16,28 +16,24 @@ async function buildCoinflipPayload(interaction, user) {
     const isPtBr = lang === 'pt_BR';
 
     const isHeads = Math.random() < 0.5;
-    const resultEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
     const resultName = isPtBr ? (isHeads ? 'Cara' : 'Coroa') : (isHeads ? 'Heads' : 'Tails');
-    const resultText = isPtBr
-        ? `${getEmoji('brilho')} A moeda girou no ar e caiu com **${resultName}** virada para cima! ${resultEmoji}`
-        : `${getEmoji('brilho')} The coin flipped in the air and landed on **${resultName}**! ${resultEmoji}`;
+    const resultSideEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
 
     const embed = await createEmbed(interaction, {
-        title: isPtBr ? `${getEmoji('estrela')} Cara ou Coroa` : `${getEmoji('estrela')} Coin Flip`,
-        description: resultText,
+        title: isPtBr ? 'Cara ou Coroa' : 'Coin Flip',
+        description: isPtBr
+            ? `> A moeda girou no ar e caiu em **${resultName}**! ${resultSideEmoji}`
+            : `> The coin flipped in the air and landed on **${resultName}**! ${resultSideEmoji}`,
         color: colors.primary || 0xAEA7BD,
-        thumbnail: isHeads
-            ? 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f464.png'
-            : 'https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f451.png',
         fields: [
             {
-                name: isPtBr ? `${getEmoji('trofeu')} Resultado` : `${getEmoji('trofeu')} Result`,
+                name: isPtBr ? 'Resultado' : 'Result',
                 value: `**${resultName}**`,
                 inline: true,
             },
             {
-                name: isPtBr ? `${getEmoji('pessoa')} Lançado por` : `${getEmoji('pessoa')} Flipped by`,
-                value: `${user.username}`,
+                name: isPtBr ? 'Lançado por' : 'Flipped by',
+                value: `<@${user.id}>`,
                 inline: true,
             },
         ],
@@ -46,8 +42,8 @@ async function buildCoinflipPayload(interaction, user) {
     const rerollButton = new ButtonBuilder()
         .setCustomId(`coinflip_reroll_${user.id}`)
         .setLabel(isPtBr ? 'Girar Novamente' : 'Flip Again')
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji(getEmoji('orbita'));
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(getEmoji('reload') || getEmoji('orbita'));
 
     const actionRow = new ActionRowBuilder().addComponents(rerollButton);
 

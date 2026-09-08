@@ -12,6 +12,7 @@ const getLanguage = require('../utils/getLanguage.js');
 const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
+const { createContainer, createTextDisplay, createSeparator, createSection, createMediaGallery } = require('../utils/componentsV2.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -110,29 +111,41 @@ module.exports = {
 
             const ownerMention = guild.ownerId ? `<@${guild.ownerId}>` : (isPtBr ? 'Desconhecido' : 'Unknown');
 
-            const divider = '> ────────────────────────────────';
-            const serverDescLines = [
-                guild.description ? `> *${guild.description}*\n` : '',
+            const idCreationBlock = [
                 `### ${getEmoji('casa')} ${isPtBr ? 'Identificação & Criação' : 'Identification & Creation'}`,
                 `> • **ID:** \`${guild.id}\``,
                 `> • **${isPtBr ? 'Proprietário' : 'Owner'}:** ${getEmoji('coroa')} ${ownerMention}`,
-                `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`,
-                divider,
+                `> • **${isPtBr ? 'Criado em' : 'Created'}:** ${createdTimestamp ? `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)` : 'N/A'}`
+            ].join('\n');
+
+            const membersBlock = [
                 `### ${getEmoji('pessoas1')} ${isPtBr ? 'Membros' : 'Members'}`,
-                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `${getEmoji('pessoa')} \`${humanCount}\` humanos • ${getEmoji('bot')} \`${botCount}\` bots` : `${getEmoji('pessoa')} \`${humanCount}\` humans • ${getEmoji('bot')} \`${botCount}\` bots`})`,
-                divider,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalMembers}\` (${isPtBr ? `${getEmoji('pessoa')} \`${humanCount}\` humanos • ${getEmoji('bot')} \`${botCount}\` bots` : `${getEmoji('pessoa')} \`${humanCount}\` humans • ${getEmoji('bot')} \`${botCount}\` bots`})`
+            ].join('\n');
+
+            const channelsBlock = [
                 `### ${getEmoji('chatbubble')} ${isPtBr ? 'Canais & Categorias' : 'Channels & Categories'}`,
-                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `${getEmoji('chatbubble')} \`${textChannels}\` texto • ${getEmoji('speaker')} \`${voiceChannels}\` voz • ${getEmoji('pasta')} \`${categoryChannels}\` categorias` : `${getEmoji('chatbubble')} \`${textChannels}\` text • ${getEmoji('speaker')} \`${voiceChannels}\` voice • ${getEmoji('pasta')} \`${categoryChannels}\` categories`})`,
-                divider,
+                `> • **${isPtBr ? 'Total' : 'Total'}:** \`${totalChannels}\` (${isPtBr ? `${getEmoji('chatbubble')} \`${textChannels}\` texto • ${getEmoji('speaker')} \`${voiceChannels}\` voz • ${getEmoji('pasta')} \`${categoryChannels}\` categorias` : `${getEmoji('chatbubble')} \`${textChannels}\` text • ${getEmoji('speaker')} \`${voiceChannels}\` voice • ${getEmoji('pasta')} \`${categoryChannels}\` categories`})`
+            ].join('\n');
+
+            const structureBlock = [
                 `### ${getEmoji('diamante')} ${isPtBr ? 'Impulsos & Estrutura' : 'Boost Status & Structure'}`,
                 `> • **${isPtBr ? 'Nível de Boost' : 'Boost Tier'}:** \`${boostTier}\` (\`${boostCount}\` ${isPtBr ? 'impulsos' : 'boosts'})`,
                 `> • **${isPtBr ? 'Segurança & Verificação' : 'Security & Verification'}:** ${getEmoji('cadeadofechado')} \`${verificationText}\``,
                 `> • **${isPtBr ? 'Recursos' : 'Assets'}:** \`${totalRoles}\` ${isPtBr ? 'cargos' : 'roles'} • \`${totalEmojis}\` emojis • \`${totalStickers}\` ${isPtBr ? 'figurinhas' : 'stickers'}`
+            ].join('\n');
+
+            const serverDescLines = [
+                guild.description ? `> *${guild.description}*` : '',
+                idCreationBlock,
+                membersBlock,
+                channelsBlock,
+                structureBlock
             ].filter(Boolean);
 
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
-                description: serverDescLines.join('\n'),
+                description: serverDescLines.join('\n\n'),
                 color: colors.primary || 0xAEA7BD,
             });
 
@@ -142,6 +155,39 @@ module.exports = {
             if (bannerUrl && embed.setImage) {
                 embed.setImage(bannerUrl);
             }
+
+            const containerComponents = [];
+            const titleHeader = `## ${isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`}`;
+            if (iconUrl) {
+                containerComponents.push(createSection(titleHeader, { url: iconUrl }));
+            } else {
+                containerComponents.push(createTextDisplay(titleHeader));
+            }
+
+            if (guild.description) {
+                containerComponents.push(createTextDisplay(`> *${guild.description}*`));
+            }
+
+            containerComponents.push(createSeparator(true, 1));
+            containerComponents.push(createTextDisplay(idCreationBlock));
+            containerComponents.push(createSeparator(true, 1));
+            containerComponents.push(createTextDisplay(membersBlock));
+            containerComponents.push(createSeparator(true, 1));
+            containerComponents.push(createTextDisplay(channelsBlock));
+            containerComponents.push(createSeparator(true, 1));
+            containerComponents.push(createTextDisplay(structureBlock));
+
+            if (bannerUrl) {
+                containerComponents.push(createMediaGallery([bannerUrl]));
+            }
+
+            containerComponents.push(createSeparator(true, 1));
+            containerComponents.push(createTextDisplay(`-# ${getEmoji('bot')} ${guild.name} • ${client.user?.displayName || "Binder's Server Tools"}`));
+
+            embed._v2Container = createContainer({
+                accentColor: colors.primary || 0xAEA7BD,
+                components: containerComponents
+            });
 
             const buttons = [];
             if (iconUrl) {
