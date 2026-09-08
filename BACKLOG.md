@@ -134,3 +134,37 @@
 - **Arquitetura**:
   - Botão no rodapé de `/server info` abrindo menu ou modal com listagem paginada dos emojis e links diretos para download.
 
+---
+
+## 🎨 Emojis Customizados Necessários & Faltantes (Catálogo para Criação)
+
+> **Nota para o Desenvolvedor/Designer**: Lista detalhada dos emojis customizados que faltam no bot ou que substituiriam emojis provisórios para elevar o design visual a um padrão profissional moderno:
+
+### 1. Minigames & Diversão
+- `moeda` — Moeda dourada ou prateada em rotação/brilhante para a abertura do `/coinflip` (atualmente usando `orbita`).
+- `cara` — Lado "Cara" da moeda detalhado para o resultado do `/coinflip` (atualmente usando `pessoa`).
+- `coroa_moeda` — Lado "Coroa" de moeda para o resultado do `/coinflip` (atualmente usando coroa genérica).
+- `jogodavelha` — Ícone de grade 3x3 do Jogo da Velha para o minigame BK-05.
+
+### 2. Jogos & Comunidades (Minecraft & Roblox)
+- `minecraft_bedrock` — Ícone do bloco ou logo da Bedrock Edition para diferenciar no `/minecraft jogador`.
+- `namemc` — Ícone oficial com a letra "N" do NameMC para o botão de histórico de skins/nomes.
+- `roblox_game` — Ícone de experiência/jogo Roblox (botão "Jogar no Roblox" e campo de experiência).
+- `roblox_group` — Ícone de escudo/grupo para o futuro subcomando `/roblox grupo`.
+
+### 3. Sistemas de Utilidade & Servidor
+- `download` — Seta moderna apontando para baixo com bandeja para o futuro comando `/download` de mídias sociais.
+- `expressoes` / `figurinhas` — Ícone de sticker/adesivo para o painel de `/server emojis` (BK-16).
+- `afk_sono` — Ícone de "Zzz" ou lua com sono para o sistema `/afk` (BK-11).
+- `bolo_aniversario` — Bolo com vela ou presente temático para o sistema de aniversários (BK-08).
+- `sorteio_tada` — Trompete de festa ou caixa de presente festiva para o sistema de giveaways (BK-09).
+- `reputacao` — Medalha de recomendação ou coração dourado com joinha para o sistema de `/rep` (BK-13).
+
+### 4. Emojis Marcados com 'ARRUMAR' no Dicionário (`src/config/emojis.js`)
+- `selo` (`<:selo:1397389746405114000>`) — Verificar renderização e ID.
+- `safetybadge` (`<:safetybadge:1397390621441921106>`) — Atualizar para o selo de segurança com fundo transparente.
+- `telegram` (`<:telegram:1546598951573262478>`) — Atualizar para ícone padrão circular azul.
+- `play` (`<:play:1546598821713281194>`) — Atualizar para botão de reprodução musical limpo.
+- `presenteaberto` (`<:presenteaberto:1546598639764242442>`) — Atualizar caixa de presente aberta com brilho.
+- `coracaopixel` (`<:coracaopixel:1397391540535431198>`) — Atualizar coração pixelado rosa/roxo para agradecimentos.
+

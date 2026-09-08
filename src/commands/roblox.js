@@ -46,19 +46,19 @@ module.exports = {
             sub
                 .setName('jogo')
                 .setNameLocalizations({ 'en-US': 'game', 'pt-BR': 'jogo' })
-                .setDescription('Roblox ❯ Consulta informações de um jogo/experiência do Roblox por ID ou link.')
+                .setDescription('Roblox ❯ Consulta informações de um jogo/experiência do Roblox por nome, ID ou link.')
                 .setDescriptionLocalizations({
-                    'en-US': 'Roblox ❯ Fetches details of a Roblox game/experience by Place ID or URL.',
-                    'pt-BR': 'Roblox ❯ Consulta informações de um jogo/experiência do Roblox por ID ou link.',
+                    'en-US': 'Roblox ❯ Fetches details of a Roblox game/experience by name, Place ID, or URL.',
+                    'pt-BR': 'Roblox ❯ Consulta informações de um jogo/experiência do Roblox por nome, ID ou link.',
                 })
                 .addStringOption(opt =>
                     opt
-                        .setName('id')
-                        .setNameLocalizations({ 'en-US': 'game', 'pt-BR': 'id' })
-                        .setDescription('ID do jogo (Place ID) ou link do Roblox')
+                        .setName('busca')
+                        .setNameLocalizations({ 'en-US': 'query', 'pt-BR': 'busca' })
+                        .setDescription('Nome do jogo, Place ID ou link do Roblox')
                         .setDescriptionLocalizations({
-                            'en-US': 'Game Place ID or Roblox experience URL',
-                            'pt-BR': 'ID do jogo (Place ID) ou link do Roblox',
+                            'en-US': 'Game name, Place ID or Roblox experience URL',
+                            'pt-BR': 'Nome do jogo, Place ID ou link do Roblox',
                         })
                         .setRequired(true)
                 )
@@ -78,39 +78,92 @@ module.exports = {
         if (sub === 'jogo' || sub === 'game') {
             await interaction.deferReply();
             const rawInput = (typeof interaction.options?.getString === 'function'
-                ? (interaction.options.getString('id') || interaction.options.getString('game'))
+                ? (interaction.options.getString('busca') || interaction.options.getString('query') || interaction.options.getString('id') || interaction.options.getString('game'))
                 : null) || '';
 
-            // Extrai Place ID de URLs como https://www.roblox.com/games/920587237/... ou aceita ID numérico
-            let placeId = rawInput.trim();
-            const urlMatch = rawInput.match(/games\/(\d+)/i);
-            if (urlMatch) {
-                placeId = urlMatch[1];
-            }
-
-            if (!placeId || !/^\d+$/.test(placeId)) {
+            const trimmedInput = rawInput.trim();
+            if (!trimmedInput) {
                 return interaction.editReply({
                     content: isPtBr
-                        ? `${getEmoji('errado')} ID ou link de jogo inválido. Informe um Place ID numérico ou URL do jogo.`
-                        : `${getEmoji('errado')} Invalid game ID or link. Please provide a numeric Place ID or game URL.`
+                        ? `${getEmoji('errado')} Informe o nome, ID ou link do jogo do Roblox.`
+                        : `${getEmoji('errado')} Please provide a Roblox game name, Place ID, or link.`
                 });
             }
 
+            let placeId = null;
+            let universeId = null;
+            let preloadedGame = null;
+
+            // 1. Extrai Place ID de URLs como https://www.roblox.com/games/920587237/...
+            const urlMatch = trimmedInput.match(/games\/(\d+)/i);
+            if (urlMatch) {
+                placeId = urlMatch[1];
+            } else if (/^\d+$/.test(trimmedInput)) {
+                // 2. É numérico direto (Place ID ou Universe ID)
+                placeId = trimmedInput;
+            } else {
+                // 3. É busca por nome/palavras-chave via Roblox Omni-Search API
+                try {
+                    const searchUrl = `https://apis.roblox.com/search-api/omni-search?searchQuery=${encodeURIComponent(trimmedInput)}&sessionId=bst_${Date.now()}`;
+                    const sRes = await fetch(searchUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+                    }).catch(() => null);
+
+                    if (sRes && sRes.ok) {
+                        const sData = await sRes.json().catch(() => null);
+                        const gameGroup = (sData?.searchResults || []).find(g =>
+                            g.contentGroupType === 'Game' && Array.isArray(g.contents) && g.contents.length > 0
+                        );
+                        if (gameGroup && gameGroup.contents[0]) {
+                            const match = gameGroup.contents[0];
+                            placeId = String(match.rootPlaceId || match.contentId);
+                            universeId = String(match.universeId || match.contentId);
+                            preloadedGame = match;
+                        }
+                    }
+                } catch (searchErr) {
+                    // Fallback to error handling below
+                }
+
+                if (!placeId) {
+                    return interaction.editReply({
+                        content: isPtBr
+                            ? `${getEmoji('errado')} Nenhum jogo encontrado com o nome **"${trimmedInput}"**.`
+                            : `${getEmoji('errado')} No game found matching **"${trimmedInput}"**.`
+                    });
+                }
+            }
+
             try {
-                let gameName = null;
-                let creatorName = isPtBr ? 'Desconhecido' : 'Unknown';
-                let description = '';
-                let playing = null;
+                let gameName = preloadedGame?.name || null;
+                let creatorName = preloadedGame?.creatorName || (isPtBr ? 'Desconhecido' : 'Unknown');
+                let description = preloadedGame?.description || '';
+                let playing = preloadedGame?.playerCount ?? null;
                 let visits = null;
                 let iconUrl = null;
 
-                // 1. Tenta resolver o Universe ID via Roblox API
-                let universeId = null;
-                const universeRes = await fetch(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`).catch(() => null);
-                if (universeRes && universeRes.ok) {
-                    const uData = await universeRes.json().catch(() => null);
-                    if (uData?.universeId) {
-                        universeId = uData.universeId;
+                // 1. Tenta resolver o Universe ID via Roblox API se ainda não tivermos
+                if (!universeId && placeId) {
+                    const universeRes = await fetch(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`).catch(() => null);
+                    if (universeRes && universeRes.ok) {
+                        const uData = await universeRes.json().catch(() => null);
+                        if (uData?.universeId) {
+                            universeId = uData.universeId;
+                        }
+                    }
+
+                    // Se não resolveu via places, pode ser que o número seja um Universe ID direto
+                    if (!universeId) {
+                        const testGameRes = await fetch(`https://games.roblox.com/v1/games?universeIds=${placeId}`).catch(() => null);
+                        if (testGameRes && testGameRes.ok) {
+                            const tgData = await testGameRes.json().catch(() => null);
+                            if (Array.isArray(tgData?.data) && tgData.data.length > 0) {
+                                universeId = placeId;
+                                if (tgData.data[0].rootPlaceId) {
+                                    placeId = String(tgData.data[0].rootPlaceId);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -121,17 +174,20 @@ module.exports = {
                         const gData = await gamesRes.json().catch(() => null);
                         if (Array.isArray(gData?.data) && gData.data.length > 0) {
                             const g = gData.data[0];
-                            gameName = g.name;
-                            description = g.description || '';
+                            gameName = g.name || gameName;
+                            description = g.description || description;
                             creatorName = g.creator?.name || creatorName;
-                            playing = g.playing;
-                            visits = g.visits;
+                            playing = g.playing ?? playing;
+                            visits = g.visits ?? visits;
+                            if (g.rootPlaceId) {
+                                placeId = String(g.rootPlaceId);
+                            }
                         }
                     }
                 }
 
                 // 3. Fallback: multiget-place-details
-                if (!gameName) {
+                if (!gameName && placeId) {
                     const fallbackRes = await fetch(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`).catch(() => null);
                     if (fallbackRes && fallbackRes.ok) {
                         const fData = await fallbackRes.json().catch(() => null);
@@ -147,8 +203,8 @@ module.exports = {
                 if (!gameName) {
                     return interaction.editReply({
                         content: isPtBr
-                            ? `${getEmoji('errado')} Nenhum jogo encontrado com o Place ID \`${placeId}\`.`
-                            : `${getEmoji('errado')} No game found with Place ID \`${placeId}\`.`
+                            ? `${getEmoji('errado')} Nenhum jogo encontrado para \`${trimmedInput}\`.`
+                            : `${getEmoji('errado')} No game found for \`${trimmedInput}\`.`
                     });
                 }
 

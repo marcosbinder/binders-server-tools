@@ -3,7 +3,7 @@
  * @description Standalone slash command /coinflip (Cara ou Coroa / Heads or Tails)
  */
 
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, parseEmoji } = require('discord.js');
 const tosCheck = require('../utils/tosCheck.js');
 const createEmbed = require('../utils/createEmbed.js');
 const getLanguage = require('../utils/getLanguage.js');
@@ -20,7 +20,7 @@ async function buildCoinflipPayload(interaction, user) {
     const resultSideEmoji = isHeads ? getEmoji('pessoa') : getEmoji('coroa');
 
     const embed = await createEmbed(interaction, {
-        title: isPtBr ? 'Cara ou Coroa' : 'Coin Flip',
+        title: isPtBr ? `${getEmoji('orbita')} Cara ou Coroa` : `${getEmoji('orbita')} Coin Flip`,
         description: isPtBr
             ? `> A moeda girou no ar e caiu em **${resultName}**! ${resultSideEmoji}`
             : `> The coin flipped in the air and landed on **${resultName}**! ${resultSideEmoji}`,
@@ -28,7 +28,7 @@ async function buildCoinflipPayload(interaction, user) {
         fields: [
             {
                 name: isPtBr ? 'Resultado' : 'Result',
-                value: `**${resultName}**`,
+                value: `**${resultName}** ${resultSideEmoji}`,
                 inline: true,
             },
             {
@@ -43,7 +43,7 @@ async function buildCoinflipPayload(interaction, user) {
         .setCustomId(`coinflip_reroll_${user.id}`)
         .setLabel(isPtBr ? 'Girar Novamente' : 'Flip Again')
         .setStyle(ButtonStyle.Secondary)
-        .setEmoji(getEmoji('reload') || getEmoji('orbita'));
+        .setEmoji(parseEmoji(getEmoji('reload')) || parseEmoji(getEmoji('orbita')) || { name: '🔄' });
 
     const actionRow = new ActionRowBuilder().addComponents(rerollButton);
 
@@ -71,7 +71,22 @@ module.exports = {
         const canProceed = await tosCheck(interaction);
         if (!canProceed) return;
 
+        const lang = getLanguage(interaction);
+        const isPtBr = lang === 'pt_BR';
+
+        await interaction.reply({
+            content: isPtBr ? `${getEmoji('orbita')} Lançando a moeda no ar...` : `${getEmoji('orbita')} Flipping the coin in the air...`,
+            fetchReply: true,
+        });
+
+        if (process.env.NODE_ENV !== 'test') {
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
         const payload = await buildCoinflipPayload(interaction, interaction.user);
-        return safeReply(interaction, payload);
+        return interaction.editReply({
+            content: null,
+            ...payload,
+        });
     },
 };

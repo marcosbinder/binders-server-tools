@@ -4,25 +4,29 @@
  */
 
 const { buildCoinflipPayload } = require('../../commands/coinflip.js');
-const { isMessageV2, transformToV2Payload } = require('../../utils/componentsV2.js');
+const getLanguage = require('../../utils/getLanguage.js');
+const { getEmoji } = require('../../config/emojis.js');
 
 module.exports = {
     name: 'coinflip_reroll',
     async execute(interaction, client) {
+        const lang = getLanguage(interaction);
+        const isPtBr = lang === 'pt_BR';
+
+        await interaction.update({
+            content: isPtBr ? `${getEmoji('orbita')} Lançando a moeda no ar...` : `${getEmoji('orbita')} Flipping the coin in the air...`,
+            embeds: [],
+            components: [],
+        });
+
+        if (process.env.NODE_ENV !== 'test') {
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
         const payload = await buildCoinflipPayload(interaction, interaction.user);
-
-        if (isMessageV2(interaction.message)) {
-            return interaction.update(transformToV2Payload(payload, false));
-        }
-
-        try {
-            return await interaction.update(payload);
-        } catch (err) {
-            const errMsg = err?.rawError?.message || err?.message || String(err);
-            if (errMsg.includes('MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2')) {
-                return await interaction.update(transformToV2Payload(payload, false));
-            }
-            throw err;
-        }
+        return interaction.editReply({
+            content: null,
+            ...payload,
+        });
     },
 };

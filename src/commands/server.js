@@ -12,7 +12,7 @@ const getLanguage = require('../utils/getLanguage.js');
 const { getEmoji } = require('../config/emojis.js');
 const colors = require('../config/colors.js');
 const safeReply = require('../utils/safeReply.js');
-const { createContainer, createTextDisplay, createSeparator, createSection, createMediaGallery } = require('../utils/componentsV2.js');
+const { createContainer, createTextDisplay, createSeparator, createSection, createMediaGallery, createV2Payload } = require('../utils/componentsV2.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -145,7 +145,7 @@ module.exports = {
 
             const embed = await createEmbed(interaction, {
                 title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
-                description: serverDescLines.join('\n\n'),
+                description: serverDescLines.join(`\n${getEmoji('linha')}\n\n`),
                 color: colors.primary || 0xAEA7BD,
             });
 
@@ -155,39 +155,6 @@ module.exports = {
             if (bannerUrl && embed.setImage) {
                 embed.setImage(bannerUrl);
             }
-
-            const containerComponents = [];
-            const titleHeader = `## ${isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`}`;
-            if (iconUrl) {
-                containerComponents.push(createSection(titleHeader, { url: iconUrl }));
-            } else {
-                containerComponents.push(createTextDisplay(titleHeader));
-            }
-
-            if (guild.description) {
-                containerComponents.push(createTextDisplay(`> *${guild.description}*`));
-            }
-
-            containerComponents.push(createSeparator(true, 1));
-            containerComponents.push(createTextDisplay(idCreationBlock));
-            containerComponents.push(createSeparator(true, 1));
-            containerComponents.push(createTextDisplay(membersBlock));
-            containerComponents.push(createSeparator(true, 1));
-            containerComponents.push(createTextDisplay(channelsBlock));
-            containerComponents.push(createSeparator(true, 1));
-            containerComponents.push(createTextDisplay(structureBlock));
-
-            if (bannerUrl) {
-                containerComponents.push(createMediaGallery([bannerUrl]));
-            }
-
-            containerComponents.push(createSeparator(true, 1));
-            containerComponents.push(createTextDisplay(`-# ${getEmoji('bot')} ${guild.name} • ${client.user?.displayName || "Binder's Server Tools"}`));
-
-            embed._v2Container = createContainer({
-                accentColor: colors.primary || 0xAEA7BD,
-                components: containerComponents
-            });
 
             const buttons = [];
             if (iconUrl) {

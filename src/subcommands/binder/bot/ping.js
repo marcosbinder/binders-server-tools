@@ -27,35 +27,27 @@ module.exports = {
             ? (isPtBr ? 'Excelente' : 'Excellent')
             : (roundtrip < 500 ? (isPtBr ? 'Bom' : 'Good') : (isPtBr ? 'Instável' : 'Unstable'));
 
+        const statusEmoji = roundtrip < 200 ? getEmoji('verde') : (roundtrip < 500 ? getEmoji('amarelo') : getEmoji('vermelho'));
+
         const descriptionLines = [
-            `### 🚀 ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
-            `> • **${emojis.wifi || '📶'} Gateway (WebSocket):** \`${wsPing}ms\``,
-            `> • **${emojis.tempo || '⏱️'} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
-            `> • **${emojis.estrela || '⭐'} Status:** \`${statusText}\``,
+            `### ${getEmoji('foguete')} ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
+            `> • **${getEmoji('wifi')} Gateway (WebSocket):** \`${wsPing}ms\``,
+            `> • **${getEmoji('tempo')} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
+            `> • **${statusEmoji} Status:** \`${statusText}\``,
             ``,
-            `-# ⚡ ${isPtBr ? 'Medição em tempo real diretamente com os servidores do Discord.' : 'Real-time measurement directly with Discord gateway servers.'}`
+            `-# ${getEmoji('brilho')} ${isPtBr ? 'Medição em tempo real diretamente com os servidores do Discord.' : 'Real-time measurement directly with Discord gateway servers.'}`
         ];
 
         const embed = await createEmbed(interaction, {
-            title: isPtBr ? `${emojis.foguete || '🚀'} Latência do Bot` : `${emojis.foguete || '🚀'} Bot Latency`,
+            title: isPtBr ? `${getEmoji('foguete')} Latência do Bot` : `${getEmoji('foguete')} Bot Latency`,
             description: descriptionLines.join('\n'),
             color: pingColor,
         });
 
-        const { embedToV2Container, IS_COMPONENTS_V2 } = require('../../../utils/componentsV2.js');
-        const v2Container = embedToV2Container(embed);
-
-        const replyPayload = {
-            flags: IS_COMPONENTS_V2,
-            components: [v2Container],
-        };
-        Object.defineProperty(replyPayload, 'embeds', {
-            value: [embed],
-            enumerable: false,
-            writable: true,
-            configurable: true
+        return interaction.editReply({
+            content: null,
+            embeds: [embed],
+            components: [],
         });
-
-        return interaction.editReply(replyPayload);
     },
 };

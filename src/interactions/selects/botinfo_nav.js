@@ -99,7 +99,7 @@ async function buildPage(page, interaction, client) {
 
             embed = await createEmbed(interaction, {
                 title: `[4/4] ${emojis.coracaopixel} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
-                description: `> ${thanksText}\n\n-# ${obrigadoText}`,
+                description: `> ${thanksText}\n\n${getEmoji('linha')}\n\n-# ${obrigadoText}`,
                 color: colors.primary,
             });
 
