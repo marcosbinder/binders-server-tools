@@ -20,7 +20,7 @@ module.exports = {
         });
 
         if (process.env.NODE_ENV !== 'test') {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 750));
         }
 
         const payload = await buildCoinflipPayload(interaction, interaction.user);

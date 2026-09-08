@@ -1,20 +1,6 @@
 {
   "users": [
     {
-      "userId": "dual_user_1",
-      "user_id": "dual_user_1",
-      "tosVersion": 2,
-      "tos_version": 2,
-      "language": "lang_pt_br",
-      "lastKnownLocale": null,
-      "last_known_locale": null,
-      "badges": "[]",
-      "isDeveloper": 0,
-      "is_developer": 0,
-      "createdAt": "2026-09-07T10:46:02.116713+00:00",
-      "updatedAt": "2026-09-07T10:46:02.116713+00:00"
-    },
-    {
       "userId": "1117890204569718885",
       "user_id": "1117890204569718885",
       "tosVersion": 2,
@@ -29,20 +15,6 @@
       "updatedAt": "2026-09-06T23:52:46.455538+00:00"
     },
     {
-      "userId": "cb_user_1",
-      "user_id": "cb_user_1",
-      "tosVersion": 2,
-      "tos_version": 2,
-      "language": "lang_pt_br",
-      "lastKnownLocale": null,
-      "last_known_locale": null,
-      "badges": "[]",
-      "isDeveloper": 0,
-      "is_developer": 0,
-      "createdAt": "2026-09-07T10:46:22.383931+00:00",
-      "updatedAt": "2026-09-07T10:46:22.383931+00:00"
-    },
-    {
       "userId": "999111222",
       "user_id": "999111222",
       "tosVersion": 0,
@@ -55,20 +27,6 @@
       "is_developer": 0,
       "createdAt": "2026-09-07T10:44:23.373796+00:00",
       "updatedAt": "2026-09-07T10:44:23.373796+00:00"
-    },
-    {
-      "userId": "888999111222333444",
-      "user_id": "888999111222333444",
-      "tosVersion": 2,
-      "tos_version": 2,
-      "language": "lang_pt_br",
-      "lastKnownLocale": null,
-      "last_known_locale": null,
-      "badges": "[]",
-      "isDeveloper": 0,
-      "is_developer": 0,
-      "createdAt": "2026-09-07T10:45:12.225903+00:00",
-      "updatedAt": "2026-09-07T10:45:12.225903+00:00"
     },
     {
       "userId": "111222333444555666",
@@ -125,7 +83,49 @@
       "is_developer": 0,
       "createdAt": "2026-09-07T10:45:49.625594+00:00",
       "updatedAt": "2026-09-07T10:45:49.625594+00:00"
+    },
+    {
+      "userId": "dual_user_1",
+      "user_id": "dual_user_1",
+      "tosVersion": 2,
+      "tos_version": 2,
+      "language": "lang_pt_br",
+      "lastKnownLocale": null,
+      "last_known_locale": null,
+      "badges": "[]",
+      "isDeveloper": 0,
+      "is_developer": 0,
+      "createdAt": "2026-09-07T10:46:02.116713+00:00",
+      "updatedAt": "2026-09-07T10:46:02.116713+00:00"
+    },
+    {
+      "userId": "cb_user_1",
+      "user_id": "cb_user_1",
+      "tosVersion": 2,
+      "tos_version": 2,
+      "language": "lang_pt_br",
+      "lastKnownLocale": null,
+      "last_known_locale": null,
+      "badges": "[]",
+      "isDeveloper": 0,
+      "is_developer": 0,
+      "createdAt": "2026-09-07T10:46:22.383931+00:00",
+      "updatedAt": "2026-09-07T10:46:22.383931+00:00"
+    },
+    {
+      "userId": "888999111222333444",
+      "user_id": "888999111222333444",
+      "tosVersion": 2,
+      "tos_version": 2,
+      "language": "lang_pt_br",
+      "lastKnownLocale": null,
+      "last_known_locale": null,
+      "badges": "[]",
+      "isDeveloper": 0,
+      "is_developer": 0,
+      "createdAt": "2026-09-07T10:45:12.225903+00:00",
+      "updatedAt": "2026-09-07T10:45:12.225903+00:00"
     }
   ],
-  "updatedAt": 1788905567370
+  "updatedAt": 1788906294057
 }

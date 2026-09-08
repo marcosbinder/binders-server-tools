@@ -66,7 +66,7 @@ module.exports = {
                             label: lang === 'pt_BR' ? 'Automático (padrão)' : 'Automatic (default)',
                             description: lang === 'pt_BR' ? 'Minha língua vai seguir a do seu Discord.' : 'My language will follow your Discord client.',
                             value: 'lang_auto',
-                            emoji: '⚙️'
+                            emoji: { id: '1397390825687748608', name: 'configuracao' }
                         },
                         {
                             label: lang === 'pt_BR' ? 'Português (Brasil)' : 'Portuguese (Brazil)',

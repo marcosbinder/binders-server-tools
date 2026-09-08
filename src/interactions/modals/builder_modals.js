@@ -2,6 +2,7 @@ const { MessageFlags, PermissionFlagsBits } = require('discord.js');
 const { getOrCreateStudioSession, buildStudioPayload, MAX_CONTAINER_BLOCKS } = require('../../components/builder/containerBuilder.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const safeReply = require('../../utils/safeReply.js');
+const { getEmoji } = require('../../config/emojis.js');
 
 module.exports = {
     name: 'modal_builder',
@@ -11,7 +12,7 @@ module.exports = {
 
         if (!interaction.guild) {
             return safeReply(interaction, {
-                content: isPtBr ? '❌ Esta ação só pode ser executada dentro de um servidor.' : '❌ This action can only be performed within a server.',
+                content: isPtBr ? `${getEmoji('errado')} Esta ação só pode ser executada dentro de um servidor.` : `${getEmoji('errado')} This action can only be performed within a server.`,
                 flags: [MessageFlags.Ephemeral]
             });
         }
@@ -25,7 +26,7 @@ module.exports = {
 
         if (!hasPermission) {
             return safeReply(interaction, {
-                content: isPtBr ? '❌ Você precisa da permissão de Gerenciar Mensagens.' : '❌ You need the Manage Messages permission.',
+                content: isPtBr ? `${getEmoji('errado')} Você precisa da permissão de Gerenciar Mensagens.` : `${getEmoji('errado')} You need the Manage Messages permission.`,
                 flags: [MessageFlags.Ephemeral]
             });
         }
@@ -36,7 +37,7 @@ module.exports = {
         const maxBlocks = MAX_CONTAINER_BLOCKS || 25;
         if (session.blocks.length >= maxBlocks) {
             return interaction.reply({
-                content: isPtBr ? `⚠️ | Limite de ${maxBlocks} blocos atingido! Remova algum elemento antes de adicionar novos.` : `⚠️ | Block limit of ${maxBlocks} reached! Remove an element before adding new ones.`,
+                content: isPtBr ? `${getEmoji('exclamacao')} Limite de ${maxBlocks} blocos atingido! Remova algum elemento antes de adicionar novos.` : `${getEmoji('exclamacao')} Block limit of ${maxBlocks} reached! Remove an element before adding new ones.`,
                 flags: [MessageFlags.Ephemeral]
             });
         }

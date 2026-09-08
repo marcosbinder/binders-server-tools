@@ -168,3 +168,12 @@
 - `presenteaberto` (`<:presenteaberto:1546598639764242442>`) — Atualizar caixa de presente aberta com brilho.
 - `coracaopixel` (`<:coracaopixel:1397391540535431198>`) — Atualizar coração pixelado rosa/roxo para agradecimentos.
 
+### 5. Emojis de Idiomas, Jogos e UI (Atualmente Usando Unicode Comum)
+- `bandeira_brasil` (`flag_br`) — Bandeira estilizada do Brasil para os menus de seleção de idioma em `/binder idioma` (atualmente recorrendo ao Unicode `🇧🇷`).
+- `bandeira_eua` / `bandeira_uk` (`flag_en`) — Bandeira estilizada dos EUA ou Reino Unido para os menus de idioma (atualmente recorrendo ao Unicode `🇬🇧`).
+- `alerta_triangulo` (`warning_triangle`) — Triângulo estilizado de atenção/aviso em tom azul/pastel para alertas de limites e permissões (diferenciando da exclamação circular).
+- `robux` — Ícone oficial com a moeda hexagonal ou logo de Robux para o comando `/roblox` (preços, transações e saldo).
+- `minecraft_coracao` — Ícone temático de coração pixelado para estatísticas de jogadores de Minecraft.
+- `minecraft_armadura` — Ícone de peitoral/armadura pixelada para servidores e jogadores de Minecraft.
+- `divisoria_pixel` — Barra divisória horizontal fina pixelada no tema oficial do bot para ser utilizada em embeds clássicos (que não possuem suporte nativo aos Separators de Components V2).
+

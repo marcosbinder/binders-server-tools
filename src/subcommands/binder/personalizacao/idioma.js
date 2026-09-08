@@ -49,7 +49,7 @@ module.exports = {
                         label: 'Automático / Automatic (Discord)',
                         description: 'Segue o idioma do seu aplicativo / Follows your Discord client',
                         value: 'lang_auto',
-                        emoji: '⚙️',
+                        emoji: { id: '1397390825687748608', name: 'configuracao' },
                         default: currentLang === 'lang_auto',
                     },
                     {

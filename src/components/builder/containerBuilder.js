@@ -4,7 +4,8 @@ const {
   ButtonStyle, 
   StringSelectMenuBuilder, 
   ChannelSelectMenuBuilder, 
-  ChannelType
+  ChannelType,
+  parseEmoji
 } = require('discord.js');
 const { getEmoji } = require('../../config/emojis.js');
 const colors = require('../../config/colors.js');
@@ -267,33 +268,33 @@ function buildStudioPayload(session, guild, lang = 'pt_BR') {
 
   if (!session.isPublishing) {
     const welcomeContent = isPtBr
-      ? `## 🛠️ | Estúdio de Contêineres Components V2\nSeja bem-vindo! Utilize o seletor abaixo para construir e estruturar layouts avançados para o servidor.\n-# 📦 | **${n}** elemento(s) em uso no projeto atual.`
-      : `## 🛠️ | Components V2 Container Studio\nWelcome! Use the selector below to build and structure advanced layouts for the server.\n-# 📦 | **${n}** element(s) in use in current project.`;
+      ? `## ${getEmoji('ferramenta1')} | Estúdio de Contêineres Components V2\nSeja bem-vindo! Utilize o seletor abaixo para construir e estruturar layouts avançados para o servidor.\n-# ${getEmoji('pasta')} | **${n}** elemento(s) em uso no projeto atual.`
+      : `## ${getEmoji('ferramenta1')} | Components V2 Container Studio\nWelcome! Use the selector below to build and structure advanced layouts for the server.\n-# ${getEmoji('pasta')} | **${n}** element(s) in use in current project.`;
 
     const selectPlaceholder = isPtBr
-      ? '⚙️ | Selecione o componente estrutural desejado...'
-      : '⚙️ | Select the desired structural component...';
+      ? 'Selecione o componente estrutural desejado...'
+      : 'Select the desired structural component...';
 
     const options = isPtBr ? [
-      { label: 'Título Principal', value: 'titulo', emoji: '🏷️', description: 'Cabeçalho de destaque da seção.' },
-      { label: 'Corpo de Texto', value: 'texto', emoji: '📝', description: 'Área principal para parágrafos e markdown.' },
-      { label: 'Paleta de Cores', value: 'cor', emoji: '🎨', description: 'Define a coloração lateral do contêiner.' },
-      { label: 'Mídia de Destaque', value: 'imagem', emoji: '🖼️', description: 'Anexa uma imagem ou banner ao layout.' },
-      { label: 'Miniatura (Thumbnail)', value: 'thumb', emoji: '🔳', description: 'Ícone lateral ou avatar.' },
-      { label: 'Assinatura do Autor', value: 'autor', emoji: '👤', description: 'Identificação no topo do contêiner.' },
-      { label: 'Notas de Rodapé', value: 'rodape', emoji: '🔻', description: 'Informações complementares na base.' },
-      { label: 'Botões Interativos', value: 'botao', emoji: '🔗', description: 'Insere links e ações clicáveis.' },
-      { label: 'Quebra de Seção', value: 'separador', emoji: '➖', description: 'Linha divisória elegante entre elementos.' }
+      { label: 'Título Principal', value: 'titulo', emoji: parseEmoji(getEmoji('ticket')), description: 'Cabeçalho de destaque da seção.' },
+      { label: 'Corpo de Texto', value: 'texto', emoji: parseEmoji(getEmoji('lapis')), description: 'Área principal para parágrafos e markdown.' },
+      { label: 'Paleta de Cores', value: 'cor', emoji: parseEmoji(getEmoji('paletadecores')), description: 'Define a coloração lateral do contêiner.' },
+      { label: 'Mídia de Destaque', value: 'imagem', emoji: parseEmoji(getEmoji('brilho')), description: 'Anexa uma imagem ou banner ao layout.' },
+      { label: 'Miniatura (Thumbnail)', value: 'thumb', emoji: parseEmoji(getEmoji('selo')), description: 'Ícone lateral ou avatar.' },
+      { label: 'Assinatura do Autor', value: 'autor', emoji: parseEmoji(getEmoji('pessoa')), description: 'Identificação no topo do contêiner.' },
+      { label: 'Notas de Rodapé', value: 'rodape', emoji: parseEmoji(getEmoji('bot')), description: 'Informações complementares na base.' },
+      { label: 'Botões Interativos', value: 'botao', emoji: parseEmoji(getEmoji('link')), description: 'Insere links e ações clicáveis.' },
+      { label: 'Quebra de Seção', value: 'separador', emoji: parseEmoji(getEmoji('menos')), description: 'Linha divisória elegante entre elementos.' }
     ] : [
-      { label: 'Main Title', value: 'titulo', emoji: '🏷️', description: 'Section highlight header.' },
-      { label: 'Body Text', value: 'texto', emoji: '📝', description: 'Main area for paragraphs and markdown.' },
-      { label: 'Color Palette', value: 'cor', emoji: '🎨', description: 'Sets the container accent color.' },
-      { label: 'Featured Media', value: 'imagem', emoji: '🖼️', description: 'Attach an image or banner to the layout.' },
-      { label: 'Thumbnail', value: 'thumb', emoji: '🔳', description: 'Side icon or avatar.' },
-      { label: 'Author Signature', value: 'autor', emoji: '👤', description: 'Top container attribution.' },
-      { label: 'Footer Notes', value: 'rodape', emoji: '🔻', description: 'Additional info at the bottom.' },
-      { label: 'Interactive Buttons', value: 'botao', emoji: '🔗', description: 'Insert links and clickable actions.' },
-      { label: 'Section Divider', value: 'separador', emoji: '➖', description: 'Elegant separator line between elements.' }
+      { label: 'Main Title', value: 'titulo', emoji: parseEmoji(getEmoji('ticket')), description: 'Section highlight header.' },
+      { label: 'Body Text', value: 'texto', emoji: parseEmoji(getEmoji('lapis')), description: 'Main area for paragraphs and markdown.' },
+      { label: 'Color Palette', value: 'cor', emoji: parseEmoji(getEmoji('paletadecores')), description: 'Sets the container accent color.' },
+      { label: 'Featured Media', value: 'imagem', emoji: parseEmoji(getEmoji('brilho')), description: 'Attach an image or banner to the layout.' },
+      { label: 'Thumbnail', value: 'thumb', emoji: parseEmoji(getEmoji('selo')), description: 'Side icon or avatar.' },
+      { label: 'Author Signature', value: 'autor', emoji: parseEmoji(getEmoji('pessoa')), description: 'Top container attribution.' },
+      { label: 'Footer Notes', value: 'rodape', emoji: parseEmoji(getEmoji('bot')), description: 'Additional info at the bottom.' },
+      { label: 'Interactive Buttons', value: 'botao', emoji: parseEmoji(getEmoji('link')), description: 'Insert links and clickable actions.' },
+      { label: 'Section Divider', value: 'separador', emoji: parseEmoji(getEmoji('menos')), description: 'Elegant separator line between elements.' }
     ];
 
     const welcomeContainer = {

@@ -2,6 +2,7 @@ const { MessageFlags, PermissionFlagsBits } = require('discord.js');
 const { getOrCreateStudioSession, buildStudioPayload } = require('../../components/builder/containerBuilder.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const safeReply = require('../../utils/safeReply.js');
+const { getEmoji } = require('../../config/emojis.js');
 
 module.exports = {
     name: 'sel_builder_canal',
@@ -11,7 +12,7 @@ module.exports = {
 
         if (!interaction.guild) {
             return safeReply(interaction, {
-                content: isPtBr ? '❌ Esta ação só pode ser executada dentro de um servidor.' : '❌ This action can only be performed within a server.',
+                content: isPtBr ? `${getEmoji('errado')} Esta ação só pode ser executada dentro de um servidor.` : `${getEmoji('errado')} This action can only be performed within a server.`,
                 flags: [MessageFlags.Ephemeral]
             });
         }
@@ -25,7 +26,7 @@ module.exports = {
 
         if (!hasPermission) {
             return safeReply(interaction, {
-                content: isPtBr ? '❌ Você precisa da permissão de Gerenciar Mensagens.' : '❌ You need the Manage Messages permission.',
+                content: isPtBr ? `${getEmoji('errado')} Você precisa da permissão de Gerenciar Mensagens.` : `${getEmoji('errado')} You need the Manage Messages permission.`,
                 flags: [MessageFlags.Ephemeral]
             });
         }

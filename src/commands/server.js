@@ -68,8 +68,8 @@ module.exports = {
         if (!guild) {
             return safeReply(interaction, {
                 content: isPtBr
-                    ? '❌ Este comando só pode ser utilizado dentro de um servidor.'
-                    : '❌ This command can only be used within a server.',
+                    ? `${getEmoji('errado')} Este comando só pode ser utilizado dentro de um servidor.`
+                    : `${getEmoji('errado')} This command can only be used within a server.`,
                 ephemeral: true,
             });
         }
@@ -155,50 +155,30 @@ module.exports = {
                 );
             }
 
-            const actionRows = buttons.length > 0 ? [new ActionRowBuilder().addComponents(buttons)] : [];
+            const components = buttons.length > 0 ? [new ActionRowBuilder().addComponents(buttons)] : [];
 
-            const containerComponents = [];
+            const serverDescLines = [
+                guild.description ? `> *${guild.description}*` : '',
+                idCreationBlock,
+                membersBlock,
+                channelsBlock,
+                structureBlock
+            ].filter(Boolean);
 
-            if (iconUrl) {
-                containerComponents.push(
-                    createSection(`### ${isPtBr ? 'Informações de' : 'Server Information for'} ${guild.name}`, { url: iconUrl })
-                );
-            } else {
-                containerComponents.push(
-                    createTextDisplay(`### ${isPtBr ? 'Informações de' : 'Server Information for'} ${guild.name}`)
-                );
-            }
-
-            if (guild.description) {
-                containerComponents.push(createTextDisplay(`> *${guild.description}*`));
-            }
-
-            containerComponents.push(
-                createSeparator(true, 1),
-                createTextDisplay(idCreationBlock),
-                createSeparator(true, 1),
-                createTextDisplay(membersBlock),
-                createSeparator(true, 1),
-                createTextDisplay(channelsBlock),
-                createSeparator(true, 1),
-                createTextDisplay(structureBlock)
-            );
-
-            if (bannerUrl) {
-                containerComponents.push(createMediaGallery([bannerUrl]));
-            }
-
-            const v2Container = createContainer({
-                accentColor: colors.primary || 0xAEA7BD,
-                components: containerComponents
+            const embed = await createEmbed(interaction, {
+                title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
+                description: serverDescLines.join('\n\n'),
+                color: colors.primary || 0xAEA7BD,
             });
 
-            const v2Payload = createV2Payload({
-                container: v2Container,
-                actionRows
-            });
+            if (iconUrl && embed.setThumbnail) {
+                embed.setThumbnail(iconUrl);
+            }
+            if (bannerUrl && embed.setImage) {
+                embed.setImage(bannerUrl);
+            }
 
-            return safeReply(interaction, v2Payload);
+            return safeReply(interaction, { embeds: [embed], components });
         }
 
         // ---------------------------------------------------------------------
