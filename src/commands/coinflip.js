@@ -25,18 +25,6 @@ async function buildCoinflipPayload(interaction, user) {
             ? `> A moeda girou no ar e caiu em **${resultName}**! ${resultSideEmoji}`
             : `> The coin flipped in the air and landed on **${resultName}**! ${resultSideEmoji}`,
         color: colors.primary || 0xAEA7BD,
-        fields: [
-            {
-                name: isPtBr ? 'Resultado' : 'Result',
-                value: `**${resultName}** ${resultSideEmoji}`,
-                inline: true,
-            },
-            {
-                name: isPtBr ? 'Lançado por' : 'Flipped by',
-                value: `<@${user.id}>`,
-                inline: true,
-            },
-        ],
     });
 
     const rerollButton = new ButtonBuilder()
@@ -80,7 +68,7 @@ module.exports = {
         });
 
         if (process.env.NODE_ENV !== 'test') {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         const payload = await buildCoinflipPayload(interaction, interaction.user);

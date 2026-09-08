@@ -121,22 +121,33 @@ if (fs.existsSync(modalsPath)) {
     console.log(`[CARREGADOR] Carregados ${client.modals.size} handlers de modal.`);
 }
 
-// Auto-deploy Slash Commands on startup if enabled and credentials are present
+// Initialize database and start Discord client
 const { deployCommands } = require('./deploy-commands.js');
-if (process.env.AUTO_DEPLOY_COMMANDS !== 'false' && process.env.DISCORD_TOKEN && process.env.CLIENT_ID) {
-    deployCommands().catch(err => {
-        console.warn('[AVISO] Auto-deploy de comandos falhou ou foi ignorado:', err.message);
-    });
+const { initDatabase } = require('./src/database/db.js');
+
+async function startBot() {
+    try {
+        await initDatabase();
+    } catch (dbErr) {
+        console.error('[ERRO] Falha ao inicializar banco de dados:', dbErr.message);
+    }
+
+    if (process.env.AUTO_DEPLOY_COMMANDS !== 'false' && process.env.DISCORD_TOKEN && process.env.CLIENT_ID) {
+        deployCommands().catch(err => {
+            console.warn('[AVISO] Auto-deploy de comandos falhou ou foi ignorado:', err.message);
+        });
+    }
+
+    if (process.env.DISCORD_TOKEN) {
+        client.login(process.env.DISCORD_TOKEN).catch(err => {
+            console.error('[ERRO] Falha ao logar no Discord:', err.message);
+        });
+    } else {
+        console.warn('[AVISO] DISCORD_TOKEN não encontrado no ambiente.');
+    }
 }
 
-// Login Discord Client if token is present
-if (process.env.DISCORD_TOKEN) {
-    client.login(process.env.DISCORD_TOKEN).catch(err => {
-        console.error('[ERRO] Falha ao logar no Discord:', err.message);
-    });
-} else {
-    console.warn('[AVISO] DISCORD_TOKEN não encontrado no ambiente.');
-}
+startBot();
 
 const { sendLifecycleLog, setLifecycleClient } = require('./src/utils/lifecycleLogger.js');
 const { closeDatabase } = require('./src/database/db.js');

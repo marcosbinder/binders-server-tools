@@ -573,6 +573,42 @@ function createSupabaseClient(url = process.env.SUPABASE_URL, key = process.env.
     }
 }
 
+const LOCAL_STORE_PATH = path.join(process.cwd(), 'database', 'local_store.json');
+
+function loadLocalJsonFallback() {
+    if (sqliteDb) return;
+    try {
+        if (fs.existsSync(LOCAL_STORE_PATH)) {
+            const raw = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
+            const data = JSON.parse(raw);
+            if (Array.isArray(data?.users)) {
+                for (const u of data.users) {
+                    if (u?.userId && !userCache.has(u.userId)) {
+                        const normalized = normalizeUser(u);
+                        userCache.set(u.userId, { ...normalized, _cachedAt: Date.now() });
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('[Database/LocalStore] Aviso ao carregar armazenamento local:', err.message);
+    }
+}
+
+function saveLocalJsonFallback() {
+    if (sqliteDb) return;
+    try {
+        const dbDir = path.join(process.cwd(), 'database');
+        if (!fs.existsSync(dbDir)) {
+            fs.mkdirSync(dbDir, { recursive: true });
+        }
+        const users = Array.from(userCache.values()).map(normalizeUser);
+        fs.writeFileSync(LOCAL_STORE_PATH, JSON.stringify({ users, updatedAt: Date.now() }, null, 2), 'utf-8');
+    } catch (err) {
+        console.warn('[Database/LocalStore] Aviso ao salvar armazenamento local:', err.message);
+    }
+}
+
 /**
  * Inicializa o banco de dados (Supabase PostgreSQL ou Fallback SQLite/Memory)
  */
@@ -602,6 +638,20 @@ async function initDatabase() {
                 } else {
                     databaseMode = 'supabase';
                     console.log('[Database] Conectado ao Supabase PostgreSQL com sucesso!');
+                    // Precarrega usuários existentes do Supabase para aquecer o cache síncrono
+                    try {
+                        const { data: allUsers, error: usersErr } = await supabaseClient.from('users').select('*');
+                        if (!usersErr && Array.isArray(allUsers)) {
+                            for (const u of allUsers) {
+                                const normalized = normalizeUser(u);
+                                userCache.set(u.userId, { ...normalized, _cachedAt: Date.now() });
+                            }
+                            saveLocalJsonFallback();
+                            console.log(`[Database] Aquecimento de cache: ${allUsers.length} usuários carregados do Supabase.`);
+                        }
+                    } catch (preloadErr) {
+                        console.warn('[Database] Aviso ao precarregar usuários do Supabase:', preloadErr.message);
+                    }
                     // Garantir que initSqliteFallback() seja inicializado mesmo quando o Supabase sobe com sucesso
                     initSqliteFallback();
                 }
@@ -617,6 +667,8 @@ async function initDatabase() {
         console.log('[Database] Credenciais do Supabase ausentes no .env. Inicializando SQLite local / Memória.');
         initSqliteFallback();
     }
+
+    loadLocalJsonFallback();
 
     isInitialized = true;
     return { mode: databaseMode };
@@ -724,10 +776,14 @@ function getFallbackUser(userId, defaultUser) {
         }
     }
 
-    // Modo memória
+    // Modo memória / Local JSON
+    if (!userCache.has(userId)) {
+        loadLocalJsonFallback();
+    }
     if (!userCache.has(userId)) {
         const normalized = normalizeUser(defaultUser);
         userCache.set(userId, { ...normalized, _cachedAt: Date.now() });
+        saveLocalJsonFallback();
     }
     return normalizeUser(userCache.get(userId));
 }
@@ -834,6 +890,8 @@ function updateFallbackUser(userId, updates) {
         } catch (e) {
             console.error('[Database/SQLite] Erro ao atualizar usuário:', e.message);
         }
+    } else {
+        saveLocalJsonFallback();
     }
 }
 

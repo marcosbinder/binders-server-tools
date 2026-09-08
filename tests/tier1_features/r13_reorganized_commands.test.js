@@ -339,10 +339,16 @@ describe('Requirement R13: Reorganized Commands, New Standalones & Infrastructur
             await serverCommand.execute(interaction, client);
             assert.equal(interaction._replies.length, 1);
             const res = interaction._getLastResponse();
-            const embed = res.embeds[0].data;
-            const content = (embed.fields ? embed.fields.map(f => f.name + ' ' + f.value).join(' ') : '') + ' ' + (embed.description || '');
-            assert.ok(content.includes('Identificação') || content.includes('Identification') || content.includes('Identity'));
-            assert.ok(content.includes('Membros') || content.includes('Members'));
+            const rawContent = res.embeds?.[0]?.data
+                ? ((res.embeds[0].data.fields ? res.embeds[0].data.fields.map(f => f.name + ' ' + f.value).join(' ') : '') + ' ' + (res.embeds[0].data.description || ''))
+                : JSON.stringify(res.components || []);
+            assert.ok(rawContent.includes('Identificação') || rawContent.includes('Identification') || rawContent.includes('Identity'));
+            assert.ok(rawContent.includes('Membros') || rawContent.includes('Members'));
+            if (res.components?.[0]) {
+                const container = res.components[0];
+                const hasSeparator = (container.components || []).some(c => c.type === 14);
+                assert.ok(hasSeparator, 'Server info Components V2 container must include Separator components');
+            }
         });
 
         test('/server info rejects execution in DM context', async () => {

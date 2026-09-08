@@ -135,27 +135,6 @@ module.exports = {
                 `> • **${isPtBr ? 'Recursos' : 'Assets'}:** \`${totalRoles}\` ${isPtBr ? 'cargos' : 'roles'} • \`${totalEmojis}\` emojis • \`${totalStickers}\` ${isPtBr ? 'figurinhas' : 'stickers'}`
             ].join('\n');
 
-            const serverDescLines = [
-                guild.description ? `> *${guild.description}*` : '',
-                idCreationBlock,
-                membersBlock,
-                channelsBlock,
-                structureBlock
-            ].filter(Boolean);
-
-            const embed = await createEmbed(interaction, {
-                title: isPtBr ? `Informações de ${guild.name}` : `Server Information for ${guild.name}`,
-                description: serverDescLines.join(`\n${getEmoji('linha')}\n\n`),
-                color: colors.primary || 0xAEA7BD,
-            });
-
-            if (iconUrl && embed.setThumbnail) {
-                embed.setThumbnail(iconUrl);
-            }
-            if (bannerUrl && embed.setImage) {
-                embed.setImage(bannerUrl);
-            }
-
             const buttons = [];
             if (iconUrl) {
                 buttons.push(
@@ -176,8 +155,50 @@ module.exports = {
                 );
             }
 
-            const components = buttons.length > 0 ? [new ActionRowBuilder().addComponents(buttons)] : [];
-            return safeReply(interaction, { embeds: [embed], components });
+            const actionRows = buttons.length > 0 ? [new ActionRowBuilder().addComponents(buttons)] : [];
+
+            const containerComponents = [];
+
+            if (iconUrl) {
+                containerComponents.push(
+                    createSection(`### ${isPtBr ? 'Informações de' : 'Server Information for'} ${guild.name}`, { url: iconUrl })
+                );
+            } else {
+                containerComponents.push(
+                    createTextDisplay(`### ${isPtBr ? 'Informações de' : 'Server Information for'} ${guild.name}`)
+                );
+            }
+
+            if (guild.description) {
+                containerComponents.push(createTextDisplay(`> *${guild.description}*`));
+            }
+
+            containerComponents.push(
+                createSeparator(true, 1),
+                createTextDisplay(idCreationBlock),
+                createSeparator(true, 1),
+                createTextDisplay(membersBlock),
+                createSeparator(true, 1),
+                createTextDisplay(channelsBlock),
+                createSeparator(true, 1),
+                createTextDisplay(structureBlock)
+            );
+
+            if (bannerUrl) {
+                containerComponents.push(createMediaGallery([bannerUrl]));
+            }
+
+            const v2Container = createContainer({
+                accentColor: colors.primary || 0xAEA7BD,
+                components: containerComponents
+            });
+
+            const v2Payload = createV2Payload({
+                container: v2Container,
+                actionRows
+            });
+
+            return safeReply(interaction, v2Payload);
         }
 
         // ---------------------------------------------------------------------

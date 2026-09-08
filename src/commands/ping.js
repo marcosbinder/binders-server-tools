@@ -47,7 +47,6 @@ module.exports = {
         const statusEmoji = roundtrip < 200 ? getEmoji('verde') : (roundtrip < 500 ? getEmoji('amarelo') : getEmoji('vermelho'));
 
         const descriptionLines = [
-            `### ${getEmoji('foguete')} ${isPtBr ? 'Conectividade & Tempo de Resposta' : 'Connectivity & Response Time'}`,
             `> • **${getEmoji('wifi')} Gateway (WebSocket):** \`${wsPing}ms\``,
             `> • **${getEmoji('tempo')} ${isPtBr ? 'Ida e Volta (REST API)' : 'Roundtrip (REST API)'}:** \`${roundtrip}ms\``,
             `> • **${statusEmoji} Status:** \`${statusText}\``,

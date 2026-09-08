@@ -2,7 +2,7 @@ const { ActionRowBuilder, StringSelectMenuBuilder, version, MessageFlags } = req
 const createEmbed = require('../../utils/createEmbed.js');
 const getLanguage = require('../../utils/getLanguage.js');
 const checkInteractionOwnership = require('../../utils/interactionOwnership.js');
-const emojis = require('../../config/emojis.js');
+const { emojis, getEmoji } = require('../../config/emojis.js');
 const colors = require('../../config/colors.js');
 const { isMessageV2, transformToV2Payload } = require('../../utils/componentsV2.js');
 const os = require('node:os');
@@ -99,7 +99,7 @@ async function buildPage(page, interaction, client) {
 
             embed = await createEmbed(interaction, {
                 title: `[4/4] ${emojis.coracaopixel} ${isPtBr ? 'Agradecimentos & Inspirações' : 'Acknowledgements & Inspirations'}`,
-                description: `> ${thanksText}\n\n${getEmoji('linha')}\n\n-# ${obrigadoText}`,
+                description: `> ${thanksText}\n\n-# ${obrigadoText}`,
                 color: colors.primary,
             });
 
@@ -169,6 +169,7 @@ module.exports = {
             payload.files = ['./assets/banner.png'];
         } else {
             payload.files = [];
+            payload.attachments = [];
         }
 
         if (isOwner) {
